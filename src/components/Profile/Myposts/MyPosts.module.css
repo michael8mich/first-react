@@ -1,0 +1,12 @@
+.content {
+    grid-area: c;
+    background-color: coral;
+    width: 100%;
+}
+
+.first_img {
+    width: 100%;
+}
+.second_img {
+    width: 50px;
+}

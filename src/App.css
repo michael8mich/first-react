@@ -9,19 +9,17 @@
   grid-template-rows: 60px 1fr;
   grid-template-columns: 2fr 10fr;
 }
-.header {
-  grid-area: h;
-  background-color: green;
-}
-.nav {
-  grid-area: n;
-  background-color: blue;
-}
-.content {
+.app-wrapper-content {
   grid-area: c;
   background-color: coral;
   width: 100%;
 }
-.header img {
-  height: 30px;
+.app-wrapper-navbar {
+  grid-area: n;
+  background-color: lightseagreen;
+  padding: 20px;
+}
+.app-wrapper-header {
+  grid-area: h;
+  background-color: rgb(37, 196, 37);
 }
