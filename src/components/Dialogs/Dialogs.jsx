@@ -1,39 +1,43 @@
 import React from 'react';
 import s from './Dialogs.module.css'
-import { NavLink } from 'react-router-dom';
+import DilaodItem from './DialogItem/DialogItem';
+import Message from './Message/Massage';
+
 const Dialogs = (props) => {
+
+    let dialogElements = props.dialogsPage.dialogs.map(d => <DilaodItem name={d.name} id={d.id} />)
+    let messagesElements = props.dialogsPage.messages.map(m => <Message name={m.message} id={m.id} />)
+
+    let addMessage = () => {
+
+        props.addMessage()
+    }
+
+    let onMessagetChange = (event) => {
+
+        let text = event.target.value
+        props.onMessagetChange(text)
+    }
     return (
         <div className={s.dialogs}>
             <div className={s.dialogsItems}>
-                <div className={s.dialog + ' ' + s.active}>
-                    <NavLink to='/dialogs/1'>Zhanna</NavLink>
-                </div>
-                <div className={s.dialog}>
-                    <NavLink to='/dialogs/2'>Mana</NavLink>
-                </div>
-                <div className={s.dialog}>
-                    <NavLink to='/dialogs/3'>Manana</NavLink>
-                </div>
-                <div className={s.dialog}>
-                    <NavLink to='/dialogs/4'>Muna</NavLink>
-                </div>
-                <div className={s.dialog}>
-                    <NavLink to='/dialogs/5'>Munana</NavLink>
-                </div>
-                <div className={s.dialog}>
-                    <NavLink to='/dialogs/6'>Kara</NavLink>
-                </div>
-                <div className={s.dialog}>
-                    <NavLink to='/dialogs/7'>Kura</NavLink>
-                </div>
+                {dialogElements}
             </div>
             <div className={s.messages} >
-                <div className={s.messages} >Hi</div>
-                <div className={s.messages} >Hi Hi</div>
-                <div className={s.messages} >Whats Up</div>
-                <div className={s.messages} >How is Ypo</div>
+                {messagesElements}
             </div>
-        </div>)
+            <div>
+                <div>
+                    <textarea value={props.dialogsPage.newMessageText} onChange={onMessagetChange} />
+                </div>
+                <div>
+                    <button onClick={addMessage}>Add message </button>
+                </div>
+            </div>
+
+        </div>
+
+    )
 }
 
 export default Dialogs

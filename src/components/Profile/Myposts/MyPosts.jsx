@@ -1,19 +1,33 @@
 import React from 'react';
-import s from './MyPosts.module.css'
-import Post from './Post/Post'
+import s from './MyPosts.module.css';
+import Post from './Post/Post';
 
-const MyPosts = () => {
-    return <div >
+const MyPosts = (props) => {
+
+    let postsElements = props.profilePage.posts.map(p => <Post id={p.id.toString()} message={p.message} likesCount={p.likesCount.toString()} />)
+    let newPostElement = React.createRef()
+
+    let addAddPost = () => {
+        props.addPost()
+    }
+    let onPostChange = () => {
+        let text = newPostElement.current.value
+        props.onPostChange(text)
+    }
+    return <div className={s.postBlock}>
         <div >
-            my posts
+            <h3>My posts</h3>
             <div >
-                new post
+                <div>
+                    <textarea ref={newPostElement} value={props.profilePage.newPostText} onChange={onPostChange} />
+                </div>
+                <div>
+                    <button onClick={addAddPost}>Add post </button>
+                </div>
             </div>
         </div>
         <div className={s.postes}>
-            <Post message='Hi' />
-            <Post message='Post 2' />
-            <Post message='Post 3' />
+            {postsElements}
         </div>
     </div>
 }
