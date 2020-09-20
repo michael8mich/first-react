@@ -1,0 +1,10 @@
+.item a {
+    color: white;
+    margin-left: 10px;
+    margin-top: 5px;
+    font-size: 18px;
+    text-decoration: unset;
+}
+.item a.active {
+    color: yellow;
+}
