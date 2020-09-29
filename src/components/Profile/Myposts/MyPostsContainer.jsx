@@ -1,5 +1,5 @@
 import React from 'react';
-import { addPostActiomCreator, updateNewPostTextActiomCreator } from '../../../redux/profile-reducer';
+import { addPostActiomCreator } from '../../../redux/profile-reducer';
 import MyPosts from './MyPosts';
 import { connect } from 'react-redux';
 
@@ -13,12 +13,9 @@ let matStateToProps = (state) => {
 
 let matDispatchToProps = (dispatch) => {
     return {
-        addPost: () => {
-            dispatch(addPostActiomCreator())
+        addPost: (newPostText) => {
+            dispatch(addPostActiomCreator(newPostText))
         },
-        onPostChange: (text) => {
-            dispatch(updateNewPostTextActiomCreator(text))
-        }
     }
 
 }

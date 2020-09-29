@@ -1,33 +1,52 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import s from './Users.module.css';
+
+
+
+
+
 let Users = (props) => {
-    debugger
-    if (props.users.length === 0) {
-        props.setUsers(
-            [
-                { id: 1, photoUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRJywdqtVksjz_uX70d9O1RUqJVUmCooVRbiw&usqp=CAU', followed: true, fullName: "Michael Kn", status: 'I am a boss', location: { city: 'Petach Tikva', country: 'Israel' } },
-                { id: 2, photoUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRJywdqtVksjz_uX70d9O1RUqJVUmCooVRbiw&usqp=CAU', followed: true, fullName: "Zhanna Me", status: 'I am a boss-s', location: { city: 'Petach Tikva', country: 'Israel' } },
-                { id: 3, photoUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRJywdqtVksjz_uX70d9O1RUqJVUmCooVRbiw&usqp=CAU', followed: false, fullName: "Mishel Kn", status: 'I am a student', location: { city: 'Nof Ha Galil', country: 'Israel' } },
-                { id: 4, photoUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRJywdqtVksjz_uX70d9O1RUqJVUmCooVRbiw&usqp=CAU', followed: false, fullName: "Boris Ra", status: 'I am a patient', location: { city: 'Kursk', country: 'Russia' } }
-            ]
-        )
+    let pageCount = Math.ceil(props.totalUserCount / props.pageSize);
+    let pages = [];
+    for (let i = 1; pageCount >= i; i++) {
+        pages.push(i)
     }
-
-
     return (
         <div>
+            <div>
+                {pages.map(p => {
+                    return <span onClick={(e) => props.onPageChanged(p)}
+                        className={(props.currentPage === p && s.selectedPage) + ' ' + s.pageSelector}  >{p}</span>
+                })}
+
+            </div>
+            <br />
             {
                 props.users.map(u =>
                     <div key={u.id}>
                         <span>
                             <div>
-                                <img src={u.photoUrl} alt="" className={s.userphoto} />
+                                <NavLink to={'/profile/' + u.id}>
+                                    <img src={u.photoUrl} alt="" className={s.userphoto} />
+                                </NavLink>
                             </div>
                             <div>
                                 {
                                     u.followed
-                                        ? <button onClick={() => props.unfollow(u.id)}>UnFollow</button>
-                                        : <button onClick={() => props.follow(u.id)}>Follow</button>
+                                        ? <button disabled={props.followingInProgress.some(id => id === u.id)} onClick={
+                                            () => {
+                                                props.setFollow(true, u.id);
+                                            }
+
+                                        }
+                                        >UnFollow</button>
+                                        : <button disabled={props.followingInProgress.some(id => id === u.id)} onClick={() => {
+                                            props.setFollow(false, u.id);
+                                        }
+
+                                        }
+                                        >Follow</button>
                                 }
                             </div>
                         </span>
@@ -43,8 +62,9 @@ let Users = (props) => {
 
                 )
             }
-        </div>
+        </div >
     )
 }
+
 
 export default Users

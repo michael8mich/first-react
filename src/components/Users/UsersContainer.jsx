@@ -1,28 +1,63 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { followAC, unfollowAC, setUsersAC } from '../../redux/users-reducer';
+import { follow, unfollow, setfollowingInProgress, getUsers, setFollow } from '../../redux/users-reducer';
 import Users from './Users';
+import Preloader from '../common/Preloader/Preloader';
+import { compose } from 'redux';
+import { getUsersS, getPageSizeS, getTotalUserCountS, getCurrentPageS, getIsFetchingS, getFollowingInProgressS } from '../../redux/users-selectors';
+class UsersContainer extends React.Component {
+
+    onPageChanged = (p) => {
+        this.props.getUsers(p, this.props.pageSize)
+    }
+    render() {
+
+
+        return (<>
+            { this.props.isFetching ? <Preloader /> : null}
+            <Users totalUserCount={this.props.totalUserCount}
+                pageSize={this.props.pageSize}
+                currentPage={this.props.currentPage}
+                onPageChanged={this.onPageChanged}
+                users={this.props.users}
+                follow={this.props.follow}
+                unfollow={this.props.unfollow}
+                followingInProgress={this.props.followingInProgress}
+                setfollowingInProgress={this.props.setfollowingInProgress}
+                setFollow={this.props.setFollow}
+            />
+        </>
+        )
+    }
+    componentDidMount() {
+        setTimeout(() => {
+            this.props.getUsers(this.props.currentPage, this.props.pageSize)
+        }, 1);
+
+    }
+}
+
 
 let mapStateToProps = (state) => {
     return {
-        users: state.usersPage.users
+        users: getUsersS(state),
+        pageSize: getPageSizeS(state),
+        totalUserCount: getTotalUserCountS(state),
+        currentPage: getCurrentPageS(state),
+        totalUserCount: getTotalUserCountS(state),
+        isFetching: getIsFetchingS(state),
+        followingInProgress: getFollowingInProgressS(state)
     }
-
 }
 
-let mapDispatchToProps = (dispatch) => {
-    return {
-        follow: (userId) => {
-            dispatch(followAC(userId))
-        },
-        unfollow: (userId) => {
-            dispatch(unfollowAC(userId))
-        },
-        setUsers: (users) => {
-            dispatch(setUsersAC(users))
-        },
+export default compose(
+    connect(mapStateToProps, {
+        follow,
+        unfollow,
+        setfollowingInProgress,
+        getUsers,
+        setFollow
     }
+    )
+)(UsersContainer)
 
-}
-const UsersContainer = connect(mapStateToProps, mapDispatchToProps)(Users)
-export default UsersContainer
