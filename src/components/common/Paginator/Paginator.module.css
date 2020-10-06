@@ -1,0 +1,15 @@
+.userphoto {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+.selectedPage {
+    font-weight: 600;
+    color: green;
+}
+.pageSelector {
+    cursor: pointer;
+}
+.paginator {
+    margin: 10px;
+}

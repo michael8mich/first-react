@@ -1,14 +1,15 @@
 import { restApi } from '../api/api';
 import userPhoto from '../assets/images/userPhoto.png'
+import { updateObjectInArray } from '../utils/object-helpers';
 
 
-const FOLLOW = 'FOLLOW'
-const UNFOLLOW = 'UNFOLLOW'
-const SET_USERS = 'SET_USERS'
-const SET_CURRENT_PAGE = 'SET_CURRENT_PAGE'
-const SET_TOTAL_USER_COUNT = 'SET_TOTAL_USER_COUNT'
-const TOGGLE_IS_FETCHING = 'TOGGLE_IS_FETCHING'
-const TOGGLE_IS_FOLLOWING_PROGRESS = 'TOGGLE_IS_FOLLOWING_PROGRESS'
+const FOLLOW = 'USERS/FOLLOW'
+const UNFOLLOW = 'USERS/UNFOLLOW'
+const SET_USERS = 'USERS/SET_USERS'
+const SET_CURRENT_PAGE = 'USERS/SET_CURRENT_PAGE'
+const SET_TOTAL_USER_COUNT = 'USERS/SET_TOTAL_USER_COUNT'
+const TOGGLE_IS_FETCHING = 'USERS/TOGGLE_IS_FETCHING'
+const TOGGLE_IS_FOLLOWING_PROGRESS = 'USERS/TOGGLE_IS_FOLLOWING_PROGRESS'
 
 let initialState = {
     users: [],
@@ -25,23 +26,12 @@ const usersReducer = (state = initialState, action) => {
         case FOLLOW:
             return {
                 ...state,
-                users: state.users.map(u => {
-                    if (u.id === action.userId)
-                        return { ...u, followed: true }
-                    else
-                        return { ...u }
-                })
+                users: updateObjectInArray(state.users, action.userId, "id", { followed: true })
             };
         case UNFOLLOW:
             return {
                 ...state,
-                users: state.users.map(u => {
-                    if (u.id === action.userId)
-                        return { ...u, followed: false }
-                    else
-                        return { ...u }
-
-                })
+                users: updateObjectInArray(state.users, action.userId, "id", { followed: false })
             };
         case SET_USERS:
             return {
@@ -83,56 +73,46 @@ export const setTotalUserCount = (totalUserCount) => ({ type: SET_TOTAL_USER_COU
 export const setIsFetching = (isFetching) => ({ type: TOGGLE_IS_FETCHING, isFetching })
 export const setfollowingInProgress = (isFetching, id) => ({ type: TOGGLE_IS_FOLLOWING_PROGRESS, isFetching, id })
 
-export const getUsers = (currentPage, pageSize) => {
-    return (dispatch) => {
-        dispatch(setCurrentPage(currentPage))
-        let users = [];
-        dispatch(setIsFetching(true))
-        restApi.getList(currentPage, pageSize, 'get', '*', 'users', '1=1', 'id')
-            .then((data) => {
-                users = data.map((u) => {
-                    return {
-                        id: u.id,
-                        photoUrl: u.photoUrl ? u.photoUrl : userPhoto,
-                        followed: u.followed == 1 ? true : false,
-                        fullName: u.fullName,
-                        status: u.status,
-                        location: { city: u.city, country: u.country }
-                    }
+export const getUsers = (currentPage, pageSize) => async (dispatch) => {
+    dispatch(setCurrentPage(currentPage))
+    let users = [];
+    dispatch(setIsFetching(true))
+    let data = await restApi.getList(currentPage, pageSize, 'get', '*', 'users', '1=1', 'id')
+    users = data.map((u) => {
+        return {
+            id: u.id,
+            photoUrl: u.photoUrl ? u.photoUrl : userPhoto,
+            followed: u.followed == 1 ? true : false,
+            fullName: u.fullName,
+            status: u.status,
+            location: { city: u.city, country: u.country }
+        }
 
-                })
+    })
+    dispatch(setUsers(users));
+    let dataCount = await restApi.globalApi('get',
+        ' count(-1) as cnt ',
+        ' users ',
+        ' 1=1  ')
 
-                dispatch(setUsers(users));
-                restApi.globalApi('get',
-                    ' count(-1) as cnt ',
-                    ' users ',
-                    ' 1=1  ')
-                    .then((data) => {
-                        dispatch(setIsFetching(false))
-                        dispatch(setTotalUserCount(data[0].cnt))
-                    })
-
-            })
-    }
+    dispatch(setIsFetching(false))
+    dispatch(setTotalUserCount(dataCount[0].cnt))
 }
-export const setFollow = (type, id) => {
-    return (dispatch) => {
-        dispatch(setfollowingInProgress(true, id));
-        if (type)
-            dispatch(unfollow(id))
-        else
-            dispatch(follow(id))
-        setTimeout(() => {
-            restApi.globalApi('put',
-                ' {"followed": ' + (type ? 0 : 1) + '} ',
-                ' users ',
-                ' id=' + id
-            )
-                .then((data) => {
-                    dispatch(setfollowingInProgress(false, id))
-                })
-        }, 2000);
+export const setFollow = (type, id) => async (dispatch) => {
+    dispatch(setfollowingInProgress(true, id));
+    if (type)
+        dispatch(unfollow(id))
+    else
+        dispatch(follow(id))
+    setTimeout(async () => {
+        let data = await restApi.globalApi('put',
+            ' {"followed": ' + (type ? 0 : 1) + '} ',
+            ' users ',
+            ' id=' + id
+        )
+        if (data[0] == '1')
+            dispatch(setfollowingInProgress(false, id))
+    }, 1000);
 
-    }
 }
 export default usersReducer

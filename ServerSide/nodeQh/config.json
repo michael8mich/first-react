@@ -1,0 +1,11 @@
+{
+  "port": 8082,
+  "CArestURL": "http://mx:8050/caisd-rest",
+  "AccessKey": "113744600",
+  "SDdb": {
+    "user": "sa",
+    "password": "Aa123456#",
+    "server": "mx",
+    "database": "mdb"
+  }
+}

@@ -8,8 +8,8 @@ import { Textarea } from '../../components/common/FormsControls/FormsControls';
 const maxLength20 = maxLengthCreator(20);
 const Dialogs = (props) => {
 
-    let dialogElements = props.dialogsPage.dialogs.map(d => <DilaodItem name={d.name} id={d.id} />)
-    let messagesElements = props.dialogsPage.messages.map(m => <Message name={m.message} id={m.id} />)
+    let dialogElements = props.dialogsPage.dialogs.map(d => <DilaodItem key={d.id} name={d.name} id={d.id} />)
+    let messagesElements = props.dialogsPage.messages.map(m => <Message key={m.id} name={m.message} id={m.id} />)
 
 
     let addNewMessage = (formData) => {

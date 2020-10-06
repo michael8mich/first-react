@@ -1,12 +1,17 @@
 import * as axios from 'axios'
-
+const SERVER_PATH = 'http://mx:8082/'
 const instance = axios.create({
-    baseURL: 'http://mx:8082/q/qh', //'http://mx/WebJ/GetJ'
+    baseURL: SERVER_PATH + 'q/qh', //'http://mx/WebJ/GetJ'
     headers: {
         'Access-Control-Allow-Origin': 'http://localhost:3000/'
     }
 })
-
+const uploadInstance = axios.create({
+    baseURL: 'http://mx:8082/upload',
+    headers: {
+        'Access-Control-Allow-Origin': 'http://localhost:3000/'
+    }
+})
 export const restApi = {
     getList(currentPage, pageSize, type, first, second, third, order) {
         return instance({
@@ -41,6 +46,21 @@ export const restApi = {
                     return Promise.reject(error)
                 })
 
+    },
+    savePhoto(type, file) {
+
+        const data = new FormData()
+        data.append('file', file)
+        return axios.post(SERVER_PATH + 'upload', data, {
+            // receive two    parameter endpoint url ,form data
+        }).then(res => {
+            return res.data;
+        }).catch(
+            function (error) {
+                console.log('Show error notification!')
+                console.log(error)
+                return Promise.reject(error)
+            })
     }
 }
 

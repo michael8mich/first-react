@@ -1,7 +1,16 @@
+.block {
+    padding: 10px;
+}
 .descriptionBlock {
     padding: 10px;
 }
 .first_img {
     width: 200px;
     height: 200px;
+}
+.fileAtt {
+    display: none;
+}
+.contact {
+    padding-left: 10px;
 }

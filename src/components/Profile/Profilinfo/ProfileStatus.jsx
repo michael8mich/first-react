@@ -12,9 +12,9 @@ class ProfileStatus extends React.Component {
         this.setState({
             editMode: !this.state.editMode
         })
-        if (this.state.editMode) {
-            this.props.updateStatus(1, this.state.status)
-        }
+        // if (this.state.editMode) {
+        //     this.props.updateStatus(1, this.state.status)
+        // }
 
     }
     onStatusChange = (event) => {

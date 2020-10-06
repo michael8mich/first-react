@@ -8,7 +8,8 @@ import { getUsersS, getPageSizeS, getTotalUserCountS, getCurrentPageS, getIsFetc
 class UsersContainer extends React.Component {
 
     onPageChanged = (p) => {
-        this.props.getUsers(p, this.props.pageSize)
+        const { pageSize } = this.props;
+        this.props.getUsers(p, pageSize)
     }
     render() {
 
@@ -31,7 +32,8 @@ class UsersContainer extends React.Component {
     }
     componentDidMount() {
         setTimeout(() => {
-            this.props.getUsers(this.props.currentPage, this.props.pageSize)
+            const { currentPage, pageSize } = this.props;
+            this.props.getUsers(currentPage, pageSize)
         }, 1);
 
     }
