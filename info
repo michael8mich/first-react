@@ -1,1 +1,16 @@
 npx create-react-app . --template typescript
+npm i axios react-router-dom @types/react-router-dom moment
+npm i redux redux-thunk react-redux antd @types/react-redux @types/redux-thunk
+npm install @types/react
+
+
+
+
+
+
+
+
+
+
+
+https://ant.design/components/overview/
