@@ -3,11 +3,11 @@ npm i axios react-router-dom @types/react-router-dom moment
 npm i redux redux-thunk react-redux antd @types/react-redux @types/redux-thunk
 npm install @types/react
 
+npm install --save react-i18next i18next //https://www.freecodecamp.org/news/how-to-add-localization-to-your-react-app/
+//https://react.i18next.com/latest/usetranslation-hook
 
 
-
-
-
+npm i ts-transformer-keys
 
 
 

@@ -1,38 +1,18 @@
 import {Form, Input, Checkbox, Button}  from 'antd';
-import React, {FC} from 'react';
-import { useDispatch } from 'react-redux';
-import { AuthActionCreators } from '../store/reducers/auth/action-creators';
-
+import  {FC} from 'react';
+import { useAction } from '../hooks/useAction';
+import { useTypedSelector } from '../hooks/useTypedSelector';
+import { UnlockOutlined, UserOutlined } from "@ant-design/icons";
+import { useTranslation } from 'react-i18next';
 
 const LoginForm: FC = () => {
-  const dispatch =  useDispatch()
-  const onFinish = (values: any) => {
+  const { t, i18n } = useTranslation();      
+  const {error, isLoading, user } = useTypedSelector(state => state.auth)
+  const {login} = useAction()
+  const [form] = Form.useForm()
+  const onFinish =  (values: any) => {
     console.log('Success:', values);
-    debugger
-    dispatch(AuthActionCreators.login(values.username, values.password ))
-
-    //const where = ` login = '${values.username.value}' and password = '${values.password.value}' `
-    //const response = await  axiosFn("get", '', '*', 'contact', where , ''  )  
-      
-  //     let hasError = false;
-  //     if(response.data["error"]) hasError = true;
-  //     if(!hasError) {
-  //       if(response.data.length !== 0)  
-  //       {
-  //           setIsAuth(true) 
-  //           localStorage.setItem('isAuth', 'true')  
-  //       } else
-  //       {
-  //           setLoginError("Username or Password Incorrect")
-  //       }   
-  //      }
-  //      else
-  //      {
-  //       setLoginError("Login Problem")
-  //       console.log('error:',response.data["error"] )
-  //      }
-       
-  // })
+    login(values.username, values.password )
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -40,6 +20,7 @@ const LoginForm: FC = () => {
   };
     return (
       <Form
+      form={form}
       name="basic"
       labelCol={{ span: 8 }}
       wrapperCol={{ span: 16 }}
@@ -48,29 +29,38 @@ const LoginForm: FC = () => {
       onFinishFailed={onFinishFailed}
       autoComplete="off"
     >
+      {error && <div style={{color: 'red'}}>
+        {error}
+        </div>}
       <Form.Item
-        label="Username"
+        label={ t('username') }
         name="username"
-        rules={[{ required: true, message: 'Please input your username!' }]}
+        rules={[{ required: true, message: t('err_req_username') }]}
       >
-        <Input />
+        <Input
+        prefix={<UserOutlined />}
+        />
       </Form.Item>
 
       <Form.Item
-        label="Password"
+        label={ t('password') }
         name="password"
-        rules={[{ required: true, message: 'Please input your password!' }]}
+        rules={[{ required: true, message:  t('password') }]}
       >
-        <Input.Password />
+        <Input.Password 
+        prefix={<UnlockOutlined />}
+        />
       </Form.Item>
 
       <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
-        <Checkbox>Remember me</Checkbox>
+        <Checkbox>{t('remember_me')}</Checkbox>
       </Form.Item>
 
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-        <Button type="primary" htmlType="submit">
-          Submit
+        <Button type="primary" htmlType="submit" loading={isLoading}
+
+        >
+        { t('login') }
         </Button>
       </Form.Item>
     </Form>

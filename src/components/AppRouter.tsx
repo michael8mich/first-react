@@ -1,5 +1,4 @@
 
-import React, {useContext} from 'react';
 import {  Route, Switch, Redirect} from 'react-router-dom'
 import { useTypedSelector } from '../hooks/useTypedSelector';
 import { publicRoutes, privateRoutes, RouteNames } from '../router/index'

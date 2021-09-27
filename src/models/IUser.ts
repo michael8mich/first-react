@@ -3,4 +3,6 @@ export interface IUser {
     username: string
     email: string
     name: string
+    locale: string
+    direction: string
 }

@@ -1,0 +1,28 @@
+{
+
+        "home": "בית",
+        "page": "דף",
+        "language": "שפה",
+        "english":"אנגלית",
+        "hebrew":"עִברִית",
+        "logout":"להתנתק",
+        "login":"התחברות",
+        "username":"שם משתמש",
+        "password":"סיסמה",
+        "err_req_username":"אנא הכנס את שם המשתמש שלך!",
+        "err_req_password":"אנא הכנס את הסיסמה שלך!",
+        "remember_me":"זכור אותי",
+        "data_problem":"בעיית נתוני קבל/קבע",
+        "axios_error":"שגיאת Axios",
+        "add_new_vent": "הוסף אירוע חדש",
+        "event_name": "שם אירוע",
+        "err_req_event_name": "אנא הכנס את שם האירוע שלך!",
+        "guest": "אוֹרֵחַ",
+        "err_req_guest": "אנא בחר שם אורח!",
+        "date": "תַאֲרִיך",
+        "err_req_date": "אנא בחר תאריך!",
+        "create": "לִיצוֹר",
+        "required_field": "שדה חובה",
+        "isDateAfter": "התאריך הזה חייב להיות אחרי עכשיו"
+   
+  }

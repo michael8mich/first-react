@@ -1,0 +1,30 @@
+{
+   
+        "home": "Home",
+        "page": "Page",
+        "language": "Language",
+        "english":"English",
+        "hebrew":"Hebrew",
+        "logout":"Logout",
+        "login":"Login",
+        "username":"Username",
+        "password":"Password",
+        "err_req_username":"Please input your username!",
+        "err_req_password":"Please input your password!",
+        "remember_me":"Remember me",
+        "data_problem":"Get/SET data Problem",
+        "axios_error":"Axios Error",
+        "login_incorrect": "Username or Password Incorrect",
+        "login_problem": "Login Problem",
+        "add_new_vent": "Add new Event",
+        "event_name": "Event Name",
+        "err_req_event_name": "Please input your Event Name!",
+        "guest": "Guest",
+        "err_req_guest": "Please select guest name!",
+        "date": "Date",
+        "err_req_date": "Please select date!",
+        "create": "Create",
+        "required_field": "Required Field",
+        "isDateAfter": "This date must be after now"
+    
+  }
