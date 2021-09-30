@@ -16,18 +16,21 @@ const EventCalendar: FC<EventCalendarProps> = ({events, me} ) => {
     const events_list: IEvent[] = events
     const currentDateEvents =  events_list.filter(ev => moment(+ev.event_dt*1000).format("MM/DD/YYYY")  === unixDate);
     return (
-      <ul className="events">
+      <div className="events">
         {currentDateEvents.map((item , index) => (
+          <div key={index} style={{padding: 15}}>
           <Badge.Ribbon
           color={item.author.id === me ? 'green' : 'blue'} 
           text={item.author.id === me ? item.guest.name : item.author.name} 
-          key={index}>
-          {item.description}
+          >
         </Badge.Ribbon>
-          
-        
+        <div>
+          {item.description}
+        </div>
+        </div>
         ))}
-      </ul>
+         
+      </div>
     );
   }
     return (

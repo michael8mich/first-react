@@ -1,5 +1,4 @@
 {
-   
         "home": "Home",
         "page": "Page",
         "language": "Language",
@@ -25,6 +24,13 @@
         "err_req_date": "Please select date!",
         "create": "Create",
         "required_field": "Required Field",
-        "isDateAfter": "This date must be after now"
-    
+        "isDateAfter": "This date must be after now",
+        "admin": "Administration",
+        "utils": "Utils",
+        "name": "Name",
+        "type": "Type",
+        "code": "Code",
+        "active_object": "Status",
+        "submit": "Submit",
+        "add_new": "Add New"
   }

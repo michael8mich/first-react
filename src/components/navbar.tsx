@@ -39,8 +39,11 @@ const Navbar: FC = () => {
                     key={1} >{ t('logout') }
                     </Menu.Item>
                     <SubMenu key="Language" title={ t('language') }>
-                      <Menu.Item disabled={user.locale === 'enUS'} onClick={() => changeLen('enUS') }  key="_1">{ t('english') }</Menu.Item>
-                      <Menu.Item disabled={user.locale === 'heIL'}  onClick={() => changeLen('heIL') }  key="_2">{ t('hebrew') }</Menu.Item>
+                      <Menu.Item disabled={user.locale === 'enUS'} onClick={() => changeLen('enUS') }  key="enUS">{ t('english') }</Menu.Item>
+                      <Menu.Item disabled={user.locale === 'heIL'}  onClick={() => changeLen('heIL') }  key="heIL">{ t('hebrew') }</Menu.Item>
+                    </SubMenu>
+                    <SubMenu key="admin" title={ t('admin') }>
+                      <Menu.Item key="utils" onClick={() => router.push(RouteNames.UTILS) } >{ t('utils') }</Menu.Item>
                     </SubMenu>
                 </Menu>
                 </>

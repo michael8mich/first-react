@@ -12,7 +12,7 @@ const LoginForm: FC = () => {
   const [form] = Form.useForm()
   const onFinish =  (values: any) => {
     console.log('Success:', values);
-    login(values.username, values.password )
+    login(values.username, values.password, values.remember )
   };
 
   const onFinishFailed = (errorInfo: any) => {

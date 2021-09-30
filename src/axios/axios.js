@@ -1,7 +1,7 @@
 import axios from 'axios'
 const Base_URL = "https://localhost:44367/v1/qtrm"
 
-export async function axiosFn(type, data, first, second, third, id='', limit='', page='',offset = '' ) {
+export async function axiosFn(type, data, first, second, third, id='', limit='', page='',offset='' ) {
   let path = Base_URL;
     if(id!=='') 
       path = path+"/"+id

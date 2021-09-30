@@ -15,7 +15,7 @@ export const AuthActionCreators =  {
     setIsAuth: (auth:boolean): SetAuthAction => ({type:AuthActionEnum.SET_AUTH, payload: auth}),
     setIsError: (error:string): SetErrorAction => ({type:AuthActionEnum.SET_ERROR, payload: error}),
     IsLoading: (loading:boolean): SetIsLoadingAction => ({type:AuthActionEnum.SET_IS_LOADING, payload: loading}),
-    login: (username: string, password: string ) => async (dispatch: AppDispatch ) => {
+    login: (username: string, password: string, remember: boolean ) => async (dispatch: AppDispatch ) => {
 
         try {
         dispatch(AuthActionCreators.IsLoading(true))
@@ -29,6 +29,7 @@ export const AuthActionCreators =  {
          {
             let user: IUser = response.data[0]
             dispatch(AuthActionCreators.setUser(user))
+            if(remember)
             localStorage.setItem('isAuth', JSON.stringify(user) ) 
             i18n.changeLanguage(user.locale.substring(0,2)); 
             dispatch(AuthActionCreators.setIsAuth(true))

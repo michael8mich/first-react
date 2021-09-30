@@ -7,9 +7,9 @@ npm install --save react-i18next i18next //https://www.freecodecamp.org/news/how
 //https://react.i18next.com/latest/usetranslation-hook
 
 
-npm i ts-transformer-keys
+npm i ts-transformer-keys not work
 
-
+npm i lodash/debounce
 
 
 
