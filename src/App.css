@@ -3,3 +3,28 @@
 .h100 {
     height: calc(100vh - 64px);
 }
+.table-row-light {
+    background-color: #ffffff;
+}
+.table-row-dark {
+    background-color: lightgray;
+}
+.ant-input[disabled] {
+    color: rgba(0, 0, 0, 0.85);
+    background-color: #f5f5f5;
+    border-color: #d9d9d9;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 1;
+}
+.css-lr9fot-singleValue {
+    color: hsl(0, 0%, 85%);
+    grid-area: 1/1/2/3;
+    margin-left: 2px;
+    margin-right: 2px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+}

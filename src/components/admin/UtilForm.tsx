@@ -59,6 +59,13 @@ const UtilForm: FC<UtilFormProps> = (props) => {
       values.id = util.id
     }
     form.resetFields()
+    setUtil({
+      name:'',
+      id:'',
+      type:'',
+      code:'',
+      active: 1
+    } as IUtil)
     await createUtil(values)
     props.submit(values)
   };

@@ -16,7 +16,7 @@ const AppRouter = () => {
                   exact={r.exact} 
                   component={r.component} />
                   )}
-                  <Redirect to={RouteNames.UTILS} exact />
+                  <Redirect to={RouteNames.USERS}  />
               </Switch>
                   :
               <Switch>    

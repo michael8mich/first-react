@@ -4,7 +4,7 @@ import { axiosFn } from '../../../axios/axios';
 import { IUser } from './../../../models/IUser';
 import { EventActionEnum, SetGuestsAction, SetErrorAction, SetIsLoadingAction, SetEventAction } from './types';
 import i18n from "i18next";
-import { translateObj } from '../../../utils/translateObj';
+import { translateObj, translateObj_event } from '../../../utils/translateObj';
 
 export const EventActionCreators = {
     setGuests: (payload:IUser[]): SetGuestsAction => ({type:EventActionEnum.SET_GUESTS, payload}),
@@ -22,7 +22,7 @@ export const EventActionCreators = {
             {
             let evenets_: any[] = response.data
             const IObjects:string[] = ['author','guest']
-            evenets_ = translateObj(evenets_, IObjects)
+            evenets_ = translateObj_event(evenets_, IObjects)
             let events:IEvent[] = evenets_.filter(ev=> ev.author.id === me || ev.guest.id === me )
             dispatch(EventActionCreators.setEvents(events))
             } else
@@ -42,8 +42,8 @@ export const EventActionCreators = {
          dispatch(EventActionCreators.IsLoading(true))
  
          const where = ` name like '%${search}%'  `
-         const response = await  axiosFn("get", '', '*', 'contact', where , ''  )  
-    
+         const response = await  axiosFn("get", '', '*', 'V_contacts', where , ''  )  
+      debugger
          let hasError = false;
          if(response.data["error"]) hasError = true;
              if(response.data&&!hasError)

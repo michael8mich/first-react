@@ -12,7 +12,7 @@ export async function axiosFn(type, data, first, second, third, id='', limit='',
         'Access-Control-Expose-Headers' : 'X-Total-Count',
         'first': first,
         'second': second,
-        'third': third
+        'third': encodeURIComponent(third)
       }
       try {
           if(type==='post'||type==='put') 
