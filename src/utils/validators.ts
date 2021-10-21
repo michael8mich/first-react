@@ -1,6 +1,30 @@
 import moment, { Moment } from 'moment';
 import { message } from "antd";
 import i18n from "i18next";
+export const getValidatorsToProp = (pattern:string) =>
+  {
+    let validatorsArr:any = []
+     pattern.split(',').map(v=>
+      {
+        v = v.trim() || ''
+        if(v==='required')
+        validatorsArr.push( validators['required']() )
+        if(v==='isEmail')
+        validatorsArr.push( validators['isEmail']() )
+        if(v==='isPhone')
+        validatorsArr.push( validators['isPhone']() )
+        if(v==='isUsername')
+        validatorsArr.push( validators['isUsername']() )
+        if(v==='isNumber')
+        validatorsArr.push( validators['isNumber']() )
+        if(v==='isDateAfter')
+        validatorsArr.push( validators['isDateAfter']() )
+      }
+      ) 
+      console.log('validatorsArr', validatorsArr);
+      
+      return validatorsArr
+  } 
 
 function validateEmail(email:string) 
     {
@@ -16,7 +40,12 @@ function validateUsername(username:string)
     {
         var re =/^[A-Za-z .]{3,15}$/
         return re.test(username);
-    }         
+    }  
+function validateNumber(number:string) 
+    {
+        var re =/^-?[\d.]+(?:e-?\d+)?$/
+        return re.test(number);
+    }             
     
 export const validators = {
     required: (message: string = i18n.t('required_field')) => ({
@@ -53,6 +82,18 @@ export const validators = {
             validator(_:any,value:string) {
                 value = value || ''
                 if(validateUsername(value)||value.length===0)
+                {
+                    return Promise.resolve()
+                }
+                return Promise.reject(new Error(message))
+            }
+        }
+    ),
+    isNumber: (message: string = i18n.t('number_field')) => () => (
+        {
+            validator(_:any,value:string) {
+                value = value || ''
+                if(validateNumber(value)||value.length===0)
                 {
                     return Promise.resolve()
                 }

@@ -1,5 +1,5 @@
 
-import {  Route, Switch, Redirect} from 'react-router-dom'
+import {  Route, Switch, Redirect, Link} from 'react-router-dom'
 import { useTypedSelector } from '../hooks/useTypedSelector';
 import { publicRoutes, privateRoutes, RouteNames } from '../router/index'
 
@@ -16,7 +16,7 @@ const AppRouter = () => {
                   exact={r.exact} 
                   component={r.component} />
                   )}
-                  <Redirect to={RouteNames.USERS}  />
+                  <Redirect to={RouteNames.HOME}  />
               </Switch>
                   :
               <Switch>    

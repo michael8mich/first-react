@@ -1,4 +1,5 @@
 import { SelectOption } from "./ISearch";
+import { ITicket } from "./ITicket";
 
 export interface IUser {
     id: string
@@ -9,6 +10,8 @@ export interface IUser {
     first_name: string
     name: string
     locale: string
+    login: string
+    contact_number: string
     direction: string
     job_title: SelectOption
     contact_type: SelectOption
@@ -28,15 +31,25 @@ export interface IUser {
     roles: SelectOption[]
     teams: SelectOption[]
     members: SelectOption[]
+    tickets: ITicket[]
+
+    last_mod_by: SelectOption
+    last_mod_dt: string
+    create_date: string
 }
 
-export const IObjects:string[] = ['contact_type', 'job_title','primary_group','manager', 'organization','location','department','site']
-export const IRoFields:string[] = ['location_address1', 'location_address2','location_address3']
-export const IObjectsMulti:string[] = ['roles','teams','members']
+export const IUserObjects:string[] = ['contact_type', 'job_title','primary_group','manager', 'organization','location','department','site','last_mod_by']
+export const IUserRoFields:string[] = ['location_address1', 'location_address2','location_address3', 'last_mod_by', 'create_date', 'last_mod_dt']
+export const IUserObjectsMulti:string[] = ['roles','teams','members', 'tickets']
 
 export const TEAM_TYPE_ID = 'F349B208096C5B982D8205DED91F5FA4'
 export const NOT_GROUP_LIST = " ( contact_type<>'"+TEAM_TYPE_ID+"' ) "
 export const GROUP_LIST = " ( contact_type='"+TEAM_TYPE_ID+"' ) "
+
+export const ASSIGNEE_TYPE_ID = '3BDB6B6DBE05CF95B7E76C977A9AF04C'
+export const NOT_ASSIGNEE_LIST = " ( contact_type<>'"+ASSIGNEE_TYPE_ID+"' ) "
+export const ASSIGNEE_LIST = " ( contact_type='"+ASSIGNEE_TYPE_ID+"' ) "
+
 
 export const ORG_INFO_TYPE_DEPARTMENT = 'D421F990A306B50CF186BC38BFA7994A'
 export const ORG_INFO_TYPE_LOCATION = 'CAE8F8B25793ADA7D9A2E379A05A4F47'

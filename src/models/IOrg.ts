@@ -17,9 +17,9 @@ export interface IOrg {
 
 }
 
-export const IObjects:string[] = ['organizational_type', 'manager']
-export const IRoFields:string[] = [] 
-export const IObjectsMulti:string[] = []
+export const IOrgObjects:string[] = ['organizational_type', 'manager']
+export const IOrgRoFields:string[] = [] 
+export const IOrgObjectsMulti:string[] = []
 
 export const ORG_INFO_TYPE_DEPARTMENT = 'D421F990A306B50CF186BC38BFA7994A'
 export const ORG_INFO_TYPE_LOCATION = 'CAE8F8B25793ADA7D9A2E379A05A4F47'

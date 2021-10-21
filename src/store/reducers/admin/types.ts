@@ -1,4 +1,4 @@
-import { IUtil, IFilter } from '../../../models/admin/IUtil';
+import { IUtil, IFilter, AlertPrp } from '../../../models/admin/IUtil';
 import { IOrg } from '../../../models/IOrg';
 import { IUser } from '../../../models/IUser';
 
@@ -13,8 +13,10 @@ export interface AdminState {
     utils: IUtil[]
     utilsCount: number
     filters: IFilter[]
+    alert: AlertPrp
     isLoading: boolean
     error: string
+   
 }
 
 export enum AdminActionEnum {
@@ -24,11 +26,12 @@ export enum AdminActionEnum {
     SET_ORGS = "SET_ORGS",
     SET_SELECTED_ORG = "SET_SELECTED_ORG",
     SET_ORGS_COUNT = "SET_ORGS_COUNT",
-    SET_ERROR = "SET_ERROR",
     SET_UTILS = "SET_UTILS",
     SET_UTILS_COUNT = "SET_UTILS_COUNT",
     SET_FILTERS = "SET_FILTERS",
-    SET_IS_LOADING = "SET_IS_LOADING"
+    SET_ALERT = "SET_ALERT",
+    SET_IS_LOADING = "SET_IS_LOADING",
+    SET_ERROR = "SET_ERROR",
 }
 
 export interface SetUsersAction {
@@ -76,6 +79,11 @@ export interface SetFiltersAction {
     payload: IFilter[]
 }
 
+export interface SetAlertAction {
+    type: AdminActionEnum.SET_ALERT,
+    payload: AlertPrp
+}
+
 export interface SetIsLoadingAction {
     type: AdminActionEnum.SET_IS_LOADING,
     payload: boolean
@@ -92,7 +100,8 @@ SetErrorAction |
 SetUtilsAction | 
 SetIsLoadingAction |
 SetFiltersAction |
-SetUtilsCountAction 
+SetUtilsCountAction |
+SetAlertAction
 
 
 

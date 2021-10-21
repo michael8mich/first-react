@@ -9,3 +9,11 @@ export interface IFilter {
     text: string,
     value: string
   }
+export interface AlertPrp {
+    type?: 'success' | 'info' | 'warning' | 'error',
+    message: string,
+    closable: boolean ,
+    showIcon: boolean ,
+    visible: boolean,
+    autoClose: number  
+  }  

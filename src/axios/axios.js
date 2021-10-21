@@ -1,4 +1,5 @@
 import axios from 'axios'
+import FormData from 'form-data'
 const Base_URL = "https://localhost:44367/v1/qtrm"
 
 export async function axiosFn(type, data, first, second, third, id='', limit='', page='',offset='' ) {
@@ -10,7 +11,7 @@ export async function axiosFn(type, data, first, second, third, id='', limit='',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
         'Access-Control-Expose-Headers' : 'X-Total-Count',
-        'first': first,
+        'first': encodeURIComponent(first),
         'second': second,
         'third': encodeURIComponent(third)
       }
@@ -32,6 +33,32 @@ export async function axiosFn(type, data, first, second, third, id='', limit='',
         return await axios[type](path,  {
           headers: headers
       }) 
+      } catch (e) {
+      console.log(e)
+      return [{error: e}]
+  }   
+
+}
+
+export async function axiosFnUpload(file, id ) {
+  let path = Base_URL + '/upload'
+    const headers = {
+        'Content-Type': 'multipart/form-data',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE'
+      }
+      try {
+        let data = new FormData();
+        data.append('file', file)
+        data.append('FileName', file.name)
+        //data.append('fileFile', file.name)
+          return await axios.post(path, data, {
+            headers: headers,
+            params: {
+              id: id
+            }
+          })
+          
       } catch (e) {
       console.log(e)
       return [{error: e}]

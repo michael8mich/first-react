@@ -1,12 +1,13 @@
-import { IOrg } from './../../../models/IOrg';
-import { IUtil, IFilter } from '../../../models/admin/IUtil';
+import { IOrg, IOrgObjects, IOrgObjectsMulti } from './../../../models/IOrg';
+import { IUtil, IFilter, AlertPrp } from '../../../models/admin/IUtil';
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
-import { IUser } from '../../../models/IUser';
-import { AdminActionEnum, SetUsersAction, SetErrorAction, SetIsLoadingAction, SetUtilsAction, SetFiltersAction, SetUtilsCountAction, SetUsersCountAction, SetSelectedUserAction, SetOrgsAction, SetSelectedOrgAction, SetOrgsCountAction } from './types';
+import { IUserObjects, IUserObjectsMulti, IUser } from '../../../models/IUser';
+import { AdminActionEnum, SetUsersAction, SetErrorAction, SetIsLoadingAction, SetUtilsAction, SetFiltersAction, SetUtilsCountAction, SetUsersCountAction, SetSelectedUserAction, SetOrgsAction, SetSelectedOrgAction, SetOrgsCountAction, SetAlertAction } from './types';
 import i18n from "i18next";
 import { translateObj } from '../../../utils/translateObj';
 import { SearchPagination } from '../../../models/ISearch';
+import { nowToUnix } from '../../../utils/formManipulation';
 function onlyUnique(value: string, index:number, self:string[]) {
   return self.indexOf(value) === index;
 }
@@ -25,11 +26,14 @@ export const AdminActionCreators = {
     setUtils: (payload:IUtil[]): SetUtilsAction => ({type:AdminActionEnum.SET_UTILS, payload}),
     setUtilsCount: (payload:number): SetUtilsCountAction => ({type:AdminActionEnum.SET_UTILS_COUNT, payload}),
     setFilters: (payload:IFilter[]): SetFiltersAction => ({type:AdminActionEnum.SET_FILTERS, payload}),
+    setAlert: (payload:AlertPrp): SetAlertAction => ({type:AdminActionEnum.SET_ALERT, payload}),
+    
     setIsError: (payload:string): SetErrorAction => ({type:AdminActionEnum.SET_ERROR, payload}),
     IsLoading: (payload:boolean): SetIsLoadingAction => ({type:AdminActionEnum.SET_IS_LOADING, payload}),
     
     fetchUtils: (searchP: SearchPagination, where: string ) => async (dispatch: AppDispatch) => {
-     try {
+      
+      try {
       dispatch(AdminActionCreators.setIsError(''))
         dispatch(AdminActionCreators.IsLoading(true))
         const response = await  axiosFn("get", '', '*', 'utils', where , '', searchP._limit, searchP._page,  searchP._offset  )  
@@ -40,8 +44,8 @@ export const AdminActionCreators = {
             let utils_: any[] = response.data
             let _count =  response.headers['x-total-count'] || 0
             dispatch(AdminActionCreators.setUtilsCount(_count))
-            const IObjects:string[] = []
-            //utils_ = translateObj(utils_, IObjects)
+            const IUserObjects:string[] = []
+            //utils_ = translateObj(utils_, IUserObjects)
             //let utils:IUtil[] = utils_.filter(ev=> ev.active === 1 )
             let utils:IUtil[] = utils_
             let types:string[] = []
@@ -62,11 +66,13 @@ export const AdminActionCreators = {
             dispatch(AdminActionCreators.setUtils(utils))
             } else
             {
-                dispatch(AdminActionCreators.setIsError(i18n.t('data_problem')))
+              dispatch(AdminActionCreators.setUtils([]))  
+              dispatch(AdminActionCreators.setIsError(i18n.t('data_problem')))
             }   
       
        } catch (e) {
-       dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
+       dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))  
+       dispatch(AdminActionCreators.setUtils([]))      
       } finally {
         dispatch(AdminActionCreators.IsLoading(false))
       }
@@ -118,7 +124,7 @@ export const AdminActionCreators = {
 
      },
     
-    fetchUsers: (searchP: SearchPagination, where: string, IObjects:string[] ) => async (dispatch: AppDispatch) => {
+    fetchUsers: (searchP: SearchPagination, where: string, IUserObjects:string[] ) => async (dispatch: AppDispatch) => {
       try {
        dispatch(AdminActionCreators.setIsError(''))
          dispatch(AdminActionCreators.IsLoading(true))
@@ -130,31 +136,35 @@ export const AdminActionCreators = {
              let users_: any[] = response.data
              let _count =  response.headers['x-total-count'] || 0
              dispatch(AdminActionCreators.setUsersCount(_count))
-             users_ = translateObj(users_, IObjects)
+             users_ = translateObj(users_, IUserObjects)
              let users:IUser[] = users_
              dispatch(AdminActionCreators.setUsers(users))
              } else
              {
-                 dispatch(AdminActionCreators.setIsError(i18n.t('data_problem')))
+              dispatch(AdminActionCreators.setUsers([]))   
+              dispatch(AdminActionCreators.setIsError(i18n.t('data_problem')))
              }   
        
         } catch (e) {
-        dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
+          dispatch(AdminActionCreators.setUsers([]))     
+          dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
        } finally {
          dispatch(AdminActionCreators.IsLoading(false))
        }
  
      }, 
-    createUser: (user: IUser, IObjectsMulti: string[], multi:any ) => async (dispatch: AppDispatch) => {
+    createUser: (user: IUser,  multi:any, loginUserId:string ) => async (dispatch: AppDispatch) => {
       dispatch(AdminActionCreators.setIsError(''))
       try { 
         let hasError = false;
         let user_ = JSON.parse(JSON.stringify(user)) 
-        IObjectsMulti.map(v => {
+        IUserObjectsMulti.map(v => {
           delete user_[v]
         })
         const id = user_.id
         delete user_.id
+        user_.last_mod_by = loginUserId
+        user_.last_mod_dt =  nowToUnix().toString()
         //update
         if(id!=='0') {
           dispatch(AdminActionCreators.IsLoading(true))
@@ -265,7 +275,19 @@ export const AdminActionCreators = {
       }
 
      },
-    fetchUser: (id: string, IObjects:string[], IObjectsMulti:string[] = []) => async (dispatch: AppDispatch) => {
+     changeGroupMemberNotify: (notify:any[] ) => async (dispatch: AppDispatch) => {
+      try { 
+        notify.map(async v => {
+            const response = await  axiosFn("put", {notify:v.notify}, '*', 'teammember', "id" , v.code  )        
+          })
+       } catch (e) {
+       dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
+      } finally {
+        dispatch(AdminActionCreators.IsLoading(false))
+      }
+
+     },
+    fetchUser: (id: string) => async (dispatch: AppDispatch) => {
       try {
        dispatch(AdminActionCreators.setIsError(''))
          dispatch(AdminActionCreators.IsLoading(true))
@@ -276,10 +298,10 @@ export const AdminActionCreators = {
              if(response.data&&!hasError)
              {
              let users_: any[] = response.data
-             users_ = translateObj(users_, IObjects)
+             users_ = translateObj(users_, IUserObjects)
              let user:IUser = users_[0]
              dispatch(AdminActionCreators.setSelectedUser(user))
-             IObjectsMulti.map( async  m=> {
+             IUserObjectsMulti.map( async  m=> {
                let first = ''
                let second = ''
                let third = ""
@@ -294,9 +316,14 @@ export const AdminActionCreators = {
                 third = " member = '" + id + "'"
               } 
               if(m==='members') {  
-                first = ' member as value, member_name as label, id as code '
+                first = ' member as value, member_name as label, id as code, notify '
                 second = 'V_teammember'
                 third = " team  = '" + id + "'"
+              } 
+              if(m==='tickets') {  
+                first = ' * '
+                second = 'V_tickets'
+                third = " customer  = '" + id + "'"
               } 
                 const response_multi = await  axiosFn("get", '', first, second,  third , ''  )  
                 console.log('m', m);
@@ -313,9 +340,8 @@ export const AdminActionCreators = {
        } finally {
          dispatch(AdminActionCreators.IsLoading(false))
        }
-     }, 
-
-     fetchOrgs: (searchP: SearchPagination, where: string, IObjects:string[] ) => async (dispatch: AppDispatch) => {
+     },  
+    fetchOrgs: (searchP: SearchPagination, where: string ) => async (dispatch: AppDispatch) => {
       try {
        dispatch(AdminActionCreators.setIsError(''))
          dispatch(AdminActionCreators.IsLoading(true))
@@ -326,8 +352,8 @@ export const AdminActionCreators = {
              {
              let orgs_: any[] = response.data
              let _count =  response.headers['x-total-count'] || 0
-             dispatch(AdminActionCreators.setUsersCount(_count))
-             orgs_ = translateObj(orgs_, IObjects)
+             dispatch(AdminActionCreators.setOrgsCount(_count))
+             orgs_ = translateObj(orgs_, IOrgObjects)
              let orgs:IOrg[] = orgs_
              dispatch(AdminActionCreators.setOrgs(orgs))
              } else
@@ -342,12 +368,12 @@ export const AdminActionCreators = {
        }
  
      }, 
-    createOrg: (org: IOrg, IObjectsMulti: string[], multi:any ) => async (dispatch: AppDispatch) => {
+     createOrg: (org: IOrg, multi:any ) => async (dispatch: AppDispatch) => {
       dispatch(AdminActionCreators.setIsError(''))
       try { 
         let hasError = false;
         let org_ = JSON.parse(JSON.stringify(org)) 
-        IObjectsMulti.map(v => {
+        IOrgObjectsMulti.map(v => {
           delete org_[v]
         })
         const id = org_.id
@@ -462,21 +488,20 @@ export const AdminActionCreators = {
       }
 
      },
-    fetchOrg: (id: string, IObjects:string[], IObjectsMulti:string[] = []) => async (dispatch: AppDispatch) => {
+    fetchOrg: (id: string) => async (dispatch: AppDispatch) => {
       try {
        dispatch(AdminActionCreators.setIsError(''))
          dispatch(AdminActionCreators.IsLoading(true))
          const response = await  axiosFn("get", '', '*', 'V_organizational_info', '' , id  )  
          let hasError = false;
          if(response.data["error"]) hasError = true;
-         let multiObject = {}
              if(response.data&&!hasError)
              {
              let org_: any[] = response.data
-             org_ = translateObj(org_, IObjects)
+             org_ = translateObj(org_, IOrgObjects)
              let org:IOrg = org_[0]
              dispatch(AdminActionCreators.setSelectedOrg(org))
-            //  IObjectsMulti.map( async  m=> {
+            //  IOrgObjectsMulti.map( async  m=> {
             //    let first = ''
             //    let second = ''
             //    let third = ""

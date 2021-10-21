@@ -3,42 +3,38 @@ import { FilterValue, SorterResult } from 'antd/lib/table/interface';
 import { ColumnsType  } from 'antd/es/table';
 import  {FC, useEffect, useState} from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAction } from '../../hooks/useAction';
-import { useTypedSelector } from '../../hooks/useTypedSelector';
+import { useAction } from '../../../hooks/useAction';
+import { useTypedSelector } from '../../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
-import { axiosFn } from '../../axios/axios';
-import { SearchPagination, SelectOption } from '../../models/ISearch';
-import { searchFormWhereBuild } from '../../utils/formManipulation';
+import { axiosFn } from '../../../axios/axios';
+import { SearchPagination, SelectOption } from '../../../models/ISearch';
+import { FROM, searchFormWhereBuild, SELECT, uTd, WHERE } from '../../../utils/formManipulation';
 import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
-import { GROUP_LIST, IUserObjects, IUser, NOT_GROUP_LIST, TEAM_TYPE_ID } from '../../models/IUser';
 import { useHistory } from 'react-router-dom';
-import { RouteNames } from '../../router';
-import QueryBuild from '../../components/QueryBuild';
+import { RouteNames } from '../../../router';
+import { ITicketCategoryObjects, ITicketCategory, ITicketCategoryObjectsMulti } from '../../../models/ITicket';
+import { ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../../models/IUser';
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
-const WHERE_DEFAULT = ' active = 1  AND ' + NOT_GROUP_LIST
+const WHERE_DEFAULT = ' active = 1 '
 
-const Users:FC = () => {
+const TCategories:FC = () => {
   const { t } = useTranslation();
   const searchP = {
     _limit: LIMIT_DEFAULT,
     _page: '1',
     _offset: SORT_DEFAULT
   } as SearchPagination
-  const {error, isLoading, users, usersCount } = useTypedSelector(state => state.admin)
-  const {selectSmall, queriesCache } = useTypedSelector(state => state.cache)
-  const {fetchUsers, setSelectSmall} = useAction()
+  const {error, isLoading, categories, categoriesCount } = useTypedSelector(state => state.ticket)
+  const {selectSmall } = useTypedSelector(state => state.cache)
+  const {fetchCategories, setSelectSmall} = useAction()
 
   const [typeSelect, setTypeSelect] = useState('')
 
+
   useEffect(() => {
-    if(Object.keys(queriesCache).find( k=> k === 'contact')) {
-      let arr:any = {...queriesCache}
-      fetchUsers(searchP, arr['contact'], IUserObjects)
-    }
-    else
-    fetchUsers(searchP, where, IUserObjects)
+    fetchCategories(searchP, where)
       
   }, [])
 
@@ -47,23 +43,23 @@ const Users:FC = () => {
   }, [error])
 
   useEffect( () => {
-    setPagination({...pagination, total: usersCount})
-    }, [usersCount]
+    setPagination({...pagination, total: categoriesCount})
+    }, [categoriesCount]
   )
   const router = useHistory()
-  const [pagination, setPagination] = useState({ current: +searchP._page, pageSize: +searchP._limit, total: usersCount} as TablePaginationConfig )
+  const [pagination, setPagination] = useState({ current: +searchP._page, pageSize: +searchP._limit, total: categoriesCount} as TablePaginationConfig )
   const [where, setWhere] = useState(WHERE_DEFAULT as string )
   const [filter, setFilter] = useState({ } as Record<string, FilterValue | null> )
   const [form] = Form.useForm()
   const [viewForm, setViewForm] = useState(true )
   const goToObject = (event:any, id:string) => {
     event.stopPropagation()
-    router.push(RouteNames.USERS + '/' + id )
+    router.push(RouteNames.TCATEGORIES + '/' + id )
   }
-  const columns: ColumnsType<IUser> = [
+  const columns: ColumnsType<ITicketCategory> = [
     {
       key: 'name',
-      title: t('name'),
+      title: t('ticket_name'),
       dataIndex: 'name',
       sorter: true,
       render: (name, record, index) => {
@@ -72,51 +68,50 @@ const Users:FC = () => {
             {name} 
           </a>
         );}
-    
-    },
-    {
-      key: 'login',
-      title: t('login_name'),
-      dataIndex: 'login',
-      sorter: true,
-      // filters: filters
-    },
-    {
-      key: 'email',
-      title: t('email'),
-      dataIndex: 'email',
-      sorter: true,
     }
     ,
     {
-      key: 'contact_type',
-      title: t('contact_type'),
-      dataIndex: 'contact_type',
+      key: 'priority',
+      title: t('priority'),
+      dataIndex: 'priority',
       sorter: true,
-      render: (name, record, index) => {
+      render: (priority, record ) => {
         return (
-            <>        
-            {record.contact_type.label} 
-            </>
+            <div>        
+            {record.priority && record.priority.label} 
+            </div>
         );}
     }
     ,
     {
-      key: 'job_title',
-      title: t('job_title'),
-      // dataIndex: 'job_title',
+      key: 'team',
+      title: t('team'),
+      dataIndex: 'team',
       sorter: true,
-      render: (name, record, index) => {
+      render: (team, record) => {
         return (
             <div>        
-            {record.job_title.label} 
+            {record.team && record.team.label} 
+            </div>
+        );}
+    }
+    ,
+    {
+      key: 'assignee',
+      title: t('assignee'),
+      dataIndex: 'assignee',
+      sorter: true,
+      render: ( assignee, record) => {
+        return (
+            <div>        
+            {record.assignee && record.assignee.label} 
             </div>
         );}
     }
   ]
 
     const handleTableChange = (pagination: TablePaginationConfig, filter: Record<string, FilterValue | null>, sorter: SorterResult<any> | SorterResult<any>[]   ) => {  
-    setPagination({...pagination, total: usersCount})
+    setPagination({...pagination, total: categoriesCount})
     setFilter(filter)
     let page = pagination.current?.toString() || '1'
     let sorter_ = JSON.parse(JSON.stringify(sorter))
@@ -126,7 +121,7 @@ const Users:FC = () => {
     : SORT_DEFAULT
     
     console.log('_offset',_offset);
-    fetchUsers({...searchP, _page: page, _offset: _offset } , where, IUserObjects) 
+    fetchCategories({...searchP, _page: page, _offset: _offset } , where) 
   }
 
    
@@ -182,15 +177,24 @@ const Users:FC = () => {
       })
     };
 
-    const fastSearchArray = ['login', 'name', 'email']
+    const fastSearchArray = ['name', 'assignee_name', 'team_name']
     const onFinish = async (values: any) => { 
       console.log('Success:', values);
-      let usersTeams = values.usersTeams
-      delete values.usersTeams 
+      let valuesMulti:string = ''
+      let ticket_types_where = ''
+
+      ITicketCategoryObjectsMulti.map(t => {
+        values[t].map( (a: { value: string; }, index: number) => {
+          valuesMulti += "'" + a.value.replace("'", "''") + "'" + (values[t].length-1 !== index ? ' , ' : '')
+        })
+        if(t==='ticket_types' && valuesMulti.length!==0)
+        ticket_types_where = " id in ( "+SELECT+" parent "+FROM+" util_parent "+WHERE+" parent_type = 'ticket_types' and util in ("+ valuesMulti +")) "
+        delete values[t]  
+       })
+      
       let where_ = searchFormWhereBuild(values, fastSearchArray)
-      where_ = where_ + ( where_.length > 0 ? ' AND ' + usersTeams : usersTeams )
-      console.log(where_);
-      fetchUsers({...searchP } , where_, IUserObjects)
+      where_ = where_.length>0 ? where_ + ' AND ' + ticket_types_where : ''
+      fetchCategories({...searchP } , where_)
       setWhere(where_)
       
     }
@@ -198,12 +202,12 @@ const Users:FC = () => {
       console.log('Failed:', errorInfo);
     }
     const createNew = () => {
-      router.push(RouteNames.USERS + '/0')
+      router.push(RouteNames.TCATEGORIES + '/0')
     }
     const buildTitle = () =>
     {
         return (
-          <h1 style={{padding:'10px'}}>{   t('search')} { t('users')}</h1>
+          <h1 style={{padding:'10px'}}>{   t('search')} { t('tcategories')}</h1>
         )
     }
   return (
@@ -218,18 +222,18 @@ const Users:FC = () => {
        name="basic"
        // labelCol={{ span: 8 }}
        // wrapperCol={{ span: 30 }}
-       initialValues={{active: true, usersTeams: NOT_GROUP_LIST}}
+       initialValues={{active: true}}
        onFinish={onFinish}
        onFinishFailed={onFinishFailed}
        autoComplete="off" 
        > 
-       <Row>
+        <Row>
         <div style={{display:'flex', justifyContent:'start'}}>
         <Col  xs={12} xl={24}>
         
          {buildTitle()}
          </Col>
-        <Col  xs={12} xl={24}>
+         <Col  xs={12} xl={24}>
          <Button type="primary" htmlType="submit" loading={isLoading}
          >
          { t('search') }
@@ -258,7 +262,7 @@ const Users:FC = () => {
         {viewForm &&
         <>
         <Row  >
-           <Col xs={24} xl={6}  >
+           <Col xs={24} xl={5}  >
            <Form.Item
            // label={ t('name') }
            name="name" 
@@ -269,25 +273,25 @@ const Users:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={6}>
+           <Col xs={24} xl={5}  >
            <Form.Item 
            // label={ t('type') }
-           name="contact_type"
+           name="ticket_types"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
            menuPosition="fixed"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
-           placeholder={ t('type') }
+           placeholder={ t('ticket_type') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'contact_type',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'contact_type' ", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'contact_type')}
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_types',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'ticket_type' ", false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_types')}
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={6}  >
+           <Col xs={24} xl={4}  >
            <Form.Item
            label={ t('active') }
            name="active" 
@@ -300,21 +304,45 @@ const Users:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={6}  >
-           <Form.Item
-          //  label={ t('active') }
-           name="usersTeams" 
-           style={{ padding:'5px'}} 
-           > 
-           <Radio.Group defaultValue={NOT_GROUP_LIST} buttonStyle="solid">
-            <Radio.Button value={NOT_GROUP_LIST}>{t('users')}</Radio.Button>
-            <Radio.Button value={GROUP_LIST}>{t('teams')}</Radio.Button>
-          </Radio.Group>
+      </Row>
+        <Row >
+        <Col xs={24} xl={5} >
+           <Form.Item 
+           // label={ t('type') }
+           name="team"
+           style={{ padding:'5px', width: 'maxContent'}} > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isMulti={true}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('team') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'team',  ' top 20 name as label, id as value , id as code ', 'V_contacts', GROUP_LIST , false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'team')}
+           />
            </Form.Item>
            </Col>
-     </Row>
-     <Row >
-       <Col  xs={24} xl={8} >
+           <Col xs={24} xl={4}  > 
+           <Form.Item 
+           // label={ t('type') }
+           name="assignee"
+           style={{ padding:'5px', width: 'maxContent'}} > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isMulti={true}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('assignee') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'assignee',  ' top 20 name as label, id as value , id as code ', 'V_contacts', ASSIGNEE_LIST , false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'assignee')}
+           />
+           </Form.Item>
+           </Col>
+        <Col  xs={24} xl={12} >
         <Form.Item
        //  label={ t('fast_search') }
         name="fast_search" 
@@ -325,32 +353,23 @@ const Users:FC = () => {
         />
         </Form.Item>
         </Col>
-        <Col xs={24} xl={12} >
-        {
-          <QueryBuild 
-          where={where}
-          factory={'contact'}
-          />
-        }
-        </Col>
-       </Row>
-       </>
+     </Row>
+     </>
       }
    </Form>
-
      
       <Row justify="center" align="middle" >
-      <Table<IUser> 
+      <Table<ITicketCategory> 
       rowClassName={(record) => record.active === 1 ? 'table-row-light' :  'table-row-dark'}
       columns={columns} 
-      dataSource={users} 
+      dataSource={categories} 
       loading={isLoading}
-      rowKey="id"
+      rowKey={record => record.id}
       bordered
       pagination={pagination}
       onChange={handleTableChange}
-      title={() => <h3>{t('users')}/{t('teams')}</h3> }
-      footer={() => t('total_count') + ' ' + usersCount}
+      title={() => <h3>{t('tcategories')}</h3> }
+      footer={() => t('total_count') + ' ' + categoriesCount}
       style={{width: '100%', padding: '5px'}}
       // scroll={{ x: 1500, y: 700 }}
       expandable={{
@@ -366,5 +385,5 @@ const Users:FC = () => {
 
 
 
-export default Users;
+export default TCategories;
 

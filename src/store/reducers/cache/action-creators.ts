@@ -1,13 +1,11 @@
 
 
 import { AppDispatch } from '../..';
-import { CacheActionEnum, SetCacheSmallAction } from './types';
+import { IQueriesCache } from '../../../models/ISearch';
+import { CacheActionEnum, SetCacheQueriesAction, SetCacheSmallAction } from './types';
 
 export const CacheActionCreators = {
     setSelectSmall: (payload:any): SetCacheSmallAction => ({type:CacheActionEnum.SET_SELECT_SMALL, payload}),
-    // addSelectSmall: (selectSmall: any ) => async (dispatch: AppDispatch) => {
-    //     debugger 
-    //     dispatch(CacheActionCreators.setSelectSmall(selectSmall))
-    //   }
+    setQueriesCache: (payload:any): SetCacheQueriesAction => ({type:CacheActionEnum.SET_QUERIES_CACHE, payload}),
 }
 

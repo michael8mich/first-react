@@ -13,12 +13,17 @@ import { SearchPagination, SelectOption } from '../../models/ISearch';
 import { searchFormWhereBuild } from '../../utils/formManipulation';
 import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
 
+const SORT_DEFAULT = 'name asc'
+const LIMIT_DEFAULT = '10'
+const WHERE_DEFAULT = ' active = 1 '
+
+
 const Utils:FC = () => {
   const { t } = useTranslation();
   const searchP = {
-    _limit: '10',
+    _limit: LIMIT_DEFAULT,
     _page: '1',
-    _offset: "name asc" 
+    _offset: SORT_DEFAULT 
   } as SearchPagination
   const [modalVisible, setModalVisible] = useState(false)
   const {error, isLoading, utils,filters,utilsCount } = useTypedSelector(state => state.admin)
@@ -35,7 +40,7 @@ const Utils:FC = () => {
   }
 
   useEffect(() => {
-    fetchUtils(searchP, ' active = 1 ')
+    fetchUtils(searchP, where)
       
   }, [])
 
@@ -49,7 +54,7 @@ const Utils:FC = () => {
   )
 
   const [pagination, setPagination] = useState({ current: +searchP._page, pageSize: +searchP._limit, total: utilsCount} as TablePaginationConfig )
-  const [where, setWhere] = useState('' as string )
+  const [where, setWhere] = useState(WHERE_DEFAULT as string )
   const [filter, setFilter] = useState({ } as Record<string, FilterValue | null> )
   const [selectedId, setSelectedId] = useState('')
   const [form] = Form.useForm()
@@ -88,12 +93,16 @@ const Utils:FC = () => {
     }
   ]
 
-    const handleTableChange = (pagination: TablePaginationConfig, filter: Record<string, FilterValue | null>, sorter: SorterResult<any> | SorterResult<any>[]   ) => {  
+  const handleTableChange = (pagination: TablePaginationConfig, filter: Record<string, FilterValue | null>, sorter: SorterResult<any> | SorterResult<any>[]   ) => {  
     setPagination({...pagination, total: utilsCount})
     setFilter(filter)
     let page = pagination.current?.toString() || '1'
     let sorter_ = JSON.parse(JSON.stringify(sorter))
-    let _offset = sorter_.field + ' ' + (sorter_.order ? sorter_.order === 'descend' ? ' DESC' : ' ASC' : ' ASC')
+    let _offset = 
+    sorter_.field ?
+    sorter_.field + ' ' + (sorter_.order ? sorter_.order === 'descend' ? ' DESC' : ' ASC' : ' ASC')
+    : SORT_DEFAULT
+    
     console.log('_offset',_offset);
     fetchUtils({...searchP, _page: page, _offset: _offset } , where) 
   }
@@ -164,12 +173,18 @@ const Utils:FC = () => {
     const onFinishFailed = (errorInfo: any) => {
       console.log('Failed:', errorInfo);
     }
+    const buildTitle = () =>
+    {
+        return (
+          <h1 style={{padding:'10px'}}>{   t('search')} { t('utils')}</h1>
+        )
+    }
   return (
     <Layout style={{height:"100vh"}}>
+       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
       <h1>{error}</h1>
       }
-      {viewForm ?
        <Form
        // layout="vertical"
        form={form}
@@ -181,6 +196,40 @@ const Utils:FC = () => {
        onFinishFailed={onFinishFailed}
        autoComplete="off" 
        > 
+        <Row>
+        <div style={{display:'flex', justifyContent:'start'}}>
+        <Col  xs={12} xl={24}>
+        
+         {buildTitle()}
+         </Col>
+         <Col  xs={12} xl={24}>
+         <Button type="primary" htmlType="submit" loading={isLoading}
+         >
+         { t('search') }
+         </Button>&nbsp;&nbsp;&nbsp;
+         <Button type="primary" htmlType="button" 
+         onClick={() => form.resetFields() }
+         >
+         { t('clear') }
+         </Button>&nbsp;&nbsp;&nbsp;
+         <Button  style={{ background: "orange", borderColor: "white" }}
+          onClick={() => openCloseModal(true)  }
+          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
+          {viewForm ? 
+         <FilterOutlined style={{color:'gray', fontSize: '24px'}}
+         onClick={() => setViewForm(false)}
+         />  :
+          <FilterOutlined 
+          onClick={() => setViewForm(true)}
+          style={{color:'green', fontSize: '24px'}}  
+          rotate={180} />  
+        } 
+        
+         </Col>
+         </div>
+        </Row>
+        {viewForm &&
+        <>
        
         <Row  >
            <Col xs={24} xl={8}  >
@@ -200,7 +249,7 @@ const Utils:FC = () => {
            name="type"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-      menuPosition="fixed"
+            menuPosition="fixed"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -226,48 +275,9 @@ const Utils:FC = () => {
            </Form.Item>
            </Col>
      </Row>
-     <Row >
-       <Col  xs={24} xl={8} >
-        <Form.Item
-       //  label={ t('fast_search') }
-        name="fast_search" 
-        style={{display:'flex', width:'100%', padding:'5px'}} > 
-        <Input 
-         style={{ height:'38px', width: '400px'}}
-         placeholder={ t('fast_search') }
-        />
-        </Form.Item>
-        </Col>
-        <Col  xs={24} xl={8}>
-        <Form.Item 
-         style={{ padding:'15px'}}
-         wrapperCol={{ offset: 8, span: 16 }}>
-         <Button type="primary" htmlType="submit" loading={isLoading}
-         >
-         { t('search') }
-         </Button>&nbsp;&nbsp;&nbsp;
-         <Button type="primary" htmlType="button" 
-         onClick={() => form.resetFields() }
-         >
-         { t('clear') }
-         </Button>&nbsp;&nbsp;&nbsp;
-         <Button  style={{ background: "orange", borderColor: "white" }}
-          onClick={() => openCloseModal(true)  }
-          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
-         <FilterOutlined style={{color:'gray', fontSize: '24px'}}
-         onClick={() => setViewForm(false)}
-         />     
-   
-         </Form.Item>
-         </Col>
-     </Row>
-   </Form>
-  :
-  <FilterOutlined 
-  onClick={() => setViewForm(true)}
-  style={{color:'green', fontSize: '24px'}}  
-  rotate={180} />
+     </>
       }
+   </Form>
      
       <Row justify="center" align="middle" >
       <Table<IUtil> 
@@ -303,6 +313,7 @@ const Utils:FC = () => {
          </Card>
        </Modal>
       </Row>
+      </Card>
     </Layout>
   )
 }

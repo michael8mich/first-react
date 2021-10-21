@@ -1,3 +1,7 @@
+import moment from "moment";
+export const SELECT = "__s__"
+export const FROM = "__f__"
+export const WHERE = "__w__"
 function isBoolean(val:any) {
     return val === false || val === true;
  }
@@ -105,4 +109,14 @@ export const saveFormBuildMulti = (values: any, pre_values: any ) => {
   })
   
 return values_ret
+}
+export const uTd = (value:any) => {
+  const v:number = value
+   if( v!==0 )
+   return  moment.unix(value).format("DD/MM/YYYY HH:mm") 
+   else
+   return ''
+}
+export const nowToUnix = () => {
+   return moment().unix()
 }

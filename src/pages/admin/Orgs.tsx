@@ -12,10 +12,11 @@ import { searchFormWhereBuild } from '../../utils/formManipulation';
 import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
 import { useHistory } from 'react-router-dom';
 import { RouteNames } from '../../router';
-import { IObjects, IOrg } from '../../models/IOrg';
+import { IOrgObjects, IOrg } from '../../models/IOrg';
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
+const WHERE_DEFAULT = ' active = 1 '
 
 const Orgs:FC = () => {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ const Orgs:FC = () => {
 
 
   useEffect(() => {
-    fetchOrgs(searchP, where, IObjects)
+    fetchOrgs(searchP, where)
       
   }, [])
 
@@ -46,7 +47,7 @@ const Orgs:FC = () => {
   )
   const router = useHistory()
   const [pagination, setPagination] = useState({ current: +searchP._page, pageSize: +searchP._limit, total: orgsCount} as TablePaginationConfig )
-  const [where, setWhere] = useState(' active = 1 ' as string )
+  const [where, setWhere] = useState(WHERE_DEFAULT as string )
   const [filter, setFilter] = useState({ } as Record<string, FilterValue | null> )
   const [form] = Form.useForm()
   const [viewForm, setViewForm] = useState(true )
@@ -120,7 +121,7 @@ const Orgs:FC = () => {
     : SORT_DEFAULT
     
     console.log('_offset',_offset);
-    fetchOrgs({...searchP, _page: page, _offset: _offset } , where, IObjects) 
+    fetchOrgs({...searchP, _page: page, _offset: _offset } , where) 
   }
 
    
@@ -180,7 +181,7 @@ const Orgs:FC = () => {
     const onFinish = async (values: any) => { 
       console.log('Success:', values);
       let where_ = searchFormWhereBuild(values, fastSearchArray)
-      fetchOrgs({...searchP } , where_, IObjects)
+      fetchOrgs({...searchP } , where_)
       setWhere(where_)
       
     }
@@ -190,12 +191,18 @@ const Orgs:FC = () => {
     const createNew = () => {
       router.push(RouteNames.ORGS + '/0')
     }
+    const buildTitle = () =>
+    {
+        return (
+          <h1 style={{padding:'10px'}}>{   t('search')} { t('orgs')}</h1>
+        )
+    }
   return (
     <Layout style={{height:"100vh"}}>
+      <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
       <h1>{error}</h1>
       }
-      {viewForm ?
        <Form
        // layout="vertical"
        form={form}
@@ -207,9 +214,42 @@ const Orgs:FC = () => {
        onFinishFailed={onFinishFailed}
        autoComplete="off" 
        > 
-       
+        <Row>
+        <div style={{display:'flex', justifyContent:'start'}}>
+        <Col  xs={12} xl={24}>
+        
+         {buildTitle()}
+         </Col>
+        <Col  xs={12} xl={24}>
+         <Button type="primary" htmlType="submit" loading={isLoading}
+         >
+         { t('search') }
+         </Button>&nbsp;&nbsp;&nbsp;
+         <Button type="primary" htmlType="button" 
+         onClick={() => form.resetFields() }
+         >
+         { t('clear') }
+         </Button>&nbsp;&nbsp;&nbsp;
+         <Button  style={{ background: "orange", borderColor: "white" }}
+          onClick={() => createNew()  }
+          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
+          {viewForm ? 
+         <FilterOutlined style={{color:'gray', fontSize: '24px'}}
+         onClick={() => setViewForm(false)}
+         />  :
+          <FilterOutlined 
+          onClick={() => setViewForm(true)}
+          style={{color:'green', fontSize: '24px'}}  
+          rotate={180} />  
+        } 
+        
+         </Col>
+         </div>
+        </Row>
+        {viewForm &&
+        <>
         <Row  >
-           <Col xs={12} xl={6}  >
+           <Col  xs={24} xl={6}  >
            <Form.Item
            // label={ t('name') }
            name="name" 
@@ -220,13 +260,13 @@ const Orgs:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col  xs={12} xl={6}>
+           <Col  xs={24} xl={6}  >
            <Form.Item 
            // label={ t('type') }
            name="organizational_type"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-      menuPosition="fixed"
+           menuPosition="fixed"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -238,7 +278,7 @@ const Orgs:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={6}  >
+           <Col  xs={24} xl={6}  >
            <Form.Item
            label={ t('active') }
            name="active" 
@@ -252,48 +292,9 @@ const Orgs:FC = () => {
            </Form.Item>
            </Col>
      </Row>
-     <Row >
-       <Col  xs={24} xl={8} >
-        <Form.Item
-       //  label={ t('fast_search') }
-        name="fast_search" 
-        style={{display:'flex', width:'100%', padding:'5px'}} > 
-        <Input 
-         style={{ height:'38px', width: '400px'}}
-         placeholder={ t('fast_search') }
-        />
-        </Form.Item>
-        </Col>
-        <Col  xs={24} xl={8}>
-        <Form.Item 
-         style={{ padding:'15px'}}
-         wrapperCol={{ offset: 8, span: 16 }}>
-         <Button type="primary" htmlType="submit" loading={isLoading}
-         >
-         { t('search') }
-         </Button>&nbsp;&nbsp;&nbsp;
-         <Button type="primary" htmlType="button" 
-         onClick={() => form.resetFields() }
-         >
-         { t('clear') }
-         </Button>&nbsp;&nbsp;&nbsp;
-         <Button  style={{ background: "orange", borderColor: "white" }}
-          onClick={() => createNew()  }
-          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
-         <FilterOutlined style={{color:'gray', fontSize: '24px'}}
-         onClick={() => setViewForm(false)}
-         />     
-   
-         </Form.Item>
-         </Col>
-     </Row>
-   </Form>
-  :
-  <FilterOutlined 
-  onClick={() => setViewForm(true)}
-  style={{color:'green', fontSize: '24px'}}  
-  rotate={180} />
+     </>
       }
+   </Form>
      
       <Row justify="center" align="middle" >
       <Table<IOrg> 
@@ -315,6 +316,7 @@ const Orgs:FC = () => {
       }}
       />
       </Row>
+      </Card>
     </Layout>
   )
 }

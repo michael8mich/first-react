@@ -94,7 +94,7 @@ const UtilForm: FC<UtilFormProps> = (props) => {
         
       >
         <Input
-        prefix={<UserOutlined />}
+        // prefix={<UserOutlined />}
         value={util.name} 
         />
       </Form.Item>
@@ -106,7 +106,7 @@ const UtilForm: FC<UtilFormProps> = (props) => {
       >
         <Input 
         value={util.type} 
-        prefix={<UnlockOutlined />}
+        // prefix={<UnlockOutlined />}
         />
       </Form.Item>
 
@@ -117,7 +117,19 @@ const UtilForm: FC<UtilFormProps> = (props) => {
       >
         <Input 
         value={util.code}
-        prefix={<UnlockOutlined />}
+        // prefix={<UnlockOutlined />}
+        />
+      </Form.Item>
+
+      <Form.Item
+        label={ t('id') }
+        name="id"
+        rules={[]}
+      >
+        <Input 
+        disabled={true}
+        value={util.id}
+        // prefix={<UnlockOutlined />}
         />
       </Form.Item>
 

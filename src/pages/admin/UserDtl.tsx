@@ -1,5 +1,5 @@
-import { Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs} from 'antd';
-import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { Avatar, Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs} from 'antd';
+import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
@@ -7,8 +7,8 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
-import { saveFormBuild, saveFormBuildMulti } from '../../utils/formManipulation';
-import { GROUP_LIST, IObjects, IObjectsMulti, IRoFields, IUser, NOT_GROUP_LIST, TEAM_TYPE_ID } from '../../models/IUser';
+import { saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
+import { GROUP_LIST, IUserRoFields, IUser, NOT_GROUP_LIST, TEAM_TYPE_ID, ASSIGNEE_LIST } from '../../models/IUser';
 import { useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { validators } from '../../utils/validators';
@@ -16,13 +16,17 @@ import classes from './UserDtl.module.css'
 import { TabsPosition } from 'antd/lib/tabs';
 import { DEPARTMENT_LIST, LOCATION_LIST, ORGANIZATION_LIST, SITE_LIST } from '../../models/IOrg';
 import { stubTrue } from 'lodash';
+import { ColumnsType } from 'antd/lib/table';
+import moment from 'moment';
 
 const { TabPane } = Tabs;
 const UserDtl:FC = () => {
   const { t } = useTranslation();
-  const {fetchUser, setSelectSmall, createUser} = useAction()
+  const {fetchUser, setSelectSmall, createUser, changeGroupMemberNotify, setAlert} = useAction()
   const {error, isLoading, users, selectedUser } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
+  const {user } = useTypedSelector(state => state.auth)
+  
   const { Option } = Select;
   const { TextArea } = Input;
 
@@ -34,7 +38,7 @@ const UserDtl:FC = () => {
   
   function getUser() {
     if(id!=='0') 
-      fetchUser(id, IObjects, IObjectsMulti)
+      fetchUser(id)
       else
       setRo(false)
   }
@@ -117,12 +121,32 @@ const UserDtl:FC = () => {
     const onFinish = async (values: any) => { 
       values = form.getFieldsValue()
       const values_ = {...values}
-      IRoFields.map(r => {
+      IUserRoFields.map(r => {
         delete values_[r]
       })
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedUser});
       saveFormBuild(values_)
-      createUser({...values_, id}, IObjectsMulti, valuesMulti)
+      createUser({...values_, id},  valuesMulti, user.id)
+      setAlert({
+        type: 'success' ,
+        message: t('created_success'),
+        closable: true ,
+        showIcon: true ,
+        visible: true,
+        autoClose: 10 
+      })
+      if(notifyMember.length !== 0 && selectedUser.members.length !== 0) {
+        let new_arr:any[] = [...notifyMember]
+        let old_arr:any[] = [...selectedUser.members]
+        let diff = [] as any
+        new_arr.map(n=> {
+          if(old_arr.find(o=> o.notify !== n.notify) )
+          diff.push(n)
+        })
+        if(diff.length !== 0)
+        changeGroupMemberNotify(diff)
+      }
+      
       getUser()
       setRo(true)
     }
@@ -165,15 +189,51 @@ const UserDtl:FC = () => {
       setRo(false)
     }  
     const tabChangeFunction = (key:any) => {
+      if(key==='2')
+      {
+        if(notifyMember.length === 0) {
+          setNotifyMember(JSON.parse(JSON.stringify(selectedUser.members))  )
+        }
+        
+      }
       console.log(key);
     }
   const localeteArr = [{'label': t('english') , 'value': 'enUS', 'code': 'enUS'},{'label': t('hebrew'), 'value': 'heIL', 'code': 'heIL'}]
+  //----------- group_mamber
+  const [notifyMember, setNotifyMember] = useState([] as any)
+  const changeNotify = (event:any, id:string) => {
+      let arr:any = [...notifyMember]
+      arr.map((m: { code: string; notify: number; }) => {
+      if(m.code === id)
+      m.notify = event.target.checked ? 1 : 0
+    })
+    setNotifyMember([...arr])
+  }
+
+  const grpMemColumns: ColumnsType<any> = [
+    {
+      key: 'label',
+      title: t('name'),
+      dataIndex: 'label',
+      sorter: true,
+    },
+    {
+      key: 'notify',
+      title: t('notify'),
+      dataIndex: 'notify',
+      sorter: true,
+      render: (name, record, index) => {
+        return (
+            <Checkbox 
+            checked={record.notify} 
+            disabled={ro}
+            onChange={(event) => changeNotify(event, record.code)}
+            />
+        );}
+    }]
+
   return (
     <Layout style={{height:"100vh"}}>
-      {/* {
-        selectedUser.id && loading &&
-        setFormValues() 
-      } */}
       {error && 
       <h1>{error}</h1>
       }
@@ -182,7 +242,7 @@ const UserDtl:FC = () => {
       }
        
        
-       <Card style={{background:'#f0f2f5', border:'solid 1px lightgray', marginTop:'10px'}}>
+       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
        <Form
        layout="vertical"
        form={form}
@@ -195,7 +255,7 @@ const UserDtl:FC = () => {
        autoComplete="off" 
        > 
         <Row >
-        <Col  xs={24} xl={8}>
+        <Col  xs={12} xl={24}>
         
         {ro 
         ?     
@@ -231,9 +291,9 @@ const UserDtl:FC = () => {
          </Col>
         </Row>
   <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
-    <TabPane tab={t('detail')} key="1">
+    <TabPane tab={t('detail')} key="1" >
         <Row  >
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5} sm={5} lg={5} >
            <Form.Item
            label={ t('last_name') }
            name="last_name" 
@@ -247,7 +307,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5} sm={5} lg={5}>
            <Form.Item
            label={ t('first_name') }
            name="first_name" 
@@ -259,7 +319,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5} sm={5} lg={5} >
            <Form.Item
            label={ t('login_name') }
            name="login" 
@@ -273,7 +333,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5} sm={5} lg={5} >
            <Form.Item
            label={ t('contact_number') }
            name="contact_number" 
@@ -285,7 +345,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}>
+           <Col xs={24} xl={4} sm={4} lg={4}>
            <Form.Item 
            label={ t('contact_type') }
            name="contact_type"
@@ -307,13 +367,15 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}>
+           </Row>
+        <Row  >
+           <Col xs={24} xl={5} sm={5} lg={5}>
            <Form.Item 
            label={ t('job_title') }
            name="job_title"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-      menuPosition="fixed"
+           menuPosition="fixed"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -326,9 +388,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-        </Row>
-        <Row  >
-           <Col xs={12} xl={4}>
+           <Col xs={24} xl={5} sm={5} lg={5}>
            <Form.Item 
            label={ t('manager') }
            name="manager"
@@ -348,7 +408,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}>
+           <Col xs={24} xl={5} sm={5} lg={5}>
            <Form.Item 
            label={ t('primary_group') }
            name="primary_group"
@@ -367,9 +427,26 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
+           <Col xs={24} xl={5} sm={5} lg={5}  >
+           <Form.Item
+           label={ t('active') }
+           name="active" 
+           style={{ padding:'5px'}} 
+           valuePropName="checked"
+           > 
+           <Checkbox 
+             disabled={ro}
+             style={{ height:'38px', width: 'maxContent'}}
+             defaultChecked={true}
+           />
+           </Form.Item>
+           </Col>
+           <Avatar size={64} icon={<UserOutlined />} 
+           src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
+           />
         </Row>    
         <Row  >
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5} sm={5} lg={5}  >
            <Form.Item
            label={ t('phone') }
            name="phone" 
@@ -383,7 +460,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5} sm={5} lg={5}  >
            <Form.Item
            label={ t('mobile_phone') }
            name="mobile_phone" 
@@ -397,7 +474,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5} sm={5} lg={5}  >
            <Form.Item
            label={ t('additional_phone') }
            name="additional_phone" 
@@ -411,7 +488,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5} sm={5} lg={5}  >
            <Form.Item
            label={ t('email') }
            name="email" 
@@ -425,7 +502,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}>
+           <Col xs={24} xl={5} sm={5} lg={5}>
            <Form.Item 
            label={ t('locale') }
            name="locale"
@@ -445,23 +522,9 @@ const UserDtl:FC = () => {
            </Select>
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}  >
-           <Form.Item
-           label={ t('active') }
-           name="active" 
-           style={{ padding:'5px'}} 
-           valuePropName="checked"
-           > 
-           <Checkbox 
-             disabled={ro}
-             style={{ height:'38px', width: 'maxContent'}}
-             defaultChecked={true}
-           />
-           </Form.Item>
-           </Col>
-        </Row>
+           </Row>
         <Row  >
-         <Col xs={12} xl={12}  >
+         <Col xs={12} xl={24}  >
          <Form.Item
            label={ t('description') }
            name="description" 
@@ -474,11 +537,58 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
          </Col>
-           { 
+           
+        </Row>   
+        <Row  >
+           <Col xs={24} xl={5} sm={5} lg={5}  >
+           <Form.Item
+           label={ t('last_mod_by') }
+           style={{ padding:'5px'}} 
+           > 
+           <Input 
+             disabled={true}
+             style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('last_mod_by') }
+             value={selectedUser.last_mod_by && selectedUser.last_mod_by.label}
+           />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={5} sm={5} lg={5}  >
+           <Form.Item
+           label={ t('last_mod_dt') }
+           style={{ padding:'5px'}} 
+           > 
+           <Input 
+             disabled={true}
+             style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('last_mod_dt') }
+             value={ uTd(selectedUser.last_mod_dt)}
+           />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={5} sm={5} lg={5}  >
+           <Form.Item
+           label={ t('create_date') }
+           style={{ padding:'5px'}} 
+           rules={[validators.isPhone()]}
+           > 
+           <Input 
+             disabled={true}
+             style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('create_date') }
+             value={uTd(selectedUser.create_date)}
+           />
+           </Form.Item>
+           </Col>
+           </Row>
+      </TabPane>
+    <TabPane tab={t('orgs')} key="2" forceRender={true} >
+      <Row>
+      { 
            form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value !== TEAM_TYPE_ID 
            ?
            <>
-           <Col xs={12} xl={12}>
+           <Col xs={24} xl={12}>
            <Form.Item 
            label={ t('roles') }
            name="roles"
@@ -486,7 +596,7 @@ const UserDtl:FC = () => {
            //  rules={[validators.required()]}
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+           menuPosition="fixed"
            isDisabled={ro}
            isMulti={true}
            styles={SelectStyles}
@@ -499,7 +609,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={12}>
+           <Col xs={24} xl={12}>
            <Form.Item 
            label={ t('teams') }
            name="teams"
@@ -507,7 +617,7 @@ const UserDtl:FC = () => {
            //  rules={[validators.required()]}
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+           menuPosition="fixed"
            isDisabled={ro}
            isMulti={true}
            styles={SelectStyles}
@@ -522,7 +632,7 @@ const UserDtl:FC = () => {
            </Col>
            </>
            :
-           <Col xs={12} xl={14}>
+           <Col xs={24} xl={24}>
            <Form.Item 
            label={ t('members') }
            name="members"
@@ -530,7 +640,7 @@ const UserDtl:FC = () => {
            //  rules={[validators.required()]}
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+           menuPosition="fixed"
            isDisabled={ro}
            isMulti={true}
            styles={SelectStyles}
@@ -538,17 +648,15 @@ const UserDtl:FC = () => {
            placeholder={ t('members') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'members',  ' top 200 name as label, id as value , id as code ', 'V_contacts', " contact_type <> 'F349B208096C5B982D8205DED91F5FA4'", false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'members',  ' top 200 name as label, id as value , id as code ', 'V_contacts', ASSIGNEE_LIST, true )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'members')}
            />
            </Form.Item>
            </Col>
         }
-        </Row>   
-      </TabPane>
-      <TabPane tab={t('orgs')} key="2">
-      <Row  >
-           <Col xs={12} xl={4}>
+      </Row>
+      <Row  hidden={form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value === TEAM_TYPE_ID}>
+           <Col xs={24} xl={5}>
            <Form.Item 
            label={ t('organization') }
            name="organization"
@@ -568,7 +676,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}>
+           <Col xs={24} xl={5}>
            <Form.Item 
            label={ t('location') }
            name="location"
@@ -588,7 +696,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}>
+           <Col xs={24} xl={5}>
            <Form.Item 
            label={ t('department') }
            name="department"
@@ -608,7 +716,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={12} xl={4}>
+           <Col xs={24} xl={5}>
            <Form.Item 
            label={ t('site') }
            name="site"
@@ -629,8 +737,8 @@ const UserDtl:FC = () => {
            </Form.Item>
            </Col>
       </Row>
-      <Row  >
-           <Col xs={12} xl={4}  >
+      <Row  hidden={form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value === TEAM_TYPE_ID}>
+           <Col xs={24} xl={5}  >
            <Form.Item
            label={ t('address1') }
            name="location_address1" 
@@ -643,7 +751,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col> 
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5}  >
            <Form.Item
            label={ t('address2') }
            name="location_address2" 
@@ -656,7 +764,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col> 
-           <Col xs={12} xl={4}  >
+           <Col xs={24} xl={5}  >
            <Form.Item
            label={ t('address3') }
            name="location_address3" 
@@ -670,6 +778,14 @@ const UserDtl:FC = () => {
            </Form.Item>
            </Col> 
       </Row>      
+      {   
+           form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value === TEAM_TYPE_ID &&
+      <Table
+      columns={grpMemColumns} 
+      dataSource={notifyMember} 
+      >
+      </Table>
+      }      
     </TabPane>  
     </Tabs>   
     </Form>
@@ -683,7 +799,7 @@ const UserDtl:FC = () => {
 
 export default UserDtl;
 
-function addSelectSmall(data: any, name: string) {
+function x(x: any) {
   throw new Error('Function not implemented.');
 }
 

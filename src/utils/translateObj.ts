@@ -1,5 +1,7 @@
 
 export const translateObj = (objects_: any[], IObjects:string[]) => {
+    if(objects_.length === 0 )
+    return objects_
     const keys = Object.keys(objects_[0])
     const found = IObjects.some(r=> keys.indexOf(r) )
     objects_.map(e => {

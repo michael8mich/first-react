@@ -1,7 +1,8 @@
 import { IOrg } from './../../../models/IOrg';
-import { IFilter, IUtil } from '../../../models/admin/IUtil';
+import { AlertPrp, IFilter, IUtil } from '../../../models/admin/IUtil';
 import { IUser } from "../../../models/IUser"
 import { AdminAction, AdminActionEnum, AdminState } from "./types"
+
 
 const initialState: AdminState = {
     users: [] as IUser[],
@@ -13,6 +14,7 @@ const initialState: AdminState = {
     utils: [] as IUtil[],
     utilsCount: 0,
     filters: [] as IFilter[],
+    alert: {} as AlertPrp,
     isLoading: false,
     error: ''
 
@@ -43,7 +45,9 @@ export default function AdminReducer(state = initialState, action:AdminAction ):
        case  AdminActionEnum.SET_IS_LOADING:
            return {...state, isLoading: action.payload }    
        case  AdminActionEnum.SET_FILTERS:
-            return {...state, filters: action.payload }    
+            return {...state, filters: action.payload }   
+       case  AdminActionEnum.SET_ALERT:
+                return {...state, alert: action.payload }         
         default:
            return state
     }

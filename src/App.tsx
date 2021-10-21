@@ -1,4 +1,4 @@
-import { Layout } from 'antd';
+import { Alert, Layout } from 'antd';
 import  {FC, useEffect, useState} from 'react';
 import './App.css';
 import AppRouter from './components/AppRouter';
@@ -12,11 +12,14 @@ import { useTypedSelector } from './hooks/useTypedSelector';
 import './i18n/config';
 import { useTranslation } from 'react-i18next';
 import { withTranslation } from 'react-i18next'; 
+import BreadCrumb from './components/BreadCrumb';
+import AlertComponent from './components/AlertComponent';
 const App:FC = () => {
   let defaultLen = 'heIL'
   const { i18n } = useTranslation();   
   const {setUser, setIsAuth} = useAction()
   const {isAuth, user } = useTypedSelector(state => state.auth) 
+  const {alert } = useTypedSelector(state => state.admin) 
 
   
   useEffect(() => {
@@ -42,7 +45,9 @@ const App:FC = () => {
     <ConfigProvider locale={user.locale === 'heIL' ? heIL : enUS } direction={direction}>
     <Layout>
       <Navbar />
-      <Layout.Content>
+      <Layout.Content style={{ overflow: 'scroll' }}>
+      <BreadCrumb />
+      <AlertComponent {...alert} />
         <AppRouter />
       </Layout.Content>
     </Layout>

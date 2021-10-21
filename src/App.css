@@ -1,5 +1,21 @@
 @import '~antd/dist/antd.css';
-
+body {
+    background: #fafafa;
+}
+.ant-card {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: rgba(0, 0, 0, 0.85);
+    font-size: 14px;
+    font-variant: tabular-nums;
+    line-height: 1.5715;
+    list-style: none;
+    font-feature-settings: 'tnum', "tnum";
+    position: relative;
+    background: #fafafa;
+    border-radius: 2px;
+}
 .h100 {
     height: calc(100vh - 64px);
 }
@@ -28,3 +44,49 @@
     white-space: nowrap;
     box-sizing: border-box;
 }
+.homeQueryCard {
+    border: 5px solid #FAAD14;;
+    border-radius:25px;
+    padding:'10px';
+    margin:10px;
+    color:#fafafa;
+    background:#3bc27f;
+      /* rgba(234,107,76,255); */
+    /* #FAAD14;  */
+    font-size:18px;
+    font-weight:400;
+    cursor: pointer;
+    
+}
+.homeQueryCard:hover {
+    align-items: center;
+    text-align: center;
+    color: white;
+    font-size: 19px;
+    border: 10 solid green;
+  }
+
+  .homeQueryCardEdit {
+    border: 5px solid rgba(234,107,76,255);
+    border-radius:25px;
+    padding:'10px';
+    margin:10px;
+    color:green;
+    background:lightgray; 
+    font-size:18px;
+    font-weight:400;
+    cursor: pointer;
+    
+}  
+  /* .antd-pro-charts-treemap-treemap .antd-pro-charts-treemap-legend {
+    min-width: 400px
+  }   */
+  .upload-list-inline .ant-upload-list-item {
+    float: left;
+    width: 200px;
+    margin-right: 8px;
+  }
+  
+  .upload-list-inline [class*='-upload-list-rtl'] .ant-upload-list-item {
+    float: right;
+  }  

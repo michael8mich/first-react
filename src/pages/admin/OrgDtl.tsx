@@ -12,11 +12,11 @@ import { useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { validators } from '../../utils/validators';
 import classes from './UserDtl.module.css'
-import { IObjects, IObjectsMulti, IRoFields, ORG_INFO_TYPE_LOCATION } from '../../models/IOrg';
+import { IOrgObjects, IOrgObjectsMulti, IOrgRoFields, ORG_INFO_TYPE_LOCATION } from '../../models/IOrg';
 
 const OrgDtl:FC = () => {
   const { t } = useTranslation();
-  const {fetchOrg, setSelectSmall, createOrg} = useAction()
+  const {fetchOrg, createOrg} = useAction()
   const {error, isLoading, orgs, selectedOrg } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const { Option } = Select;
@@ -30,7 +30,7 @@ const OrgDtl:FC = () => {
 
   function getUser() {
     if(id!=='0') 
-      fetchOrg(id, IObjects, IObjectsMulti)
+      fetchOrg(id)
       else
       setRo(false)
   }
@@ -113,12 +113,12 @@ const OrgDtl:FC = () => {
     const onFinish = async (values: any) => { 
       values = form.getFieldsValue()
       const values_ = {...values}
-      IRoFields.map(r => {
+      IOrgRoFields.map(r => {
         delete values_[r]
       })
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedOrg});
       saveFormBuild(values_)
-      createOrg({...values_, id}, IObjectsMulti, valuesMulti)
+      createOrg({...values_, id}, valuesMulti)
       getUser()
       setRo(true)
     }
@@ -146,17 +146,13 @@ const OrgDtl:FC = () => {
   const localeteArr = [{'label': t('english') , 'value': 'enUS', 'code': 'enUS'},{'label': t('hebrew'), 'value': 'heIL', 'code': 'heIL'}]
   return (
     <Layout style={{height:"100vh"}}>
-      {/* {
-        selectedOrg.id && loading &&
-        setFormValues() 
-      } */}
       {error && 
       <h1>{error}</h1>
       }
       {isLoading && 
        <Spin style={{padding:'20px'}} size="large" />
       }
-       <Card style={{background:'#f0f2f5', border:'solid 1px lightgray', marginTop:'10px'}}>
+       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
        <Form
        layout="vertical"
        form={form}
@@ -300,9 +296,9 @@ const OrgDtl:FC = () => {
            </Form.Item>
            </Col>
         </Row>   
-        {
-        form.getFieldsValue().organizational_type && form.getFieldsValue().organizational_type.value === ORG_INFO_TYPE_LOCATION &&      
-        <Row  >
+        {/* {
+        form.getFieldsValue().organizational_type && form.getFieldsValue().organizational_type.value === ORG_INFO_TYPE_LOCATION &&       */}
+        <Row  hidden={form.getFieldsValue().organizational_type && form.getFieldsValue().organizational_type.value !== ORG_INFO_TYPE_LOCATION}>
            <Col xs={12} xl={4}  >
            <Form.Item
            label={ t('address1') }
@@ -343,7 +339,7 @@ const OrgDtl:FC = () => {
            </Form.Item>
            </Col>   
         </Row>
-        }
+        {/* } */}
         <Row  >
          <Col xs={12} xl={12}  >
          <Form.Item
@@ -379,4 +375,8 @@ const OrgDtl:FC = () => {
   )
 }
 export default OrgDtl;
+
+function setSelectSmall(arg0: { [x: string]: any; }) {
+  throw new Error('Function not implemented.');
+}
 
