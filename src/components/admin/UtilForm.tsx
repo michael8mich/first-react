@@ -51,6 +51,7 @@ const UtilForm: FC<UtilFormProps> = (props) => {
     ,[props])
 
   const onFinish = async (values: any) => {
+    debugger
     console.log('Success:', values);
     console.log('Util:', util);
     values.active = values.active ? 1 : 0

@@ -2,6 +2,8 @@ import moment from "moment";
 export const SELECT = "__s__"
 export const FROM = "__f__"
 export const WHERE = "__w__"
+
+export const DATETIMEFORMAT = "DD/MM/YYYY HH:mm"
 function isBoolean(val:any) {
     return val === false || val === true;
  }
@@ -65,7 +67,7 @@ export const saveFormBuild = (values: any) => {
         if(val instanceof Object )
         values[v]  = val.value
         else
-        values[v]  = val.toString().replace("'", "''") 
+        values[v]  = val.toString().replace(/'/g, "''") 
   })
   
 return values
@@ -113,7 +115,7 @@ return values_ret
 export const uTd = (value:any) => {
   const v:number = value
    if( v!==0 )
-   return  moment.unix(value).format("DD/MM/YYYY HH:mm") 
+   return  moment.unix(value).format(DATETIMEFORMAT) 
    else
    return ''
 }

@@ -7,13 +7,13 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
-import { saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
+import { DATETIMEFORMAT, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
 import {  ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
 import { Link, NavLink, useHistory, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { getValidatorsToProp, validators } from '../../utils/validators';
 import classes from './TicketDtl.module.css'
-import { ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketRoFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
+import { ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
 import { ColumnsType } from 'antd/lib/table';
 import { TabsPosition } from 'antd/lib/tabs';
 import { RouteNames } from '../../router';
@@ -23,6 +23,7 @@ import { getScrollTop } from 'react-select/dist/declarations/src/utils';
 import { translateObj } from '../../utils/translateObj';
 import ActivityForm from './ActivityForm';
 import UploadFiles from '../../components/admin/UploadFiles';
+import moment from 'moment';
 interface RefObject {
   upload_files: (id:string) => void
   get_files: () => void
@@ -32,7 +33,7 @@ const { Panel } = Collapse;
 const { Option } = Select;
 const TicketDtl:FC = () => {
   const { t } = useTranslation();
-  const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, fetchProperties} = useAction()
+  const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, fetchProperties, setProperties} = useAction()
   const {error, isLoading, tickets, selectedTicket, properties } = useTypedSelector(state => state.ticket)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {user } = useTypedSelector(state => state.auth)
@@ -46,6 +47,7 @@ const TicketDtl:FC = () => {
   const [modalVisible, setModalVisible] = useState(false)
   const [activityType, setActivityType] = useState('') 
   const [init, setInit] = useState(false) 
+  const [ticketPrp, setTicketPrp] = useState([] as ITicketPrpTpl[] ) 
   const [ticketId, setTicketId] = useState('0') 
   let {id} = useParams<Params>()
   
@@ -91,13 +93,27 @@ const TicketDtl:FC = () => {
       const  formFields = Object.keys((form.getFieldsValue()))
       const form_set_values = {} as any
       formFields.map(ff => {
+        if(ff.indexOf('prp_')!=-1)
+        {
+          let obj = ticketPrp.find(p=>'prp_'+p.id === ff) 
+          if(obj) {
+            if(obj.factory.label.toString()=="Date")
+            {
+              if(obj.value) 
+              form_set_values[ff] = moment(uTd(obj.value) )
+            } else
+            if(obj.factory.label.toString()=="Object")
+            form_set_values[ff] = { label: obj.value, value: obj.valueObj }
+            else
+            form_set_values[ff] = obj.value
+          }
+        }
+        else
         form_set_values[ff] = curTicket[ff]
       })
       form.setFieldsValue(form_set_values);
     }
   }
- 
-
    useEffect(() => {
     if(id!=='0')
     setFormValues()
@@ -113,24 +129,23 @@ const TicketDtl:FC = () => {
       {
         if(!Object.keys(selectedTicket).find( k=> k === 'name'))
         {
-          
           afterUpdateCreate()
           fetchTicket(selectedTicket.id)
           setTicketId(selectedTicket.id) 
           upload_files(selectedTicket.id)
-          
           //router.push(RouteNames.TICKETS + '/' + selectedTicket.id )
         }
       }
      }
    }, [selectedTicket?.id])
 
-  //  useEffect(() => {
-  //    debugger
-  //   if(id!=='0')
-  //   if(selectedTicket?.customer?.value)
-  //   getCustomerInfo({...selectedTicket} , selectedTicket.customer.value)
-  // }, [id])
+   useEffect(() => {
+     if(selectedTicket.ticketProperties)
+     setTicketPrp(selectedTicket.ticketProperties)
+     else
+     if(properties)
+     setTicketPrp(properties)
+  }, [selectedTicket.ticketProperties, properties])
   
   const [customerInfo, setCustomerInfo] = useState(false) 
   const [category_info, setcategory_info] = useState({} as ITicketCategory)
@@ -262,15 +277,58 @@ const TicketDtl:FC = () => {
       setRo(true)
       setCustomerInfo(false)
     }
+
+  const propertyBuild = (values:any, prp: ITicketPrpTpl[]) => {
+    interface IFormValue {
+      id:string,
+      value: any
+    }
+    let prp_val = [] as any[]  
+     Object.keys(values).map(k=>{
+      if(k.indexOf('prp_')!=-1){
+        let newObj = {id: k.replace('prp_',''),
+        value: values[k] || ''}
+        prp_val.push(newObj)
+      }
+    })
+    let prp_ = prp.map(p => {
+     let val = prp_val.find(v=> v.id === p.id) || ''
+     let value
+     let valueObj
+     val.value = val.value || ''
+      if(val.value instanceof moment )
+      {
+       value = val.value.unix() 
+      } else
+      if(val.value instanceof Object )
+      {
+        value = val.value.label
+        valueObj = val.value
+      }
+      else 
+      value = val.value
+      return {...p, id: '0', value:value, valueObj: valueObj ? valueObj : '' }
+    })
+    let new_prp:ITicketPrpTpl[] = [...prp_] 
+    return new_prp
+  }
+
+
     const onFinish = async (values: any) => { 
       values = form.getFieldsValue()
       const values_ = {...values}
       ITicketRoFields.map(r => {
         delete values_[r]
       })
+      let prp = propertyBuild({...values_}, properties)
+      Object.keys(values_).map(v=> {
+        if(v.indexOf('prp_')!= -1)
+        delete values_[v]
+      })
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedTicket});
       saveFormBuild(values_)
-      createTicket({...values_, id:ticketId}, valuesMulti, user.id)
+      debugger
+      createTicket({...values_, id:ticketId}, valuesMulti, user.id, [...prp])
       if(!init)
       afterUpdateCreate()
     }
@@ -415,7 +473,7 @@ const TicketDtl:FC = () => {
   const toMe = () =>
   {
     let obj:any =  { assignee:user.id } 
-    createTicket({...obj, id:ticketId}, {}, user.id)
+    createTicket({...obj, id:ticketId}, {}, user.id, [])
     fetchTicket(ticketId)
   }
 
@@ -425,7 +483,7 @@ const TicketDtl:FC = () => {
     setModalVisible(true)
 
     let obj:any =  { status:STATUS_CLOSE.value } 
-    createTicket({...obj, id:ticketId}, {}, user.id)
+    createTicket({...obj, id:ticketId}, {}, user.id, [])
     fetchTicket(id)
   }
   
@@ -439,7 +497,6 @@ const TicketDtl:FC = () => {
   async function  SubmitActivity(values:any) {
     if(activityType === 'New Log Comment')
     {
-      debugger 
       values = {...values, name: activityType, ticket: selectedTicket.id, old_value: '' }
        createTicketActivity(values, user.id)
        fetchTicketLog(selectedTicket)
@@ -481,10 +538,10 @@ const TicketDtl:FC = () => {
        autoComplete="off" 
        > 
         <Row >
-        <Col  xs={24} xl={8}>
+        <Col  xs={24} xl={14}>
         {ro 
         ?     
-        <div style={{display:'flex', justifyContent:'start'}}>
+        <div className="flex-container">
          {buildTitle()}
          <Button type="primary" htmlType="button" key="edit"
           onClick={(event) => edit(event)  }
@@ -515,7 +572,7 @@ const TicketDtl:FC = () => {
          >
          { t('refresh') }
          </Button>&nbsp;&nbsp;&nbsp;
-         </div> 
+        </div> 
          :
          <div style={{display:'flex', justifyContent:'start'}}>
          {buildTitle()}
@@ -532,7 +589,7 @@ const TicketDtl:FC = () => {
          </Button>&nbsp;&nbsp;&nbsp;
         </div>    
      }
-         </Col>
+        </Col>
         </Row>
         <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
         <TabPane tab={t('detail')} key="detail" >
@@ -610,44 +667,87 @@ const TicketDtl:FC = () => {
         </Row> 
         <Row  >
         {
-          properties.map(p => (
+          ticketPrp.map(p => (
             <Col xs={24} xl={p.width} key={p.id} >
-               <Form.Item 
-               key={p.id+'_'+p.name}
-               label={p.name}
-               name={p.id}
-               style={{ padding:'5px', width: 'maxContent'}} 
-               rules={getValidatorsToProp(p.pattern)}
-               > 
+              
                {
-                  p.factory.label === 'Text' &&
+                   p.factory.label === 'Text' &&
+                   <Form.Item 
+                   key={p.id+'_Text'}
+                   label={p.name}
+                   name={'prp_'+p.id}
+                   style={{ padding:'5px', width: 'maxContent'}} 
+                   rules={getValidatorsToProp(p.pattern)}
+                   > 
                   <Input
+                  disabled={ro}
                   placeholder={p.placeholder}
                   />
+                  </Form.Item>
                 }
                 {    
-                  p.factory.label === 'List' &&
-                  <Select>
-                     placeholder={p.placeholder}
+                   p.factory.label === 'List' &&
+                  <Form.Item 
+                  key={p.id+'_List'}
+                  label={p.name}
+                  name={'prp_'+p.id}
+                  style={{ padding:'5px', width: 'maxContent'}} 
+                  rules={getValidatorsToProp(p.pattern)}
+                  > 
+                 
+                  <Select disabled={ro}>
                       {
                        p.code.split(',').map(o=>
                           (
-                            <Option value={o} key={0}>{o}</Option>
+                            <Option value={o} key={o}>{o}</Option>
                           )) 
-                      }
-                      
+                      }    
                   </Select>
+                  </Form.Item>
                }
                {
-                  p.factory.label === 'Date' &&
+                p.factory.label === 'Date' &&
+                <Form.Item 
+                key={p.id+'_Date'}
+                label={p.name}
+                name={'prp_'+p.id}
+                style={{ padding:'5px', width: 'maxContent'}} 
+                rules={getValidatorsToProp(p.pattern)}
+                > 
                  <DatePicker 
+                 format={DATETIMEFORMAT}
+                 disabled={ro}
                  placeholder={p.placeholder}
                  showTime={{ format: 'HH:mm' }} 
                 >
                 </DatePicker>
+                </Form.Item>
                }
-               </Form.Item>
-               </Col>
+               {    
+                   p.factory.label === 'Object' &&
+                  <Form.Item 
+                  key={p.id+'_Object'}
+                  label={p.name}
+                  name={'prp_'+p.id}
+                  style={{ padding:'5px', width: 'maxContent'}} 
+                  rules={getValidatorsToProp(p.pattern)}
+                  > 
+                  <AsyncSelect 
+                  menuPosition="fixed"
+                  isDisabled={ro}
+                  isMulti={false}
+                  styles={SelectStyles}
+                  isClearable={true}
+                  placeholder={ p.placeholder }
+                  cacheOptions 
+                  defaultOptions
+                  loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'prp_'+p.id,  p.code.split(';')[0], 
+                  p.code.split(';')[1], p.code.split(';')[2] , true )} 
+                  onChange={(selectChange:any) => selectChanged(selectChange, 'prp_'+p.id)}
+                  />
+                  </Form.Item>
+               }
+           </Col>
           )
             )
         }  

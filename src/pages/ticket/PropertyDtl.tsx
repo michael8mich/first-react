@@ -58,7 +58,7 @@ const PropertyDtl: FC<PropertyDtlProps> =  (props)  => {
 
 const onFinish = (values: any) => {
     console.log('Success:', values)
-      
+      debugger
  
       if(!selectedProperty?.id)
       {

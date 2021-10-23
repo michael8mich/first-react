@@ -7,7 +7,7 @@ import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction,
 import i18n from "i18next";
 import { translateObj } from '../../../utils/translateObj';
 import { SearchPagination } from '../../../models/ISearch';
-import { nowToUnix } from '../../../utils/formManipulation';
+import { nowToUnix, saveFormBuild } from '../../../utils/formManipulation';
 import { IUser, IUserObjects, IUserObjectsMulti } from '../../../models/IUser';
 function onlyUnique(value: string, index:number, self:string[]) {
   return self.indexOf(value) === index;
@@ -100,7 +100,7 @@ export const TicketActionCreators = {
        }
  
      },   
-    createTicket: (ticket: ITicket,  multi:any, loginTicketId:string ) => async (dispatch: AppDispatch) => {
+    createTicket: (ticket: ITicket,  multi:any, loginTicketId:string, prp: ITicketPrpTpl[] = [] ) => async (dispatch: AppDispatch) => {
       dispatch(TicketActionCreators.setIsError(''))
       try { 
         let hasError = false;
@@ -112,6 +112,7 @@ export const TicketActionCreators = {
         delete ticket_.id
         ticket_.last_mod_by = loginTicketId
         ticket_.last_mod_dt =  nowToUnix().toString()
+
         //update
         if(id!=='0') {
           dispatch(TicketActionCreators.IsLoading(true))
@@ -180,7 +181,22 @@ export const TicketActionCreators = {
             let new_id: string = responseNew.data[0].id
             let emptyTicket = {} as ITicket
             dispatch(TicketActionCreators.setSelectedTicket( {...emptyTicket, id: new_id }))
-            
+            let p_index = 1;
+            prp.map(async p=> {
+              let p_ = JSON.parse(JSON.stringify(p))  
+              delete p_.id
+              saveFormBuild(p_)
+              const responseNew = await  axiosFn("post", {...p_, ticket:new_id}, '*', 'tprp', "id" , ''  ) 
+              if(prp.length === p_index) {
+                const responseProperties = await  axiosFn("get", {...p_, ticket:new_id}, '*', 'V_tprp', " ticket ='" + new_id + "' order by sequence " , ''  ) 
+                if(responseProperties.data) {
+                  dispatch(TicketActionCreators.setSelectedTicket( {...emptyTicket, ticketProperties: responseProperties.data })) 
+                }
+              }
+              p_index ++ 
+            })
+
+
           //   Object.keys(multi).map(v => {
           //   let arr:any[] = multi[v]
           //   arr.map(async m => {
@@ -242,6 +258,10 @@ export const TicketActionCreators = {
              tickets_ = translateObj(tickets_, ITicketObjects)
              let ticket:ITicket = tickets_[0]
              dispatch(TicketActionCreators.setSelectedTicket(ticket))
+             const responseProperties = await  axiosFn("get", '', '*', 'V_tprp', " ticket ='" + ticket.id + "' order by sequence " , ''  ) 
+             
+             if(responseProperties.data) 
+               dispatch(TicketActionCreators.setSelectedTicket( {...ticket, ticketProperties: translateObj(responseProperties.data, ITicketPropertyObjects)}) )
             //  ITicketObjectsMulti.map( async  m=> {
             //    let first = ''
             //    let second = ''

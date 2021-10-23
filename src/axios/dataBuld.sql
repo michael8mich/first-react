@@ -1,7 +1,29 @@
 USE [trm]
 GO
 
-/****** Object:  Table [dbo].[contact]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[attachment]    Script Date: 10/21/2021 7:01:19 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[attachment](
+	[id] [nvarchar](32) NOT NULL,
+	[name] [nvarchar](150) NOT NULL,
+	[object] [nvarchar](32) NULL,
+	[factory] [nvarchar](32) NULL,
+	[active] [int] NULL CONSTRAINT [DF_attachemnt_active]  DEFAULT ((1)),
+	[file_name] [nvarchar](2000) NULL,
+	[folder] [nvarchar](32) NULL,
+	[last_mod_by] [nvarchar](32) NULL,
+	[last_mod_dt] [bigint] NULL,
+	[create_date] [bigint] NULL CONSTRAINT [DF_attachemnt_create_date]  DEFAULT (datediff(second,'1970-01-01',getutcdate()))
+) ON [PRIMARY]
+
+GO
+
+/****** Object:  Table [dbo].[contact]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -38,7 +60,20 @@ CREATE TABLE [dbo].[contact](
 
 GO
 
-/****** Object:  Table [dbo].[events]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[empty]    Script Date: 10/21/2021 7:01:19 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[empty](
+	[id] [int] NULL
+) ON [PRIMARY]
+
+GO
+
+/****** Object:  Table [dbo].[events]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -55,7 +90,7 @@ CREATE TABLE [dbo].[events](
 
 GO
 
-/****** Object:  Table [dbo].[organizational_info]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[organizational_info]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -83,7 +118,31 @@ CREATE TABLE [dbo].[organizational_info](
 
 GO
 
-/****** Object:  Table [dbo].[relationship]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[queries]    Script Date: 10/21/2021 7:01:19 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[queries](
+	[name] [nvarchar](150) NULL,
+	[id] [nvarchar](32) NULL,
+	[object] [nvarchar](32) NULL,
+	[factory] [nvarchar](32) NULL,
+	[active] [int] NULL CONSTRAINT [DF_queries_active]  DEFAULT ((1)),
+	[query] [nvarchar](2000) NULL,
+	[seq] [int] NULL,
+	[folder] [nvarchar](32) NULL,
+	[default] [int] NULL CONSTRAINT [DF_queries_default]  DEFAULT ((0)),
+	[last_mod_by] [nvarchar](32) NULL,
+	[last_mod_dt] [bigint] NULL,
+	[create_date] [bigint] NULL CONSTRAINT [DF_queries_create_date]  DEFAULT (datediff(second,'1970-01-01',getutcdate()))
+) ON [PRIMARY]
+
+GO
+
+/****** Object:  Table [dbo].[relationship]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -104,7 +163,7 @@ CREATE TABLE [dbo].[relationship](
 
 GO
 
-/****** Object:  Table [dbo].[teammember]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[teammember]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -125,7 +184,7 @@ CREATE TABLE [dbo].[teammember](
 
 GO
 
-/****** Object:  Table [dbo].[ticket]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[ticket]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -160,7 +219,7 @@ PRIMARY KEY CLUSTERED
 
 GO
 
-/****** Object:  Table [dbo].[ticket_category]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[ticket_category]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -187,7 +246,7 @@ PRIMARY KEY CLUSTERED
 
 GO
 
-/****** Object:  Table [dbo].[ticket_log]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[ticket_log]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -214,7 +273,38 @@ PRIMARY KEY CLUSTERED
 
 GO
 
-/****** Object:  Table [dbo].[util_parent]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[tprptpl]    Script Date: 10/21/2021 7:01:19 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[tprptpl](
+	[id] [nvarchar](32) NOT NULL,
+	[name] [nvarchar](555) NOT NULL,
+	[factory] [nvarchar](32) NOT NULL,
+	[category] [nvarchar](32) NOT NULL,
+	[sequence] [int] NOT NULL,
+	[width] [int] NULL CONSTRAINT [DF_ticket_tprptpl_sequence]  DEFAULT ((20)),
+	[pattern] [nvarchar](200) NULL CONSTRAINT [DF_ticket_tprptpl_pattern]  DEFAULT (''),
+	[defaultValue] [nvarchar](100) NULL CONSTRAINT [DF_ticket_tprptpl_default]  DEFAULT (''),
+	[placeholder] [nvarchar](100) NULL CONSTRAINT [DF_ticket_tprptpl_placeholder]  DEFAULT (''),
+	[description] [nvarchar](max) NULL CONSTRAINT [DF_ticket_tprptpl_description]  DEFAULT (''),
+	[last_mod_by] [nvarchar](32) NULL CONSTRAINT [DF_ticket_tprptpl_last_mod_by]  DEFAULT (''),
+	[last_mod_dt] [bigint] NULL CONSTRAINT [DF_ticket_tprptpl_last_mod_dt]  DEFAULT (''),
+	[create_date] [bigint] NULL DEFAULT (datediff(second,'1970-01-01',getutcdate())),
+	[active] [int] NULL CONSTRAINT [DF_ticket_tprptpl_active]  DEFAULT ((1)),
+	[code] [nvarchar](max) NULL CONSTRAINT [DF_tprptpl_code]  DEFAULT (''),
+PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+
+/****** Object:  Table [dbo].[util_parent]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -234,7 +324,7 @@ CREATE TABLE [dbo].[util_parent](
 
 GO
 
-/****** Object:  Table [dbo].[utils]    Script Date: 10/12/2021 11:16:04 AM ******/
+/****** Object:  Table [dbo].[utils]    Script Date: 10/21/2021 7:01:19 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -261,12 +351,8 @@ ALTER TABLE [dbo].[relationship] ADD  CONSTRAINT [DF_relationship_create_date]  
 GO
 
 
--------------------------------------------------------------------------------------------
-
-USE [trm]
-GO
-
-/****** Object:  View [dbo].[V_contacts]    Script Date: 10/12/2021 11:16:56 AM ******/
+------------
+****** Object:  View [dbo].[V_contacts]    Script Date: 10/21/2021 7:01:59 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -295,7 +381,7 @@ FROM            dbo.contact LEFT OUTER JOIN
 
 GO
 
-/****** Object:  View [dbo].[V_teammember]    Script Date: 10/12/2021 11:16:56 AM ******/
+/****** Object:  View [dbo].[V_teammember]    Script Date: 10/21/2021 7:01:59 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -312,7 +398,25 @@ FROM            dbo.teammember LEFT OUTER JOIN
 
 GO
 
-/****** Object:  View [dbo].[V_ticket_category]    Script Date: 10/12/2021 11:16:56 AM ******/
+/****** Object:  View [dbo].[V_tprptpls]    Script Date: 10/21/2021 7:01:59 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[V_tprptpls]
+AS
+SELECT        dbo.tprptpl.id, dbo.tprptpl.name, dbo.tprptpl.factory, dbo.tprptpl.category, dbo.tprptpl.sequence, dbo.tprptpl.width, dbo.tprptpl.pattern, dbo.tprptpl.placeholder, dbo.tprptpl.description, dbo.tprptpl.last_mod_by, 
+                         dbo.tprptpl.last_mod_dt, dbo.tprptpl.create_date, dbo.tprptpl.active, dbo.contact.last_name + N' ' + ISNULL(dbo.contact.first_name, N'') AS last_mod_by_name, dbo.tprptpl.defaultValue, 
+                         dbo.utils.name AS factory_name, dbo.tprptpl.code
+FROM            dbo.tprptpl LEFT OUTER JOIN
+                         dbo.utils ON dbo.tprptpl.factory = dbo.utils.id LEFT OUTER JOIN
+                         dbo.contact ON dbo.tprptpl.last_mod_by = dbo.contact.id
+
+GO
+
+/****** Object:  View [dbo].[V_ticket_category]    Script Date: 10/21/2021 7:01:59 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -334,7 +438,7 @@ FROM            dbo.ticket_category LEFT OUTER JOIN
 
 GO
 
-/****** Object:  View [dbo].[V_ticket_log]    Script Date: 10/12/2021 11:16:56 AM ******/
+/****** Object:  View [dbo].[V_ticket_log]    Script Date: 10/21/2021 7:01:59 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -350,7 +454,7 @@ FROM            dbo.ticket_log LEFT OUTER JOIN
 
 GO
 
-/****** Object:  View [dbo].[V_tickets]    Script Date: 10/12/2021 11:16:56 AM ******/
+/****** Object:  View [dbo].[V_tickets]    Script Date: 10/21/2021 7:01:59 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -363,8 +467,10 @@ SELECT        dbo.ticket.id, dbo.ticket.category, dbo.ticket.status, dbo.ticket.
                          dbo.ticket.description, dbo.ticket.last_mod_by, dbo.ticket.last_mod_dt, dbo.ticket.create_date, dbo.ticket.active, dbo.contact.last_name + N' ' + ISNULL(dbo.contact.first_name, N'') AS requestor_name, 
                          contact_1.last_name + N' ' + ISNULL(contact_1.first_name, N'') AS customer_name, contact_3.last_name + N' ' + ISNULL(contact_3.first_name, N'') AS assignee_name, contact_4.last_name AS team_name, 
                          contact_2.last_name + N' ' + ISNULL(contact_2.first_name, N'') AS log_agent_name, contact_5.last_name + N' ' + ISNULL(contact_5.first_name, N'') AS last_mod_by_name, utils_2.name AS status_name, 
-                         dbo.utils.name AS priority_name, utils_1.name AS urgency_name, dbo.ticket.ticket_type, utils_3.name AS ticket_type_name, dbo.ticket.name, dbo.ticket.close_date, 
-                         dbo.ticket_category.name AS category_name
+                         dbo.utils.name AS priority_name, utils_1.name AS urgency_name, dbo.ticket.ticket_type, utils_3.name AS ticket_type_name, dbo.ticket.name, dbo.ticket.close_date, dbo.ticket_category.name AS category_name,
+                             (SELECT        COUNT(id) AS Expr1
+                               FROM            dbo.attachment
+                               WHERE        (factory = 'ticket') AND (object = dbo.ticket.id)) AS attachments
 FROM            dbo.ticket LEFT OUTER JOIN
                          dbo.ticket_category ON dbo.ticket.category = dbo.ticket_category.id LEFT OUTER JOIN
                          dbo.utils AS utils_3 ON dbo.ticket.ticket_type = utils_3.id LEFT OUTER JOIN
@@ -380,7 +486,7 @@ FROM            dbo.ticket LEFT OUTER JOIN
 
 GO
 
-/****** Object:  View [dbo].[V_organizational_info]    Script Date: 10/12/2021 11:16:56 AM ******/
+/****** Object:  View [dbo].[V_organizational_info]    Script Date: 10/21/2021 7:01:59 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -399,7 +505,7 @@ FROM            dbo.organizational_info LEFT OUTER JOIN
 
 GO
 
-/****** Object:  View [dbo].[V_util_parent]    Script Date: 10/12/2021 11:16:56 AM ******/
+/****** Object:  View [dbo].[V_util_parent]    Script Date: 10/21/2021 7:01:59 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -414,7 +520,7 @@ FROM            dbo.util_parent LEFT OUTER JOIN
 
 GO
 
-/****** Object:  View [dbo].[V_events]    Script Date: 10/12/2021 11:16:56 AM ******/
+/****** Object:  View [dbo].[V_events]    Script Date: 10/21/2021 7:01:59 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -430,12 +536,11 @@ FROM            dbo.events LEFT OUTER JOIN
 
 GO
 
--------------------------------------------------
-
+---------------
 
 USE [trm]
 GO
-/****** Object:  Trigger [dbo].[tr_ticket_Modified]    Script Date: 10/12/2021 11:20:12 AM ******/
+/****** Object:  Trigger [dbo].[tr_ticket_Modified]    Script Date: 10/21/2021 7:02:34 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -614,10 +719,29 @@ declare @value_obj nvarchar(32);
 			 @last_mod_by
 			 WHERE (select team from Deleted) <> (select team from Inserted)
 	end
-
+	------------------------
+	IF (UPDATE( category))
+	begin
+			 select @id = id from Inserted
+			 select @last_mod_by = last_mod_by from Inserted
+			 select @value_obj = 'category'
+			 INSERT INTO ticket_log (id, name, ticket, old_value, new_value, old_value_obj_id, new_value_obj_id, value_obj, create_date, last_mod_dt, last_mod_by)
+			 select 
+			 LEFT(REPLACE(NEWID(),'-',''), 32) , 
+			 'Category Changed', 
+			  @id , 
+			 isnull((select name from ticket_category V where V.id = (select category from Deleted)),''), 
+			 isnull((select name from ticket_category V where V.id =  (select category from Inserted)),''), 
+			 isnull((select category from Deleted),''), 
+			 isnull((select category from Inserted),''), 
+			 @value_obj,
+			 datediff(second,'1970-01-01',getutcdate()), 
+			 datediff(second,'1970-01-01',getutcdate()) , 
+			 @last_mod_by
+			 WHERE (select category from Deleted) <> (select category from Inserted)
+	end
 	
 END
-
 
 
 

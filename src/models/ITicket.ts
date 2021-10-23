@@ -1,4 +1,3 @@
-
 import { SelectOption } from "./ISearch";
 import { IUser } from "./IUser";
 
@@ -26,7 +25,8 @@ export interface ITicket {
     category_info: ITicketCategory
     tickets_log?: ITicketLog[]
     attachments?: number
-
+    ticketProperties?: ITicketPrpTpl[]
+    ticketPropertiesCount?: number
 }
 export interface ITicketLog {
     id: string
@@ -61,7 +61,6 @@ export interface ITicketCategory {
 export interface ITicketPrpTpl {
     id: string
 	name: string
-    value: string
 	factory: SelectOption
 	category: string
 	sequence: string
@@ -76,6 +75,10 @@ export interface ITicketPrpTpl {
 	create_date: string
 	active: number
     listCode: string[]
+    
+    ticket:string
+	value: string
+	valueObj: SelectOption
 }
 
 

@@ -21,8 +21,7 @@ export const getValidatorsToProp = (pattern:string) =>
         validatorsArr.push( validators['isDateAfter']() )
       }
       ) 
-      console.log('validatorsArr', validatorsArr);
-      
+      //console.log('validatorsArr', validatorsArr);
       return validatorsArr
   } 
 
