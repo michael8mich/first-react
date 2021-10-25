@@ -22,7 +22,10 @@ export default function TicketReducer(state = initialState, action:TicketAction 
         case TicketActionEnum.SET_TICKETS:
            return {...state, tickets: action.payload, isLoading: false }
         case  TicketActionEnum.SET_SELECTED_TICKET:
-            return {...state, selectedTicket: action.payload }  
+            return {...state, selectedTicket: action.payload } 
+
+        case  TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES:
+                return {...state,  selectedTicket:  { ...state.selectedTicket,  ticketProperties: action.payload }}  
         case  TicketActionEnum.SET_TICKETS_COUNT:
             return {...state, ticketsCount: action.payload }   
         

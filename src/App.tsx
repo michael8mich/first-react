@@ -50,6 +50,11 @@ const App:FC = () => {
       <AlertComponent {...alert} />
         <AppRouter />
       </Layout.Content>
+      <Layout.Footer style={{height:'10px'}}>
+        <div style={{fontSize:'8px'}}>
+        UTA System(Users Tickets Assets) Michael Khokhlinov Co 2021
+        </div>
+      </Layout.Footer>
     </Layout>
     </ConfigProvider>
   )

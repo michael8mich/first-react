@@ -7,13 +7,14 @@ import { useTypedSelector } from '../hooks/useTypedSelector';
 import { useAction } from '../hooks/useAction';
 import SubMenu from 'antd/lib/menu/SubMenu';
 import { useTranslation } from 'react-i18next';
+import { ITicket, ITicketPrpTpl } from '../models/ITicket';
 
 
 const Navbar: FC = () => {
     const { t, i18n } = useTranslation();      
     const router = useHistory()
     const {isAuth, user } = useTypedSelector(state => state.auth)
-    const {logout} = useAction()
+    const {logout, setSelectedProperty, setProperties, setSelectedTicket} = useAction()
     const {setUser, refreshStorage} = useAction()
     
     const [collapsed,setCollapsed] =  useState(true)
@@ -28,8 +29,16 @@ const Navbar: FC = () => {
       refreshStorage({ ...user , locale: len})
       i18n.changeLanguage(len.substring(0,2));
     }
+    const createNewTicket = () => {
+      window.location.reload(); 
+      setSelectedTicket({} as ITicket)
+      setSelectedProperty({} as ITicketPrpTpl)
+      setProperties([] as ITicketPrpTpl[])
+      router.push(RouteNames.TICKETS + '/0')
+    }
     return (
       <Layout.Header> 
+        {/* <button onClick={() => window.location.reload()}>Click to reload!</button> */}
           {/* <Row justify="start" style={{width:'100%'}}> */}
           {
            isAuth
@@ -47,15 +56,12 @@ const Navbar: FC = () => {
                   forceSubMenuRender={true}
                   title="Menu"
                   >
-                      <Menu.Item 
-                      onClick={logout} 
-                      key={1} >{ t('logout') }
-                      </Menu.Item>
-                      <Menu.Item key="events" onClick={() => router.push(RouteNames.EVENT) } >
-                        { t('events') }</Menu.Item>
+                      <Menu.Item  onClick={logout}  key="logout" >{ t('logout') }</Menu.Item>
+                      {/* <Menu.Item key="events" onClick={() => router.push(RouteNames.EVENT) } >
+                        { t('events') }</Menu.Item> */}
                       <SubMenu key="Language" title={ t('language') }>
-                        <Menu.Item disabled={user.locale === 'enUS'} onClick={() => changeLen('enUS') }  key="enUS">{ t('english') }</Menu.Item>
-                        <Menu.Item disabled={user.locale === 'heIL'}  onClick={() => changeLen('heIL') }  key="heIL">{ t('hebrew') }</Menu.Item>
+                        <Menu.Item key="enUS" disabled={user.locale === 'enUS'} onClick={() => changeLen('enUS') }  >{ t('english') }</Menu.Item>
+                        <Menu.Item key="heIL" disabled={user.locale === 'heIL'}  onClick={() => changeLen('heIL') }  >{ t('hebrew') }</Menu.Item>
                       </SubMenu>
                       <SubMenu key="admin" title={ t('admin') }>
                         <Menu.Item key="utils" onClick={() => router.push(RouteNames.UTILS) } >{ t('utils') }</Menu.Item>
@@ -63,6 +69,8 @@ const Navbar: FC = () => {
                         <Menu.Item key="orgs" onClick={() => router.push(RouteNames.ORGS ) } >{ t('orgs') }</Menu.Item>
                       </SubMenu>
                       <SubMenu key="ticketsMain" title={ t('tickets') }>
+                      
+                        <Menu.Item key="ticket" onClick={() => createNewTicket() } >{ t('ticket') + ' ' + t('new') }</Menu.Item>
                         <Menu.Item key="tickets" onClick={() => router.push(RouteNames.TICKETS) } >{ t('tickets') }</Menu.Item>
                         <Menu.Item key="tcategories" onClick={() => router.push(RouteNames.TCATEGORIES) } >{ t('tcategories') }</Menu.Item>
                       </SubMenu>

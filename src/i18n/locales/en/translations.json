@@ -161,6 +161,7 @@
         "actions": "Actions",
         "tcode": "Build Properties Code",
         "sequence_exist": "Sequence Exist",
+        "new": "New",
 
 
         "TICKET_OPENED_BY_TEAM": "Active Tickets by Team",

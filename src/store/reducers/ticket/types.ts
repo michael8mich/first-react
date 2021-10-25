@@ -20,6 +20,7 @@ export interface TicketState {
 export enum TicketActionEnum {
     SET_TICKETS = "SET_TICKETS",
     SET_SELECTED_TICKET = "SET_SELECTED_TICKET",
+    SET_SELECTED_TICKET_PROPERTIES = "SET_SELECTED_TICKET_PROPERTIES",
     SET_TICKETS_COUNT = "SET_TICKETS_COUNT",
     
     SET_CATEGORIES = "SET_CATEGORIES",
@@ -41,6 +42,11 @@ export interface SetTicketsAction {
 export interface SetSelectedTicketAction {
     type: TicketActionEnum.SET_SELECTED_TICKET,
     payload: ITicket
+}
+
+export interface SetSelectedTicketPropertiesAction {
+    type: TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES,
+    payload: ITicketPrpTpl[]
 }
 export interface SetTicketsCountAction {
     type: TicketActionEnum.SET_TICKETS_COUNT,
@@ -88,6 +94,7 @@ export interface SetIsLoadingAction {
 export type TicketAction = 
 SetTicketsAction |
 SetSelectedTicketAction |
+SetSelectedTicketPropertiesAction |
 SetTicketsCountAction |
 SetCategoriesAction |
 SetSelectedCategoryAction | 

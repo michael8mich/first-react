@@ -14,7 +14,8 @@ const AppRouter = () => {
                   key={index} 
                   path={r.path} 
                   exact={r.exact} 
-                  component={r.component} />
+                  component={r.component} 
+                  />
                   )}
                   <Redirect to={RouteNames.HOME}  />
               </Switch>

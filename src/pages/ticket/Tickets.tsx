@@ -373,6 +373,7 @@ const Tickets:FC = () => {
       console.log('Failed:', errorInfo);
     }
     const createNew = () => {
+      setSelectedTicket({} as ITicket)
       setSelectedProperty({} as ITicketPrpTpl)
       setProperties([] as ITicketPrpTpl[])
       router.push(RouteNames.TICKETS + '/0')

@@ -3,7 +3,7 @@ import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, I
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
 import { ITicketObjects, ITicketObjectsMulti, ITicket, ITicketLog } from '../../../models/ITicket';
-import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction, SetTicketsCountAction, SetSelectedTicketAction, SetCategoriesAction, SetSelectedCategoryAction, SetCategoriesCountAction, SetPropertiesAction, SetSelectedPropertyAction, SetPropertiesCountAction } from './types';
+import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction, SetTicketsCountAction, SetSelectedTicketAction, SetCategoriesAction, SetSelectedCategoryAction, SetCategoriesCountAction, SetPropertiesAction, SetSelectedPropertyAction, SetPropertiesCountAction, SetSelectedTicketPropertiesAction } from './types';
 import i18n from "i18next";
 import { translateObj } from '../../../utils/translateObj';
 import { SearchPagination } from '../../../models/ISearch';
@@ -13,11 +13,11 @@ function onlyUnique(value: string, index:number, self:string[]) {
   return self.indexOf(value) === index;
 }
 
-
-
 export const TicketActionCreators = {
     setTickets: (payload:ITicket[]): SetTicketsAction => ({type:TicketActionEnum.SET_TICKETS, payload}),
     setSelectedTicket: (payload:ITicket): SetSelectedTicketAction => ({type:TicketActionEnum.SET_SELECTED_TICKET, payload}),
+    SetSelectedTicketProperties: (payload:ITicketPrpTpl[]): SetSelectedTicketPropertiesAction => ({type:TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES, payload}),
+    
     setTicketsCount: (payload:number): SetTicketsCountAction => ({type:TicketActionEnum.SET_TICKETS_COUNT, payload}),
     
     setCategories: (payload:ITicketCategory[]): SetCategoriesAction => ({type:TicketActionEnum.SET_CATEGORIES, payload}),
@@ -109,6 +109,8 @@ export const TicketActionCreators = {
           delete ticket_[v]
         })
         const id = ticket_.id
+        const name = ticket_.name
+        delete ticket_.name
         delete ticket_.id
         ticket_.last_mod_by = loginTicketId
         ticket_.last_mod_dt =  nowToUnix().toString()
@@ -120,51 +122,28 @@ export const TicketActionCreators = {
           if(response.data["error"]) hasError = true;
           if(response.data&&!hasError)
           {
-          let tickets: ITicket[] = response.data
-          // Object.keys(multi).map(v => {
-          //   let arr:any[] = multi[v]
-          //   arr.map(async m => {
-          //     if(m.status) {
-               
-          //       if(v === 'roles')
-          //       {
-          //         let json_ = {
-          //           parent: id,
-          //           parent_type: v,
-          //           util: m.value
-          //         }
-          //         const response = await  axiosFn("post", json_, '*', 'util_parent', "id" , ''  )  
-          //       } else
-          //       if(v === 'teams')
-          //       {
-          //         let json_ = {
-          //           member: id,
-          //           team: m.value
-          //         }
-          //         const response = await  axiosFn("post", json_, '*', 'teammember', "id" , ''  )  
-          //       } else
-          //       if(v === 'members')
-          //       {
-          //         let json_ = {
-          //           team: id,
-          //           member: m.value
-          //         }
-          //         const response = await  axiosFn("post", json_, '*', 'teammember', "id" , ''  )  
-          //       }
-                
-          //     }
-          //     else {
-          //       if(v === 'roles')
-          //       {
-          //       const response = await  axiosFn("delete", '', '*', 'util_parent', "id" , m.code  )  
-          //       } else
-          //       if(v === 'teams' || v === 'members')
-          //       {
-          //       const response = await  axiosFn("delete", '', '*', 'teammember', "id" , m.code  )  
-          //       }
-          //     }
-          //   })
-          // })
+          let ticket: ITicket[] = response.data
+          let p_index = 1;
+            prp.map(async p=> {
+              let p_ = JSON.parse(JSON.stringify(p))  
+              delete p_.id
+              saveFormBuild(p_)
+              if(p.ticket)
+                await  axiosFn("put", {...p_}, '*', 'tprp', "id" , p.id  ) 
+              else
+              {
+                await  axiosFn("post", {...p_, ticket:id}, '*', 'tprp', "id" , ''  )
+              }
+              
+              if(prp.length === p_index) {
+                const responseProperties = await  axiosFn("get", {...p_, ticket:id}, '*', 'V_tprp', " ticket ='" + id + "' order by sequence " , ''  ) 
+                if(responseProperties.data) {
+                  //dispatch(TicketActionCreators.setSelectedTicket( {...ticket[0], id:id, name:name, ticketProperties: translateObj(responseProperties.data, ITicketPropertyObjects)  })) 
+                  dispatch(TicketActionCreators.SetSelectedTicketProperties(translateObj(responseProperties.data, ITicketPropertyObjects)))
+                }
+              }
+              p_index ++ 
+            })
           } else
           {
               dispatch(TicketActionCreators.setIsError(i18n.t('data_problem'))) 
@@ -190,45 +169,12 @@ export const TicketActionCreators = {
               if(prp.length === p_index) {
                 const responseProperties = await  axiosFn("get", {...p_, ticket:new_id}, '*', 'V_tprp', " ticket ='" + new_id + "' order by sequence " , ''  ) 
                 if(responseProperties.data) {
-                  dispatch(TicketActionCreators.setSelectedTicket( {...emptyTicket, ticketProperties: responseProperties.data })) 
+                  dispatch(TicketActionCreators.SetSelectedTicketProperties(translateObj(responseProperties.data, ITicketPropertyObjects)))
+                  //dispatch(TicketActionCreators.setSelectedTicket( {...emptyTicket, ticketProperties: translateObj(responseProperties.data, ITicketPropertyObjects)  })) 
                 }
               }
               p_index ++ 
             })
-
-
-          //   Object.keys(multi).map(v => {
-          //   let arr:any[] = multi[v]
-          //   arr.map(async m => {
-          //     if(m.status) {
-          //       if(v === 'roles')
-          //       {
-          //         let json_ = {
-          //           parent: new_id,
-          //           parent_type: v,
-          //           util: m.value
-          //         }
-          //         const response = await  axiosFn("post", json_, '*', 'util_parent', "id" , ''  )  
-          //       } else
-          //       if(v === 'teams')
-          //       {
-          //         let json_ = {
-          //           member: new_id,
-          //           team: m.value
-          //         }
-          //         const response = await  axiosFn("post", json_, '*', 'teammember', "id" , ''  )  
-          //       } else
-          //       if(v === 'members')
-          //       {
-          //         let json_ = {
-          //           team: new_id,
-          //           member: m.value
-          //         }
-          //         const response = await  axiosFn("post", json_, '*', 'teammember', "id" , ''  )  
-          //       }
-          //     }
-          //   })
-          // })
           } else
           {
               dispatch(TicketActionCreators.setIsError(i18n.t('data_problem'))) 
@@ -259,33 +205,9 @@ export const TicketActionCreators = {
              let ticket:ITicket = tickets_[0]
              dispatch(TicketActionCreators.setSelectedTicket(ticket))
              const responseProperties = await  axiosFn("get", '', '*', 'V_tprp', " ticket ='" + ticket.id + "' order by sequence " , ''  ) 
-             
              if(responseProperties.data) 
                dispatch(TicketActionCreators.setSelectedTicket( {...ticket, ticketProperties: translateObj(responseProperties.data, ITicketPropertyObjects)}) )
-            //  ITicketObjectsMulti.map( async  m=> {
-            //    let first = ''
-            //    let second = ''
-            //    let third = ""
-            //   if(m==='roles') {  
-            //     first = ' util as value, name as label, id as code '
-            //     second = 'V_util_parent'
-            //     third = " parent = '" + id + "'"
-            //   } 
-            //   if(m==='teams') {  
-            //     first = ' team as value, team_name as label, id as code '
-            //     second = 'V_teammember'
-            //     third = " member = '" + id + "'"
-            //   } 
-            //   if(m==='members') {  
-            //     first = ' member as value, member_name as label, id as code, notify '
-            //     second = 'V_teammember'
-            //     third = " team  = '" + id + "'"
-            //   } 
-            //     const response_multi = await  axiosFn("get", '', first, second,  third , ''  )  
-            //     console.log('m', m);
-            //     multiObject = { ...multiObject, [m]: response_multi.data}
-            //     dispatch(TicketActionCreators.setSelectedTicket({...ticket, ...multiObject}))
-            // })
+            
              } else
              {
                  dispatch(TicketActionCreators.setIsError(i18n.t('data_problem')))

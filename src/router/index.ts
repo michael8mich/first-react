@@ -18,7 +18,6 @@ import Dashboard from '../charts/dashbord';
 export interface IRoute {
     path: string,
     component: React.ComponentType,
-    breadcrumbName: string;
     exact?: boolean
 }
 
@@ -39,21 +38,21 @@ export enum RouteNames {
 }
 
 export const privateRoutes:IRoute[] = [
-    {path: RouteNames.HOME, component: Home, breadcrumbName: i18n.t('home'),  exact: true},   
-    {path: RouteNames.EVENT, component: Event,  breadcrumbName: i18n.t('events'), exact: true}, 
-    {path: RouteNames.UTILS, component: Utils, breadcrumbName: i18n.t('utils'),exact: true}, 
-    {path: RouteNames.USER_DTL, component: UserDtl, breadcrumbName: i18n.t('util'),exact: false}, 
-    {path: RouteNames.USERS, component: Users, breadcrumbName: i18n.t('users'),exact: true},
-    {path: RouteNames.ORG_DTL, component: OrgDtl, breadcrumbName: i18n.t('user'),exact: false}, 
-    {path: RouteNames.ORGS, component: Orgs, breadcrumbName: i18n.t('orgs'),exact: true},
-    {path: RouteNames.TICKET_DTL, component: TicketDtl, breadcrumbName: i18n.t('org'),exact: false}, 
-    {path: RouteNames.TICKETS, component: Tickets, breadcrumbName: i18n.t('tickets'), exact: true},
-    {path: RouteNames.TCATEGORY_DTL, component: TCategoryDtl, breadcrumbName: i18n.t('tcategories'),exact: false}, 
-    {path: RouteNames.TCATEGORIES, component: TCategories, breadcrumbName: i18n.t('tcategory'), exact: true},
-    {path: RouteNames.DASHBOARD, component: Dashboard, breadcrumbName: i18n.t('dashboard'), exact: true},
+    {path: RouteNames.HOME, component: Home, exact: true},   
+    {path: RouteNames.EVENT, component: Event,   exact: true}, 
+    {path: RouteNames.UTILS, component: Utils, exact: true}, 
+    {path: RouteNames.USER_DTL, component: UserDtl, exact: false}, 
+    {path: RouteNames.USERS, component: Users, exact: true},
+    {path: RouteNames.ORG_DTL, component: OrgDtl, exact: false}, 
+    {path: RouteNames.ORGS, component: Orgs, exact: true},
+    {path: RouteNames.TICKET_DTL, component: TicketDtl, exact: false}, 
+    {path: RouteNames.TICKETS, component: Tickets,  exact: true},
+    {path: RouteNames.TCATEGORY_DTL, component: TCategoryDtl, exact: false}, 
+    {path: RouteNames.TCATEGORIES, component: TCategories,  exact: true},
+    {path: RouteNames.DASHBOARD, component: Dashboard, exact: true},
    
      
 ]
 export const publicRoutes:IRoute[] = [
-    {path:  RouteNames.LOGIN, component: Login, breadcrumbName: "TCategories", exact: true}
+    {path:  RouteNames.LOGIN, component: Login,exact: true}
 ]

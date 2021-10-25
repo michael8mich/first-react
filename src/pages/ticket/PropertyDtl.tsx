@@ -58,8 +58,7 @@ const PropertyDtl: FC<PropertyDtlProps> =  (props)  => {
 
 const onFinish = (values: any) => {
     console.log('Success:', values)
-      debugger
- 
+
       if(!selectedProperty?.id)
       {
         values = {...values, id:'0'} 
@@ -146,7 +145,7 @@ const onFinish = (values: any) => {
        layout="vertical"
       form={formPrp}
       name="formPrp"
-      initialValues={{active: true}}
+      initialValues={{active: 1}}
       labelCol={{ span: 6 }}
       wrapperCol={{ span: 16 }}
       onFinish={onFinish}
@@ -215,7 +214,7 @@ const onFinish = (values: any) => {
       <Col  xs={24} xl={6}  sm={12}> 
         <Form.Item label={t('width')}
           name="width"
-          rules={[validators.isNumber()]}
+          rules={[validators.isNumber(), validators.required()]}
         >
           <Input
           disabled={ro} 
@@ -243,7 +242,9 @@ const onFinish = (values: any) => {
           />
         </Form.Item>      
       </Col>
-      <Col  xs={24} xl={4}  sm={12}> 
+      {
+        selectedProperty?.id && 
+        <Col  xs={24} xl={4}  sm={12}> 
       <Form.Item
            label={ t('active') }
            name="active" 
@@ -257,6 +258,8 @@ const onFinish = (values: any) => {
            />
            </Form.Item>  
       </Col>
+      }
+      
       </Row>
       <Row  >
         <Col xs={24} xl={24}  >

@@ -389,12 +389,26 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
 
        <Card  >
        
+       {buildTitle()}
+        <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
+        <TabPane tab={t('detail')} key="detail" >
+        <div>
+        <Form
+       layout="vertical"
+       form={form}
+       name="basic"
+       // labelCol={{ span: 8 }}
+       // wrapperCol={{ span: 30 }}
+       initialValues={defaultOnNew}
+       onFinish={onFinish}
+       onFinishFailed={onFinishFailed}
+       autoComplete="off" 
+       > 
         <Row >
         <Col  xs={24} xl={8}>
         {ro 
         ?     
         <div style={{display:'flex', justifyContent:'start'}}>
-         {buildTitle()}
          <Button type="primary" htmlType="button" 
           onClick={(event) => edit(event)  }
          >
@@ -408,7 +422,6 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
          </div> 
          :
          <div style={{display:'flex', justifyContent:'start'}}>
-         {buildTitle()}
          <Button type="primary" htmlType="submit" 
          disabled={isLoading}
          loading={isLoading}
@@ -424,19 +437,6 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
      }
          </Col>
         </Row>
-        <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
-        <TabPane tab={t('detail')} key="detail" >
-        <Form
-       layout="vertical"
-       form={form}
-       name="basic"
-       // labelCol={{ span: 8 }}
-       // wrapperCol={{ span: 30 }}
-       initialValues={defaultOnNew}
-       onFinish={onFinish}
-       onFinishFailed={onFinishFailed}
-       autoComplete="off" 
-       > 
         <Row  >
         <Col xs={24} xl={18}  >
            <Form.Item
@@ -649,6 +649,7 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
     
         }
         </Form>
+        </div>
         </TabPane>
        <TabPane tab={t('properties')} key="properties" forceRender={true} >
          {
@@ -673,11 +674,9 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
           rowKey={record => record.id}
           >
           </Table>    
-    </TabPane>
+       </TabPane>
     </Tabs>  
-   
-      </Card>
-       
+      </Card>     
   </Layout>
   )
 }

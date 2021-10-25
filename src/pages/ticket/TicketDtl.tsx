@@ -7,7 +7,7 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
-import { DATETIMEFORMAT, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
+import { DATETIMEFORMAT, PRPID, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
 import {  ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
 import { Link, NavLink, useHistory, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
@@ -53,9 +53,8 @@ const TicketDtl:FC = () => {
   
   const router = useHistory()
   useEffect( () => {
-    
-    async function init() {
-      await setTicketId(id)
+    debugger
+     setTicketId(id)
       if(id==='0')  {
         setRo(false)
         CleanSelectedTicket()
@@ -64,9 +63,6 @@ const TicketDtl:FC = () => {
         fetchTicket(id) 
         get_files()
       }
-    }
-      
-    init()
    }, [])
 
   function getTicket() {
@@ -88,19 +84,18 @@ const TicketDtl:FC = () => {
   function setFormValues() {
     if(ticketId!=='0') {
       let curTicket:any = selectedTicket
-      //console.log('user', selectedTicket);
       const currUserFields= Object.keys(curTicket)
       const  formFields = Object.keys((form.getFieldsValue()))
       const form_set_values = {} as any
       formFields.map(ff => {
-        if(ff.indexOf('prp_')!=-1)
+        if(ff.indexOf(PRPID)!=-1)
         {
-          let obj = ticketPrp.find(p=>'prp_'+p.id === ff) 
+          let obj = ticketPrp.find(p=>PRPID+p.id === ff) 
           if(obj) {
             if(obj.factory.label.toString()=="Date")
             {
               if(obj.value) 
-              form_set_values[ff] = moment(uTd(obj.value) )
+                form_set_values[ff] = moment(+obj.value*1000)
             } else
             if(obj.factory.label.toString()=="Object")
             form_set_values[ff] = { label: obj.value, value: obj.valueObj }
@@ -133,19 +128,28 @@ const TicketDtl:FC = () => {
           fetchTicket(selectedTicket.id)
           setTicketId(selectedTicket.id) 
           upload_files(selectedTicket.id)
-          //router.push(RouteNames.TICKETS + '/' + selectedTicket.id )
+          
         }
       }
      }
    }, [selectedTicket?.id])
 
    useEffect(() => {
-     if(selectedTicket.ticketProperties)
-     setTicketPrp(selectedTicket.ticketProperties)
-     else
-     if(properties)
-     setTicketPrp(properties)
-  }, [selectedTicket.ticketProperties, properties])
+     if(selectedTicket.ticketProperties){
+      setTicketPrp(selectedTicket.ticketProperties)
+     } 
+  }, [selectedTicket.ticketProperties])
+
+  useEffect(() => {
+    if(properties)
+    setTicketPrp(properties)
+ }, [properties])
+
+  useEffect(() => {
+     if(ticketPrp&&ro)
+      setFormValues()
+ }, [ ticketPrp])
+
   
   const [customerInfo, setCustomerInfo] = useState(false) 
   const [category_info, setcategory_info] = useState({} as ITicketCategory)
@@ -189,7 +193,7 @@ const TicketDtl:FC = () => {
         if(response.data&&!hasError)
         {
           setSelectOptions({...selectOptions, [name]: response.data}) 
-          if(inputValue.length === 0 )
+          if(inputValue.length === 0 || big)
           //setSelectSmall( { [name]: response.data } )
           return response.data
         } 
@@ -244,16 +248,16 @@ const TicketDtl:FC = () => {
        }
        if(name==='category') {
         if(selectChange?.value) {
+          setTicketPrp([])
           const response = await  axiosFn("get", '', '*', 'V_ticket_category', " id = '" + selectChange?.value + "'" , ''  )  
           let category_info =  translateObj(response?.data, ITicketCategoryObjects)
           if(category_info[0]?.team?.value) {
             form.setFieldsValue({ team: category_info[0]?.team }) 
             fetchProperties(category_info[0].id)
           }
-         
         }   
     }
-       setSelectValues({...selectOptions, [name]: selectChange })
+    setSelectValues({...selectOptions, [name]: selectChange })
       }
     const SelectStyles = {
       container: (provided: any) => ({
@@ -285,8 +289,8 @@ const TicketDtl:FC = () => {
     }
     let prp_val = [] as any[]  
      Object.keys(values).map(k=>{
-      if(k.indexOf('prp_')!=-1){
-        let newObj = {id: k.replace('prp_',''),
+      if(k.indexOf(PRPID)!=-1){
+        let newObj = {id: k.replace(PRPID,''),
         value: values[k] || ''}
         prp_val.push(newObj)
       }
@@ -307,28 +311,28 @@ const TicketDtl:FC = () => {
       }
       else 
       value = val.value
-      return {...p, id: '0', value:value, valueObj: valueObj ? valueObj : '' }
+      return {...p, id : p.id ? p.id : '0', value:value, valueObj: valueObj ? valueObj : '' }
     })
     let new_prp:ITicketPrpTpl[] = [...prp_] 
     return new_prp
   }
 
 
-    const onFinish = async (values: any) => { 
+    const onFinish = async (values: any) => {
+      debugger 
       values = form.getFieldsValue()
       const values_ = {...values}
       ITicketRoFields.map(r => {
         delete values_[r]
       })
-      let prp = propertyBuild({...values_}, properties)
+      let prp = propertyBuild({...values_}, ticketPrp)
       Object.keys(values_).map(v=> {
-        if(v.indexOf('prp_')!= -1)
+        if(v.indexOf(PRPID)!= -1)
         delete values_[v]
       })
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedTicket});
       saveFormBuild(values_)
-      debugger
-      createTicket({...values_, id:ticketId}, valuesMulti, user.id, [...prp])
+      createTicket({...values_, id:ticketId, name:selectedTicket.name}, valuesMulti, user.id, [...prp])
       if(!init)
       afterUpdateCreate()
     }
@@ -396,6 +400,8 @@ const TicketDtl:FC = () => {
     }
   const edit = (event:any) => {
     event.preventDefault()
+    if(id==='0')
+    router.push(RouteNames.TICKETS + '/' + selectedTicket.id )
     setRo(false)
   }  
   const localeteArr = [{'label': t('english') , 'value': 'enUS', 'code': 'enUS'},{'label': t('hebrew'), 'value': 'heIL', 'code': 'heIL'}]
@@ -574,7 +580,7 @@ const TicketDtl:FC = () => {
          </Button>&nbsp;&nbsp;&nbsp;
         </div> 
          :
-         <div style={{display:'flex', justifyContent:'start'}}>
+         <div style={{display:'flex', justifyContent:'start'}} className="flex-container">
          {buildTitle()}
          <Button type="primary" htmlType="submit" key="getTicket"
          disabled={isLoading}
@@ -636,7 +642,7 @@ const TicketDtl:FC = () => {
            placeholder={ t('tcategory') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = '1'", false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = '1' order by name asc", false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'category')}
            />
            </Form.Item>
@@ -675,7 +681,7 @@ const TicketDtl:FC = () => {
                    <Form.Item 
                    key={p.id+'_Text'}
                    label={p.name}
-                   name={'prp_'+p.id}
+                   name={PRPID+p.id}
                    style={{ padding:'5px', width: 'maxContent'}} 
                    rules={getValidatorsToProp(p.pattern)}
                    > 
@@ -690,7 +696,7 @@ const TicketDtl:FC = () => {
                   <Form.Item 
                   key={p.id+'_List'}
                   label={p.name}
-                  name={'prp_'+p.id}
+                  name={PRPID+p.id}
                   style={{ padding:'5px', width: 'maxContent'}} 
                   rules={getValidatorsToProp(p.pattern)}
                   > 
@@ -710,7 +716,7 @@ const TicketDtl:FC = () => {
                 <Form.Item 
                 key={p.id+'_Date'}
                 label={p.name}
-                name={'prp_'+p.id}
+                name={PRPID+p.id}
                 style={{ padding:'5px', width: 'maxContent'}} 
                 rules={getValidatorsToProp(p.pattern)}
                 > 
@@ -728,7 +734,7 @@ const TicketDtl:FC = () => {
                   <Form.Item 
                   key={p.id+'_Object'}
                   label={p.name}
-                  name={'prp_'+p.id}
+                  name={PRPID+p.id}
                   style={{ padding:'5px', width: 'maxContent'}} 
                   rules={getValidatorsToProp(p.pattern)}
                   > 
@@ -741,9 +747,9 @@ const TicketDtl:FC = () => {
                   placeholder={ p.placeholder }
                   cacheOptions 
                   defaultOptions
-                  loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'prp_'+p.id,  p.code.split(';')[0], 
+                  loadOptions={ (inputValue:string) => promiseOptions(inputValue, PRPID+p.id,  p.code.split(';')[0], 
                   p.code.split(';')[1], p.code.split(';')[2] , true )} 
-                  onChange={(selectChange:any) => selectChanged(selectChange, 'prp_'+p.id)}
+                  onChange={(selectChange:any) => selectChanged(selectChange, PRPID+p.id)}
                   />
                   </Form.Item>
                }

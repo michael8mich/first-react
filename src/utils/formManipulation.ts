@@ -2,6 +2,7 @@ import moment from "moment";
 export const SELECT = "__s__"
 export const FROM = "__f__"
 export const WHERE = "__w__"
+export const PRPID ="_prp_"
 
 export const DATETIMEFORMAT = "DD/MM/YYYY HH:mm"
 function isBoolean(val:any) {
@@ -67,7 +68,7 @@ export const saveFormBuild = (values: any) => {
         if(val instanceof Object )
         values[v]  = val.value
         else
-        values[v]  = val.toString().replace(/'/g, "''") 
+        values[v]  = val.toString().replace(/'/g, "'") 
   })
   
 return values

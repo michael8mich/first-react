@@ -12,6 +12,13 @@
   border: solid 1px lightgray;
   margin-top:10px; 
   width:70%;
+  display: flex;
+  flex-direction: row;
+}
+@media (max-width: 500px) {
+  .customer_info_true {
+    flex-direction: column;
+  }
 }
 .customer_info_false {
   background:#fafafa; 
