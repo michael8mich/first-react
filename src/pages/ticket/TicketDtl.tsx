@@ -53,7 +53,6 @@ const TicketDtl:FC = () => {
   
   const router = useHistory()
   useEffect( () => {
-    debugger
      setTicketId(id)
       if(id==='0')  {
         setRo(false)

@@ -14,7 +14,7 @@ import { TICKET_BY_WEEKDAY, TICKET_OPENED_BY_CATEGORY, TICKET_OPENED_BY_PRIORITY
 import { ReloadOutlined, PlusCircleOutlined, MinusCircleOutlined,EditOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import { useAction } from '../hooks/useAction';
-import { IQuery } from '../models/ISearch';
+import { HOME_FOLDER, IQuery } from '../models/ISearch';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
 import Drd from './DrugAndDrop';
@@ -60,7 +60,7 @@ const Home: FC = () => {
   }, [])
 
 const getQueries = async () => {
-  let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"'   order by seq " , '' )  
+  let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" + HOME_FOLDER + "' order by seq " , '' )  
   let result_query_Arr:IQuery[] =  result_query?.data 
   
   if(result_query_Arr)

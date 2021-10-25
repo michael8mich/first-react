@@ -45,7 +45,7 @@ export const privateRoutes:IRoute[] = [
     {path: RouteNames.USERS, component: Users, exact: true},
     {path: RouteNames.ORG_DTL, component: OrgDtl, exact: false}, 
     {path: RouteNames.ORGS, component: Orgs, exact: true},
-    {path: RouteNames.TICKET_DTL, component: TicketDtl, exact: false}, 
+    {path: RouteNames.TICKET_DTL, component: TicketDtl, exact: true}, 
     {path: RouteNames.TICKETS, component: Tickets,  exact: true},
     {path: RouteNames.TCATEGORY_DTL, component: TCategoryDtl, exact: false}, 
     {path: RouteNames.TCATEGORIES, component: TCategories,  exact: true},

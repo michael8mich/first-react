@@ -29,7 +29,6 @@ const Users:FC = () => {
   const {error, isLoading, users, usersCount } = useTypedSelector(state => state.admin)
   const {selectSmall, queriesCache } = useTypedSelector(state => state.cache)
   const {fetchUsers, setSelectSmall} = useAction()
-
   const [typeSelect, setTypeSelect] = useState('')
 
   useEffect(() => {
@@ -40,7 +39,7 @@ const Users:FC = () => {
     else
     fetchUsers(searchP, where, IUserObjects)
       
-  }, [])
+  }, [queriesCache] )
 
   useEffect(() => {
    console.log('error', error);

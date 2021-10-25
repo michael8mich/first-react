@@ -1,4 +1,4 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import { Layout, Row, Menu, Avatar, Button } from 'antd';
 import { MenuFoldOutlined, UserOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router';
@@ -8,6 +8,9 @@ import { useAction } from '../hooks/useAction';
 import SubMenu from 'antd/lib/menu/SubMenu';
 import { useTranslation } from 'react-i18next';
 import { ITicket, ITicketPrpTpl } from '../models/ITicket';
+import useWindowDimensions from '../hooks/useWindowDimensions';
+import { axiosFn } from '../axios/axios';
+import { IUser, NOT_GROUP_LIST } from '../models/IUser';
 
 
 const Navbar: FC = () => {
@@ -16,10 +19,8 @@ const Navbar: FC = () => {
     const {isAuth, user } = useTypedSelector(state => state.auth)
     const {logout, setSelectedProperty, setProperties, setSelectedTicket} = useAction()
     const {setUser, refreshStorage} = useAction()
-    
     const [collapsed,setCollapsed] =  useState(true)
  
-  
     const toggleCollapsed = () => {
       setCollapsed(!collapsed)
     };
@@ -30,27 +31,28 @@ const Navbar: FC = () => {
       i18n.changeLanguage(len.substring(0,2));
     }
     const createNewTicket = () => {
-      window.location.reload(); 
       setSelectedTicket({} as ITicket)
       setSelectedProperty({} as ITicketPrpTpl)
       setProperties([] as ITicketPrpTpl[])
       router.push(RouteNames.TICKETS + '/0')
     }
+    const { height, width } = useWindowDimensions();
+
     return (
-      <Layout.Header> 
+        <>
         {/* <button onClick={() => window.location.reload()}>Click to reload!</button> */}
           {/* <Row justify="start" style={{width:'100%'}}> */}
           {
            isAuth
               ? 
-              <div style={{display:'flex', justifyContent:'space-between'}}>
-                <div style={{color:'white'}} >
+              <div style={{display:'flex', justifyContent:'space-between',background:'#001529'}} >
+                <div hidden={width<400} style={{color:'rgba(255, 255, 255, 0.65)',background:'#00152'}} >
                 <Avatar size={32} icon={<UserOutlined />} 
                 src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
                 />&nbsp;
                   {user.name} - {user.email} {user.locale === 'heIL' ? 'עברית' : 'English'}
-                </div>
-                <div  style={{ width: '50vh' }} >
+                </div> 
+                <div  style={{ width: '100vh',background:'#001529' }} >
                   <Menu theme="dark" mode="horizontal" 
                   selectable={true}
                   forceSubMenuRender={true}
@@ -82,9 +84,7 @@ const Navbar: FC = () => {
               </div>
               :
               <>
-              <div style={{color:'white'}} >
-               
-              </div>
+          
               <Menu theme="dark" mode="horizontal" selectable={false}>
                     <Menu.Item 
                     onClick={() => router.push(RouteNames.LOGIN)} 
@@ -93,7 +93,7 @@ const Navbar: FC = () => {
               </>  
           }
           {/* </Row> */}
-      </Layout.Header>
+  </>
     )
   }
   

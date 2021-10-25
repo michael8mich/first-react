@@ -1,3 +1,6 @@
+
+export const SIDER_NO_FOLDER = '2D73FF81318525D009623BD3433E696A'
+export const HOME_FOLDER = 'E5D87D8CF5E08C28A4D4D8A1B9DBBBC5'
 export interface SearchPagination {
     _limit: string,
     _page: string,
@@ -33,17 +36,3 @@ export interface SelectOption {
     query: string
   }
 
-// interface Pagination  {
-//   current: number,
-//   pageSize: number
-// }
-// interface Sorter {
-//     column?: ColumnType<any> | undefined;
-//     order?: SortOrder | undefined;
-//     field?: React.Key | readonly React.Key[] | undefined;
-//     columnKey?: React.Key | undefined;
-// }
-// interface SortProperty  {
-//   sortOrder: number,
-//   property: string[]
-// } 

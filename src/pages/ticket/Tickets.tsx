@@ -44,7 +44,7 @@ const Tickets:FC = () => {
     }
     else
     fetchTickets(searchP, where)  
-  }, [])
+  }, [queriesCache])
 
   useEffect(() => {
    console.log('error', error);
