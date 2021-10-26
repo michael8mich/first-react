@@ -1,6 +1,7 @@
 
 export const SIDER_NO_FOLDER = '2D73FF81318525D009623BD3433E696A'
 export const HOME_FOLDER = 'E5D87D8CF5E08C28A4D4D8A1B9DBBBC5'
+export const NEW_SIDER_FOLDER = 'E008D31969C1E1106BB4BC0293B0C876'
 export interface SearchPagination {
     _limit: string,
     _page: string,

@@ -16,7 +16,7 @@ import { axiosFn } from '../axios/axios';
 import { FROM, SELECT, WHERE } from '../utils/formManipulation';
 import { replace } from 'lodash';
 import { relativeTimeRounding } from 'moment';
-import { IQuery, SIDER_NO_FOLDER } from '../models/ISearch';
+import { HOME_FOLDER, IQuery, SIDER_NO_FOLDER } from '../models/ISearch';
 import ReloadOutlined from '@ant-design/icons/lib/icons/ReloadOutlined';
 import moment from 'moment';
 import EditOutlined from '@ant-design/icons/lib/icons/EditOutlined';
@@ -71,21 +71,28 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
       setTeams(teams)
     }
     const [siderQueries, setSiderQueries] = useState([] as IQuery[])
+    const [siderFolders, setSiderFolders] = useState([] as IQuery[])
+    const [siderFoldersQueries, setSiderFoldersQueries] = useState([] as IQuery[])
     const getSiderQueries = async () => {
+      if(!user?.id) return
       setNowTime(moment().format("DD/MM/YY HH:mm:ss"))
-      let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" +SIDER_NO_FOLDER + "' order by seq " , '' )  
+      let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder <> '" +HOME_FOLDER + "' order by seq " , '' )  
       let result_query_Arr:IQuery[] =  result_query?.data 
+      let folders:IQuery[] = result_query_Arr.filter( r => r.factory === 'folder' )
+      setSiderFolders(folders)
+      //result_query_Arr = result_query_Arr.filter( r => r.folder === SIDER_NO_FOLDER )
       console.log('result_query_Arr', result_query_Arr);
       let index = 1
       if(result_query_Arr)
       result_query_Arr.map(async ( q) =>  {
-        
-        let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.query , '' )  
-        q.count = q_result.data[0].cnt
-        q.index = index
-    
-        if(result_query_Arr.length === index)
-        setSiderQueries(result_query_Arr)
+        if(q.factory!=='folder') {
+          let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.query , '' )  
+          q.count = q_result.data[0].cnt
+          q.index = index
+          if(result_query_Arr.length === index)
+          setSiderQueries(result_query_Arr)
+        }
+      
         index++
         
       })
@@ -146,7 +153,7 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
     return (
       <>
       <div className="logo" />
-
+       { !props.collapsed && 
         <div style={{fontSize:'14px',fontWeight:400,color:'white',padding:'10px'}}>
         <Tooltip title={t('refresh')}>
       <ReloadOutlined 
@@ -169,7 +176,7 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
                     </Tooltip>
                 }      
        </div>
-    
+    }
           <Menu theme="dark" 
           // defaultSelectedKeys={['1','2']} 
           mode="inline">
@@ -183,6 +190,58 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
             icon={<DesktopOutlined />}
             >{ t('ticket') + ' ' + t('new') } 
             </Menu.Item>
+            
+
+            <SubMenu key="queries" icon={<FileOutlined />} title={t('queries')}>
+              {   
+                siderQueries.filter(f=>f.folder===SIDER_NO_FOLDER&&f.factory!=='folder').map( q => (
+                  <Menu.Item key={q.id}
+                  onClick={() => goToQuery(q)}
+                  >
+                    {
+                          edit &&
+                          <Tooltip title={t('delete')}>
+                            <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
+                            <DeleteOutlined 
+                            ></DeleteOutlined>
+                            </Popconfirm>
+                          </Tooltip>
+                        }
+                    <Tooltip title={q.name}>
+                        {q.name.toString().substring(0,40)}-{q.count} 
+                    </Tooltip> 
+                  </Menu.Item>
+                ))
+              }
+              {
+                siderFolders.map( f => (
+                  <SubMenu key={f.id} icon={<FileOutlined />} title={f.name}>
+                    {
+                        siderQueries.filter(fq=>fq.folder===f.id).map( q => (
+                          <Menu.Item key={q.id}
+                          onClick={() => goToQuery(q)}
+                          >
+                            {
+                                  edit &&
+                                  <Tooltip title={t('delete')}>
+                                    <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
+                                    <DeleteOutlined 
+                                    ></DeleteOutlined>
+                                    </Popconfirm>
+                                  </Tooltip>
+                                }
+                            <Tooltip title={q.name}>
+                                {q.name.toString().substring(0,40)}-{q.count} 
+                            </Tooltip> 
+                          </Menu.Item>
+                        ))
+                    }
+                     
+                  </SubMenu> 
+                ))
+              }
+            </SubMenu>
+
             <SubMenu key="admin" icon={<SettingOutlined />} title={t('admin')}>
               <Menu.Item key="utils" onClick={() => router.push(RouteNames.UTILS) } >{ t('utils') }</Menu.Item>
               <Menu.Item key="users" onClick={() => router.push(RouteNames.USERS) } >{ t('users') }</Menu.Item>
@@ -198,31 +257,6 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
                 ))
               }
             </SubMenu>
-
-            <SubMenu key="queries" icon={<FileOutlined />} title={t('queries')}>
-              {
-                siderQueries.map( q => (
-                  <Menu.Item key={q.id}
-                  onClick={() => goToQuery(q)}
-                  >
-                    {
-                          edit &&
-                          <Tooltip title={t('delete')}>
-                            <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
-                            <DeleteOutlined 
-                            ></DeleteOutlined>
-                            </Popconfirm>
-                          </Tooltip>
-                        }
-                    <Tooltip title={q.name}>
-                        {q.name.toString().substring(0,40)}-{q.count} 
-                    </Tooltip>
-                    
-                  </Menu.Item>
-                ))
-              }
-            </SubMenu>
-
           </Menu>
     </>      
     )

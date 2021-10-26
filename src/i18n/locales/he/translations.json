@@ -143,6 +143,8 @@
         "query_name": "שם שאילתה",
         "folder_name": "שם תיקיה",
         "sider_no_folder": "סרגל צד ללא תיקיה",
+        "new_sider_folder": "תיקיה חדשה לסרגל הצד",
+        "private_sider_folders": "תיקיות סרגל צד פרטיות",
         "select_files_for_upload": "גרור קבצים לכאן או לחץ כאן כדי להעלות קבצים",
         "upload_files": "העלה קבצים",
         "upload_files_on_new": "קבצים שהועלו באופן אוטומטי לאחר יצירה",

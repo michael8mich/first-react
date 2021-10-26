@@ -144,6 +144,8 @@
         "query_name": "Query Name",
         "folder_name": "Folder Name",
         "sider_no_folder": "Sidebar No folder",
+        "new_sider_folder": "New folder for Sidebar",
+        "private_sider_folders": "Private Sidebar Folders",
         "select_files_for_upload": "Drag files here or click here to upload files",
         "upload_files": "Upload Files",
         "upload_files_on_new": "Files uploaded automatically after creating",
