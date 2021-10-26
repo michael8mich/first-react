@@ -57,6 +57,7 @@
         "job_title": "Job Title",
         "locale": "Language",
         "phone": "Phone",
+        "phones-emails": "Phones/emails",
         "mobile_phone": "Mobile Phone",
         "additional_phone": "Alt Phone",
         "description": "Description",

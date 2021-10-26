@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Col, Divider, Dropdown, Form, Input, Layout, Menu, Modal, Popover, Radio, Row, Table, TablePaginationConfig, Tooltip } from 'antd';
+import { Button, Card, Checkbox, Col, Divider, Dropdown, Form, Input, Layout, Menu, Modal, Pagination, Popover, Radio, Row, Table, TablePaginationConfig, Tooltip } from 'antd';
 import { FilterValue, SorterResult } from 'antd/lib/table/interface';
 import { ColumnsType  } from 'antd/es/table';
 import  {FC, Key, ReactChild, ReactFragment, ReactPortal, useEffect, useState} from 'react';
@@ -20,7 +20,7 @@ import PopoverDtl from './PopoverDtl';
 
 
 const SORT_DEFAULT = 'name asc'
-const LIMIT_DEFAULT = '10'
+const LIMIT_DEFAULT = '25'
 const WHERE_DEFAULT = ' active = 1 '
 
 const Tickets:FC = () => {
@@ -55,7 +55,8 @@ const Tickets:FC = () => {
     }, [ticketsCount]
   )
   const router = useHistory()
-  const [pagination, setPagination] = useState({ current: +searchP._page, pageSize: +searchP._limit, total: ticketsCount} as TablePaginationConfig )
+  const [pagination, setPagination] = useState({ current: +searchP._page, pageSize: +searchP._limit, total: ticketsCount } as TablePaginationConfig )
+  const [sorter, setSorter ] = useState(SORT_DEFAULT)
   const [where, setWhere] = useState(WHERE_DEFAULT as string )
   const [filter, setFilter] = useState({ } as Record<string, FilterValue | null> )
   const [form] = Form.useForm()
@@ -154,8 +155,9 @@ const Tickets:FC = () => {
       >{t('toClose')}</Menu.Item>
     </Menu>
   );
-  function  popover(record:ITicket) 
+  function  popover(event:any, record:ITicket) 
   {
+    //event.preventDefault()
     return (
          <PopoverDtl 
          record={record} 
@@ -174,7 +176,10 @@ const Tickets:FC = () => {
           <Dropdown overlay={() => RightClickMenu(record)} trigger={['contextMenu']} >
           <div 
              onClick={(event) => goToObject(event, record.id  ) } style={{cursor: 'pointer'}}>
-             <Popover content={(event:any)=>popover(record)} title={ t('ticket') + ' ' +  t('number') + ' ' + record.name }  trigger="hover">  
+             <Popover 
+             style={{width:'200px',height:'200px'}}
+             content={(event:any)=>popover(event, record)} 
+             title={ t('ticket') + ' ' +  t('number') + ' ' + record.name }  trigger="hover">  
              <FileSearchOutlined />&nbsp;
              </Popover>
              <Tooltip title={t('priority') + ' ' + record.priority.label}>
@@ -295,19 +300,25 @@ const Tickets:FC = () => {
   ]
 
     const handleTableChange = (pagination: TablePaginationConfig, filter: Record<string, FilterValue | null>, sorter: SorterResult<any> | SorterResult<any>[]   ) => {  
-    setPagination({...pagination, total: ticketsCount})
+    setPagination({...pagination, total: ticketsCount })
     setFilter(filter)
     let page = pagination.current?.toString() || '1'
     let sorter_ = JSON.parse(JSON.stringify(sorter))
+    let pageSize = pagination.pageSize || LIMIT_DEFAULT
     let _offset = 
     sorter_.field ?
     sorter_.field + ' ' + (sorter_.order ? sorter_.order === 'descend' ? ' DESC' : ' ASC' : ' ASC')
     : SORT_DEFAULT
-    
+    setSorter(_offset)
     console.log('_offset',_offset);
-    fetchTickets({...searchP, _page: page, _offset: _offset } , where) 
+    fetchTickets({...searchP, _page: page, _offset: _offset, _limit: pageSize.toString()  } , where) 
   }
-
+  const handlePaginationChange = (page:number, pageSize:number | undefined) => {
+    setPagination({...pagination, total: ticketsCount, pageSize, current:page   })
+    setFilter(filter)
+    let pageSize_ = pageSize || ''
+    fetchTickets({...searchP, _page: page.toString(), _offset: sorter, _limit: pageSize_?.toString()  } , where) 
+  }
    
   const initSelectOptions:any = {
 
@@ -577,7 +588,7 @@ const Tickets:FC = () => {
         name="fast_search" 
         style={{display:'flex', width:'100%', padding:'5px'}} > 
         <Input 
-         style={{ height:'38px', width: '400px'}}
+         style={{ height:'38px', width: '250px'}}
          placeholder={ t('fast_search') }
         />
         </Form.Item>
@@ -596,6 +607,10 @@ const Tickets:FC = () => {
    </Form>
      
       <Row justify="center" align="middle" >
+      <Pagination 
+      {...pagination }
+      onChange={handlePaginationChange}
+      />
       <Table<ITicket> 
        onRow={(record, rowIndex) => {
         return {
@@ -610,7 +625,7 @@ const Tickets:FC = () => {
       bordered
       pagination={pagination}
       onChange={handleTableChange}
-      title={() => <h3>{t('tickets')}</h3> }
+      title={() => <h3>{t('tickets') + ' ' + t('total_count') + ' ' + ticketsCount }</h3> }
       footer={() => t('total_count') + ' ' + ticketsCount}
       style={{width: '100%', padding: '5px'}}
       // scroll={{ x: 1500, y: 700 }}

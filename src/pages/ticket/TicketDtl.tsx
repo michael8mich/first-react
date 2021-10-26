@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker} from 'antd';
+import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover} from 'antd';
 import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +24,7 @@ import { translateObj } from '../../utils/translateObj';
 import ActivityForm from './ActivityForm';
 import UploadFiles from '../../components/admin/UploadFiles';
 import moment from 'moment';
+import PopoverDtl from './PopoverDtl';
 interface RefObject {
   upload_files: (id:string) => void
   get_files: () => void
@@ -362,12 +363,14 @@ const TicketDtl:FC = () => {
     const customerLabel = () =>
     {
         return (
-          <>
+          <span
+          onClick={() => getCustomerInfoFn()}
+          >
           <UserAddOutlined 
           className={classes.customerLabel}
-          onClick={() => getCustomerInfoFn()}
+          
           /> &nbsp;&nbsp;{ t('customer')} 
-          </>
+           </span>
         )
     }
    
@@ -461,7 +464,9 @@ const TicketDtl:FC = () => {
   const  buildCustomer_info_title = () => {
     return (
       <>
-      <h3>  
+      <h3
+      style={{color:'gray'}}
+      >  
       <Avatar size={44} icon={<UserOutlined />} 
            src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
       />
@@ -519,18 +524,23 @@ const TicketDtl:FC = () => {
     setModalVisible(false)
 
   }
-  
+  function  popover(event:any, record:ITicket) 
+  {
+    //event.preventDefault()
+    return (
+         <PopoverDtl 
+         record={record} 
+         />         
+    )
+  }
  
   return (
   <Layout style={{height:"100vh"}}>
-      {error && 
-      <h1>{error}</h1>
-      }
-      {isLoading && 
-       <Spin style={{padding:'20px'}} size="large" />
-      }
-  <Row> 
-       <Card  className={customerInfo ? classes.customer_info_true : classes.customer_info_false}>
+      {error &&  <h1>{error}</h1> }
+      {isLoading && <Spin style={{padding:'20px'}} size="large" />}
+      <Row> 
+      <Col xs={24} xl={selectedTicket?.customer_info && customerInfo ? 18 : 24 } sm={selectedTicket?.customer_info && customerInfo ? 18 : 24} >
+       <Card  >
        <Form
        layout="vertical"
        form={form}
@@ -998,16 +1008,20 @@ const TicketDtl:FC = () => {
     </TabPane>  
     </Tabs>  
    </Form>
-      </Card>
+       </Card>
+      </Col>
+       <Col xs={24} xl={selectedTicket?.customer_info && customerInfo ? 6 : 0 } sm={selectedTicket?.customer_info && customerInfo ? 6 : 0}>
        {
          selectedTicket?.customer_info && customerInfo &&
-         <Card className={classes.customer_info}
+         <Card
          title={buildCustomer_info_title()} 
-         style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px', width:'30%'}}>
+         style={{background:'#fafafa', border:'solid 1px lightgray', borderRadius:'10px', marginLeft:'3px',marginRight:'3px', width:'100%', color:'gray'}}>
          &nbsp;&nbsp;
          <Descriptions
           bordered
-          title={t('customer_info')}
+          contentStyle={{color:'gray'}}
+          labelStyle={{color:'gray'}}
+          title={ (<h4 style={{color:'gray'}}>{t('customer_info')}</h4>) }
           size={'default'}
           extra={<Button type="primary" onClick={()=> router.push(RouteNames.USERS + '/' + selectedTicket.customer_info.id ) }>{t('edit')}</Button>}
           >
@@ -1032,7 +1046,7 @@ const TicketDtl:FC = () => {
             <Descriptions.Item span={3} label={t('primary_group')}>{selectedTicket.customer_info.primary_group.label}</Descriptions.Item>
           }
 
-            <Descriptions.Item span={3} label={t('phone')}>
+            <Descriptions.Item span={3} label={t('phones-emails')}>
             {
             selectedTicket.customer_info.phone && 
             selectedTicket.customer_info.phone 
@@ -1090,8 +1104,7 @@ const TicketDtl:FC = () => {
             </Descriptions.Item>
         </Descriptions>
         <Collapse
-          // defaultActiveKey={['1']}
-          
+          // defaultActiveKey={['1']}  
         > 
           { selectedTicket?.customer_info?.tickets?.length>0 &&
             <Panel header={t('tickets')+' '+selectedTicket?.customer_info?.tickets?.length} key="1" 
@@ -1103,7 +1116,14 @@ const TicketDtl:FC = () => {
                 <List.Item onClick={() => goTo(RouteNames.TICKETS , item.id)}>
                   <List.Item.Meta
                     key={item.id}
-                    avatar={<Avatar >{item.name}</Avatar>}
+                    avatar={
+                      <Popover 
+                      content={(event:any)=>popover(event, item)} 
+                      title={ t('ticket') + ' ' +  t('number') + ' ' + item.name }  trigger="hover">  
+                       <Avatar >{item.name}</Avatar>&nbsp;
+                      </Popover>
+                    }
+                    style={{cursor:'pointer',color:'gray'}}
                     title={item?.status?.label}
                     description={t('team') + ':' + item?.team?.label + ' ' + t('create_date')
                   +':' +  uTd(item?.create_date) 
@@ -1117,9 +1137,11 @@ const TicketDtl:FC = () => {
           {/* <Panel header="This is panel header 2" key="2" >
             <div>2</div>
           </Panel> */}
-          </Collapse>
+        </Collapse>
          </Card>
+         
        }
+      </Col>
        
   </Row>  
   <Modal

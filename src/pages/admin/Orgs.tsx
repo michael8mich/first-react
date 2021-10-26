@@ -115,13 +115,14 @@ const Orgs:FC = () => {
     setFilter(filter)
     let page = pagination.current?.toString() || '1'
     let sorter_ = JSON.parse(JSON.stringify(sorter))
+    let pageSize = pagination.pageSize || LIMIT_DEFAULT
     let _offset = 
     sorter_.field ?
     sorter_.field + ' ' + (sorter_.order ? sorter_.order === 'descend' ? ' DESC' : ' ASC' : ' ASC')
     : SORT_DEFAULT
     
     console.log('_offset',_offset);
-    fetchOrgs({...searchP, _page: page, _offset: _offset } , where) 
+    fetchOrgs({...searchP, _page: page, _offset: _offset, _limit: pageSize.toString()  } , where) 
   }
 
    

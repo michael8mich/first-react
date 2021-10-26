@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ITicket, ITicketLog } from '../../models/ITicket';
 import { axiosFn } from '../../axios/axios';
 import { uTd } from '../../utils/formManipulation';
+import UserAddOutlined from '@ant-design/icons/lib/icons/UserAddOutlined';
 
 const { TextArea } = Input;
 
@@ -31,13 +32,14 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
   const  buildTitle = () =>
   {
     return (
-    <Card >
+    <Card 
+    style={{border:'solid 1px gray'}}
+    >
       <Row key="description">
                <Col key="description_col" xs={24} xl={24} sm={24} lg={24}>
                  <label> {t('description')}</label>
                  <TextArea 
-                 rows={5}
-                 style={{width:'100%', minWidth:'50hv'}}
+                 rows={4}
                  disabled={true}
                  value={props.record.description}
                  />
@@ -47,17 +49,36 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
             last_log_records.length > 0 &&
             last_log_records.map((r:ITicketLog) => 
               (
-              <Row key={r.id} style={{borderBottom:'solid 1px gray'}}>
-               <Col key="1" xs={24} xl={8} sm={8} lg={8} >{r.name}</Col>
-               <Col key="2" xs={24} xl={8} sm={8} lg={8} >{r.last_mod_by_name}</Col>
+              <div key={r.id} style={{borderTop:'solid 1px gray'}}>
+                <Row key={'top_'+r.id}>
+                <Col key="1" xs={24} xl={8} sm={8} lg={8} ><span style={{fontSize:'11px'}}><b>{r.name}</b></span></Col>
+                <Col key="5" xs={24} xl={8} sm={8} lg={8}><span style={{fontSize:'11px'}}>{uTd(r.create_date)}</span> </Col>
+                <Col key="2" xs={24} xl={8} sm={8} lg={8} > <UserAddOutlined /> <span style={{fontSize:'11px'}}>{r.last_mod_by_name}</span></Col>
+                </Row>
+                <Row key={'bottom_'+r.id} >
                {
                  r.old_value ? 
-                 <Col key="3" xs={24} xl={8} sm={8} lg={8}>{ t('from') +': ' + r.old_value + ' ' + t('to') + ': ' + r.new_value}</Col>
+                 <Col key="3" xs={24} xl={24} sm={24} lg={24}>
+                   <TextArea
+                   disabled={true}
+                   value={ t('from') +': ' + r.old_value + ' ' + t('to') + ': ' + r.new_value }
+                   >
+                   </TextArea>
+                </Col>
                  :
-                 <Col key="3" xs={24} xl={8} sm={8} lg={8}> {r.new_value}</Col>
+                 <Col key="4" xs={24} xl={24} sm={24} lg={24} > 
+                  <TextArea
+                  disabled={true}
+                  value={r.new_value}
+                  >
+               
+                 </TextArea>
+                 </Col>
                }
-               <Col key="5" xs={24} xl={8} sm={8} lg={8}>{uTd(r.create_date)}</Col>
-              </Row>
+                </Row>
+               
+              </div>
+
               )
             )
           }
