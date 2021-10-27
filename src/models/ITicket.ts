@@ -79,6 +79,7 @@ export interface ITicketPrpTpl {
     ticket:string
 	value: string
 	valueObj: SelectOption
+    tcode_select: SelectOption
 }
 
 
@@ -91,7 +92,7 @@ export const ITicketCategoryRoFields:string[] = []
 export const ITicketCategoryObjectsMulti:string[] = ['ticket_types']
 
 
-export const ITicketPropertyObjects:string[] = [ 'last_mod_by','factory']
+export const ITicketPropertyObjects:string[] = [ 'last_mod_by','factory','tcode_select']
 export const ITicketPropertyRoFields:string[] = []
 export const ITicketPropertyObjectsMulti:string[] = []
 

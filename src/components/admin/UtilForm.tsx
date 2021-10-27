@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { validators } from '../../utils/validators';
 import { IUtil } from '../../models/admin/IUtil';
 import { useAction } from '../../hooks/useAction';
+import TextArea from 'rc-textarea';
 
 interface UtilFormProps {
   utils: IUtil[],
@@ -116,7 +117,9 @@ const UtilForm: FC<UtilFormProps> = (props) => {
         name="code"
         rules={[]}
       >
-        <Input 
+        <TextArea 
+        rows={5}
+        style={{width:'100%'}}
         value={util.code}
         // prefix={<UnlockOutlined />}
         />

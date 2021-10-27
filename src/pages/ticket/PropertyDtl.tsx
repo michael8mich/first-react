@@ -135,9 +135,44 @@ const onFinish = (values: any) => {
           return selectOptions[name].filter((i:SelectOption) => i.label.toLowerCase().includes(inputValue.toLowerCase()))
         }
     }  
+    const [validationRules, setValidationRules] = useState([{name: 'tcode', value: [] as any}])
+    const setValidators = (name:string) => {
+      let rule = validationRules.find(v=>v.name === name )
+      if(rule)
+      return rule.value
+      else
+      return []
+
+    }
     const selectChanged = async (selectChange:any, name:string) =>
       {
-       setSelectValues({...selectOptions, [name]: selectChange })
+        if(name==='tcode_select') {
+          if(selectChange?.value) {
+            formPrp.setFieldsValue({ code: selectChange?.code }) 
+          }   
+        }
+        if(name==='factory') {
+          if(selectChange?.label === 'Object' || selectChange?.label === 'List') {  
+            validationRules.map(v=> 
+              {
+                   if(v.name==='tcode')
+                   v.value = [validators.required()]
+              }
+              )
+            setValidationRules([...validationRules] )
+          }  
+          else {
+            validationRules.map(v=> 
+              {
+                   if(v.name==='tcode')
+                   v.value = []
+              }
+              )
+              setValidationRules([...validationRules] )
+          }
+          
+        }
+        setSelectValues({...selectOptions, [name]: selectChange })
       }
     return (
     <Card >
@@ -262,11 +297,33 @@ const onFinish = (values: any) => {
       
       </Row>
       <Row  >
-        <Col xs={24} xl={24}  >
+      <Col  xs={24} xl={6}  sm={12}> 
+        <Form.Item 
+          label={t('select') + ' ' + t('tcode')}
+          name="tcode_select"
+          // rules={[validators.required()]}
+        >
+          <AsyncSelect 
+           menuPosition="fixed"
+           isDisabled={ro}
+           isMulti={false}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={t('select') + ' ' + t('tcode')}
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'tcode_select', ' top 20 name as label, id as value , code ', 'utils', " type = 'property_object_type'", false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'tcode_select')}
+           />
+        </Form.Item>      
+      </Col>
+        <Col xs={24} xl={12} sm={12} >
          <Form.Item
            label={ t('tcode') }
            name="code" 
-           style={{ padding:'5px'}} > 
+           style={{ padding:'5px'}} 
+           rules={setValidators('tcode')}
+           > 
            <TextArea 
            rows={3}
             disabled={ro}
