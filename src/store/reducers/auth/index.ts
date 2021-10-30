@@ -3,6 +3,7 @@ import { AuthActionEnum, Authentication, AuthState } from './types';
 
 const initialState = {
     isAuth: false,
+    fromLocation: '',
     user: {} as IUser,
     isLoading: false,
     error: ''
@@ -12,6 +13,8 @@ export default function authReducer(state=initialState, action:Authentication):A
    switch (action.type) {
        case AuthActionEnum.SET_AUTH:
            return {...state, isAuth: action.payload, isLoading: false }
+        case AuthActionEnum.SET_FROM_LOCATION:
+           return {...state, fromLocation: action.payload }    
        case  AuthActionEnum.SET_ERROR:
            return {...state, error: action.payload, isLoading: false  }  
        case  AuthActionEnum.SET_USER:

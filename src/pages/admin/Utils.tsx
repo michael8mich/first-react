@@ -32,6 +32,7 @@ const Utils:FC = () => {
 
   const [typeSelect, setTypeSelect] = useState('')
   function  SubmitUtil(util:IUtil) {
+    debugger
     if(!error) {
        setModalVisible(false)
        fetchUtils(searchP, where)
@@ -256,6 +257,7 @@ const Utils:FC = () => {
            isClearable={true}
            placeholder={ t('type') }
            cacheOptions 
+           autoFocus
            defaultOptions
            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'type',  'distinct type as label, type as value , type as code', 'utils', '', false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'type')}
@@ -278,7 +280,7 @@ const Utils:FC = () => {
      </Row>
      </>
       }
-   </Form>
+       </Form>
      
       <Row justify="center" align="middle" >
       <Table<IUtil> 

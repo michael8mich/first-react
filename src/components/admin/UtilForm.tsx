@@ -36,6 +36,7 @@ const UtilForm: FC<UtilFormProps> = (props) => {
   } as IUtil)
 
   useEffect(() => {
+    setDisableButton(false)
   form.resetFields()
   let util = {} as IUtil
   if(props.selectedId) {
@@ -50,9 +51,10 @@ const UtilForm: FC<UtilFormProps> = (props) => {
   }
   }
     ,[props])
-
+  const [disableButton, setDisableButton] = useState(false)
   const onFinish = async (values: any) => {
     debugger
+    setDisableButton(true)
     console.log('Success:', values);
     console.log('Util:', util);
     values.active = values.active ? 1 : 0
@@ -68,11 +70,13 @@ const UtilForm: FC<UtilFormProps> = (props) => {
       code:'',
       active: 1
     } as IUtil)
-    await createUtil(values)
+    debugger
+    createUtil(values)
     props.submit(values)
   };
   
   const onFinishFailed = (errorInfo: any) => {
+    setDisableButton(false)
     console.log('Failed:', errorInfo);
   };
     return (
@@ -145,9 +149,9 @@ const UtilForm: FC<UtilFormProps> = (props) => {
 
       <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
         <Button type="primary" htmlType="submit" loading={isLoading}
-
+        disabled={disableButton}
         >
-        { t('submit') }
+        { t('submit') } {disableButton}
         </Button>
       </Form.Item>
     </Form>

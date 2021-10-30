@@ -230,104 +230,150 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
             icon={<DesktopOutlined />}
             >{ t('ticket') + ' ' + t('new') } 
             </Menu.Item>
-            
-          <DragDropContext  onDragEnd={onDragEnd} >
-            <Droppable droppableId="droppable">
-              {(provided, snapshot) => (
-            <div {...provided.droppableProps}  
-            ref={provided.innerRef}
-            style={getListStyle(snapshot.isDraggingOver)}
-            key="Droppable_1"
-            >   
-            <SubMenu key="queries" 
-            icon={<FileOutlined />} title={t('queries')}
-            >
-              {   
-                siderQueries.filter(f=>f.folder===SIDER_NO_FOLDER&&f.factory!=='folder').map( (q,index) => (
-                  <Draggable key={'drag_'+q.id} draggableId={q.id}  index={q.index} isDragDisabled={!edit}>
-                  {(provided, snapshot) => (
-                  <div  
-                  key={'div_'+q.id}
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  {...provided.dragHandleProps}
-                    >
-                  <Menu.Item key={q.id}
-                  onClick={() => goToQuery(q)}
-                  >
-                    {
-                          edit &&
-                          <Tooltip title={t('delete')}>
-                            <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
-                            <DeleteOutlined 
-                            ></DeleteOutlined>
-                            </Popconfirm>
-                          </Tooltip>
-                        }
-                    <Tooltip title={q.name}>
-                        {q.name.toString().substring(0,40)}-{q.count}
-                    </Tooltip>
-
-                  </Menu.Item>
-                  </div>
-                  )}
-                  </Draggable>
-                ))
-              }
-              {
-                siderFolders.map( f => (
-                  <SubMenu key={f.id} 
-                    icon= 
-                    {
-                                  edit ?
-                                  <Tooltip title={t('delete')}>
-                                    <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(f.id, true)}>
-                                    <DeleteOutlined 
-                                    ></DeleteOutlined>
-                                    </Popconfirm>
-                                  </Tooltip> :
-                                  <FileOutlined />
-                    }
-                    title={f.name}>
-                  {
-                  siderQueries.filter(fq=>fq.folder===f.id).map( q => (
-                   <Draggable key={'drag_sub'+q.id} draggableId={q.id}  index={q.index} isDragDisabled={!edit}>
-                  {(index, snapshot) => (
-                  <div style={{paddingRight:'15px'}}  key={'div_'+f.id}
-                  ref={index.innerRef}
-                  {...index.draggableProps}
-                  {...index.dragHandleProps}
-                    >
-                          <Menu.Item key={q.id}
-                          onClick={() => goToQuery(q)}
-                          >
-                            {
-                                  edit &&
-                                  <Tooltip title={t('delete')}>
-                                    <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
-                                    <DeleteOutlined 
-                                    ></DeleteOutlined>
-                                    </Popconfirm>
-                                  </Tooltip>
-                                }
-                            <Tooltip title={q.name}>
-                                {q.name.toString().substring(0,40)}-{q.count} 
-                            </Tooltip> 
-                          </Menu.Item>
-                             </div>
-                             )}
-                  </Draggable>
-                        ))
-                    } 
-                  </SubMenu> 
-               
-                ))
-              }
-            </SubMenu>
-            </div>  
-             )}
-            </Droppable>
-          </DragDropContext>
+           {
+             edit ?   
+            <> 
+            <DragDropContext  onDragEnd={onDragEnd} >
+             <Droppable droppableId="droppable">
+               {(provided, snapshot) => (
+             <div {...provided.droppableProps}  
+             ref={provided.innerRef}
+             style={getListStyle(snapshot.isDraggingOver)}
+             key="Droppable_1"
+             >   
+             <SubMenu key="queries" 
+             icon={<FileOutlined />} title={t('queries')}
+             >
+               {   
+                 siderQueries.filter(f=>f.folder===SIDER_NO_FOLDER&&f.factory!=='folder').map( (q,index) => (
+                   <Draggable key={'drag_'+q.id} draggableId={q.id}  index={q.index} isDragDisabled={!edit}>
+                   {(provided, snapshot) => (
+                   <div  
+                   key={'div_'+q.id}
+                   ref={provided.innerRef}
+                   {...provided.draggableProps}
+                   {...provided.dragHandleProps}
+                     >
+                   <Menu.Item key={q.id}
+                   onClick={() => goToQuery(q)}
+                   >
+                     {
+                           edit &&
+                           <Tooltip title={t('delete')}>
+                             <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
+                             <DeleteOutlined 
+                             ></DeleteOutlined>
+                             </Popconfirm>
+                           </Tooltip>
+                         }
+                     <Tooltip title={q.name}>
+                         {q.name.toString().substring(0,40)}-{q.count}
+                     </Tooltip>
+ 
+                   </Menu.Item>
+                   </div>
+                   )}
+                   </Draggable>
+                 ))
+               }
+               {
+                 siderFolders.map( f => (
+                   <SubMenu key={f.id} 
+                     icon= 
+                     {
+                                   edit ?
+                                   <Tooltip title={t('delete')}>
+                                     <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(f.id, true)}>
+                                     <DeleteOutlined 
+                                     ></DeleteOutlined>
+                                     </Popconfirm>
+                                   </Tooltip> :
+                                   <FileOutlined />
+                     }
+                     title={f.name}>
+                   {
+                   siderQueries.filter(fq=>fq.folder===f.id).map( q => (
+                    <Draggable key={'drag_sub'+q.id} draggableId={q.id}  index={q.index} isDragDisabled={!edit}>
+                   {(index, snapshot) => (
+                   <div style={{paddingRight:'15px'}}  key={'div_'+f.id}
+                   ref={index.innerRef}
+                   {...index.draggableProps}
+                   {...index.dragHandleProps}
+                     >
+                           <Menu.Item key={q.id}
+                           onClick={() => goToQuery(q)}
+                           >
+                             {
+                                   edit &&
+                                   <Tooltip title={t('delete')}>
+                                     <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
+                                     <DeleteOutlined 
+                                     ></DeleteOutlined>
+                                     </Popconfirm>
+                                   </Tooltip>
+                                 }
+                             <Tooltip title={q.name}>
+                                 {q.name.toString().substring(0,40)}-{q.count} 
+                             </Tooltip> 
+                           </Menu.Item>
+                              </div>
+                              )}
+                   </Draggable>
+                         ))
+                     } 
+                   </SubMenu> 
+                
+                 ))
+               }
+             </SubMenu>
+             </div>  
+              )}
+             </Droppable>
+           </DragDropContext> 
+           </> :
+           <>
+       <SubMenu key="queries" 
+             icon={<FileOutlined />} title={t('queries')}
+             >
+               {   
+                 siderQueries.filter(f=>f.folder===SIDER_NO_FOLDER&&f.factory!=='folder').map( (q,index) => (
+                   <Menu.Item key={q.id}
+                   onClick={() => goToQuery(q)}
+                   >
+                     <Tooltip title={q.name}>
+                         {q.name.toString().substring(0,40)}-{q.count}
+                     </Tooltip>
+ 
+                   </Menu.Item>
+                 ))
+               }
+               {
+                 siderFolders.map( f => (
+                   <SubMenu key={f.id} 
+                     icon= 
+                     {
+                                   <FileOutlined />
+                     }
+                     title={f.name}>
+                   {
+                   siderQueries.filter(fq=>fq.folder===f.id).map( q => (
+                           <Menu.Item key={q.id}
+                           onClick={() => goToQuery(q)}
+                           >
+                             <Tooltip title={q.name}>
+                                 {q.name.toString().substring(0,40)}-{q.count} 
+                             </Tooltip> 
+                           </Menu.Item>
+                         ))
+                     } 
+                   </SubMenu> 
+                
+                 ))
+               }
+             </SubMenu>
+           </>
+           } 
+      
 
             <SubMenu key="admin" icon={<SettingOutlined />} title={t('admin')}>
               <Menu.Item key="utils" onClick={() => router.push(RouteNames.UTILS) } >{ t('utils') }</Menu.Item>

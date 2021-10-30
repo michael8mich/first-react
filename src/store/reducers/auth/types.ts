@@ -2,12 +2,14 @@ import { IUser } from './../../../models/IUser';
 export interface AuthState {
     isAuth: boolean,
     user: IUser,
+    fromLocation: string,
     isLoading: boolean,
     error: string
 }
 
 export enum AuthActionEnum {
     SET_AUTH = "SET_AUTH",
+    SET_FROM_LOCATION = "SET_FROM_LOCATION",
     SET_ERROR = "SET_ERROR",
     SET_USER = "SET_USER",
     SET_IS_LOADING = "SET_IS_LOADING"
@@ -16,6 +18,11 @@ export enum AuthActionEnum {
 export interface SetAuthAction {
     type: AuthActionEnum.SET_AUTH,
     payload: boolean
+}
+
+export interface SetFromLocationAction {
+    type: AuthActionEnum.SET_FROM_LOCATION,
+    payload: string
 }
 
 export interface SetErrorAction {
@@ -35,6 +42,7 @@ export interface SetIsLoadingAction {
 
 export type Authentication = 
 SetAuthAction |
+SetFromLocationAction | 
 SetErrorAction | 
 SetUserAction | 
 SetIsLoadingAction

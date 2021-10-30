@@ -110,10 +110,7 @@ export const AdminActionCreators = {
               dispatch(AdminActionCreators.setIsError(i18n.t('data_problem'))) 
               console.log('Real Error', responseNew.data["error"]);
               
-          } 
-  
-        dispatch(AdminActionCreators.IsLoading(true))
-        const response = await  axiosFn("post", util_, '*', 'utils', "id" , ''  )  
+          }
         }  
       
        } catch (e) {

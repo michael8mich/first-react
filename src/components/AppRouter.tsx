@@ -5,10 +5,10 @@ import { publicRoutes, privateRoutes, RouteNames } from '../router/index'
 
 
 const AppRouter = () => {
-    const {isAuth} = useTypedSelector(state => state.auth)
+    const {isAuth, fromLocation} = useTypedSelector(state => state.auth)
     return ( 
-        isAuth ?
-             <Switch>
+        isAuth || true ?
+             <Switch >
                   { privateRoutes.map( (r,index) => 
                   <Route 
                   key={index} 
@@ -17,6 +17,7 @@ const AppRouter = () => {
                   component={r.component} 
                   />
                   )}
+                  <Redirect to={fromLocation}  />
                   <Redirect to={RouteNames.HOME}  />
               </Switch>
                   :

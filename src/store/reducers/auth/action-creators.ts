@@ -2,7 +2,7 @@ import { TFunction } from 'i18next';
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
 import { IUserObjects, IUserObjectsMulti, IUser } from './../../../models/IUser';
-import { AuthActionEnum, SetAuthAction, SetErrorAction, SetIsLoadingAction, SetUserAction } from './types';
+import { AuthActionEnum, SetAuthAction, SetErrorAction, SetFromLocationAction, SetIsLoadingAction, SetUserAction } from './types';
 import i18n from "i18next";
 import { AdminActionCreators } from '../admin/action-creators';
 import { translateObj } from '../../../utils/translateObj';
@@ -15,9 +15,10 @@ export const AuthActionCreators =  {
  
     setUser: (user:IUser): SetUserAction => ({type:AuthActionEnum.SET_USER, payload: user}),
     setIsAuth: (auth:boolean): SetAuthAction => ({type:AuthActionEnum.SET_AUTH, payload: auth}),
+    setFromLocation: (fromLocation:string): SetFromLocationAction => ({type:AuthActionEnum.SET_FROM_LOCATION, payload: fromLocation}),
     setIsError: (error:string): SetErrorAction => ({type:AuthActionEnum.SET_ERROR, payload: error}),
     IsLoading: (loading:boolean): SetIsLoadingAction => ({type:AuthActionEnum.SET_IS_LOADING, payload: loading}),
-    login: (username: string, password: string, remember: boolean ) => async (dispatch: AppDispatch ) => {
+    login: (username: string, password: string, remember: boolean, fromLocation:string ='' ) => async (dispatch: AppDispatch ) => {
 
         try {
         dispatch(AuthActionCreators.IsLoading(true))
@@ -40,6 +41,7 @@ export const AuthActionCreators =  {
              let user:IUser = users_[0]
              dispatch(AuthActionCreators.setUser(user))
              dispatch(AuthActionCreators.setIsAuth(true))
+
              i18n.changeLanguage(user.locale.substring(0,2)); 
              IUserObjectsMulti.map( async  m=> {
                let first = ''

@@ -30,6 +30,11 @@ const Home: FC = () => {
   const [edit, setEdit] =  useState(false) 
   const {setQueriesCache} = useAction()
   const router = useHistory()
+  // useEffect(() => {
+  //   debugger
+  //   console.log(router);
+    
+  // }, [])
   // Export Image
   const downloadImage = () => {
     chart?.downloadImage();

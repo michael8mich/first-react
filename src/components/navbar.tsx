@@ -37,7 +37,6 @@ const Navbar: FC = () => {
       router.push(RouteNames.TICKETS + '/0')
     }
     const { height, width } = useWindowDimensions();
-
     return (
         <>
         {/* <button onClick={() => window.location.reload()}>Click to reload!</button> */}

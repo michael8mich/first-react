@@ -620,6 +620,7 @@ const TicketDtl:FC = () => {
            > 
            
            <AsyncSelect 
+           autoFocus={true}
            menuPosition="fixed"
            isDisabled={ro}
            isMulti={false}
