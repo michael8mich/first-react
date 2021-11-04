@@ -284,6 +284,18 @@ export const AdminActionCreators = {
       }
 
      },
+     changeDefaultRole: (is_default:any[] ) => async (dispatch: AppDispatch) => {
+      try {   
+        is_default.map(async v => {
+          const response = await  axiosFn("put", {is_default:v.is_default}, '*', 'util_parent', "id" , v.code  )        
+        })
+       } catch (e) {
+       dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
+      } finally {
+        dispatch(AdminActionCreators.IsLoading(false))
+      }
+
+     },
     fetchUser: (id: string) => async (dispatch: AppDispatch) => {
       try {
        dispatch(AdminActionCreators.setIsError(''))
@@ -303,7 +315,7 @@ export const AdminActionCreators = {
                let second = ''
                let third = ""
               if(m==='roles') {  
-                first = ' util as value, name as label, id as code '
+                first = ' util as value, name as label, id as code, is_default '
                 second = 'V_util_parent'
                 third = " parent = '" + id + "'"
               } 

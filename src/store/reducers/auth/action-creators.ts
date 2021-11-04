@@ -2,10 +2,11 @@ import { TFunction } from 'i18next';
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
 import { IUserObjects, IUserObjectsMulti, IUser } from './../../../models/IUser';
-import { AuthActionEnum, SetAuthAction, SetErrorAction, SetFromLocationAction, SetIsLoadingAction, SetUserAction } from './types';
+import { AuthActionEnum, SetAuthAction, SetDefaultRoleAction, SetErrorAction, SetFromLocationAction, SetIsLoadingAction, SetSiderQueriesAction, SetUserAction } from './types';
 import i18n from "i18next";
 import { AdminActionCreators } from '../admin/action-creators';
 import { translateObj } from '../../../utils/translateObj';
+import { IQuery, SelectOption } from '../../../models/ISearch';
 
 
 
@@ -18,6 +19,8 @@ export const AuthActionCreators =  {
     setFromLocation: (fromLocation:string): SetFromLocationAction => ({type:AuthActionEnum.SET_FROM_LOCATION, payload: fromLocation}),
     setIsError: (error:string): SetErrorAction => ({type:AuthActionEnum.SET_ERROR, payload: error}),
     IsLoading: (loading:boolean): SetIsLoadingAction => ({type:AuthActionEnum.SET_IS_LOADING, payload: loading}),
+    setSiderQueries: (siderQueries:IQuery[]): SetSiderQueriesAction => ({type:AuthActionEnum.SET_SIDER_QUERIES, payload: siderQueries}),
+    setDefaultRole: (defaultRole:SelectOption): SetDefaultRoleAction => ({type:AuthActionEnum.SET_DEFAULT_ROLE, payload: defaultRole}),
     login: (username: string, password: string, remember: boolean, fromLocation:string ='' ) => async (dispatch: AppDispatch ) => {
 
         try {
@@ -48,7 +51,7 @@ export const AuthActionCreators =  {
                let second = ''
                let third = ""
               if(m==='roles') {  
-                first = ' util as value, name as label, id as code '
+                first = ' util as value, name as label, is_default as code '
                 second = 'V_util_parent'
                 third = " parent = '" + user.id + "'"
               } 

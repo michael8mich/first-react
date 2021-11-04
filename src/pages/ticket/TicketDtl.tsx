@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover} from 'antd';
+import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover, Badge} from 'antd';
 import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,7 @@ import { Link, NavLink, useHistory, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { getValidatorsToProp, validators } from '../../utils/validators';
 import classes from './TicketDtl.module.css'
-import { ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
+import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
 import { ColumnsType } from 'antd/lib/table';
 import { TabsPosition } from 'antd/lib/tabs';
 import { RouteNames } from '../../router';
@@ -25,6 +25,7 @@ import ActivityForm from './ActivityForm';
 import UploadFiles from '../../components/admin/UploadFiles';
 import moment from 'moment';
 import PopoverDtl from './PopoverDtl';
+import { P } from '@antv/g2plot';
 interface RefObject {
   upload_files: (id:string) => void
   get_files: () => void
@@ -133,16 +134,48 @@ const TicketDtl:FC = () => {
       }
      }
    }, [selectedTicket?.id])
-
+   const hideProp = (ticketPrp_:ITicketPrpTpl[]) => {
+    let a:ITicketPrpTpl[] = JSON.parse(JSON.stringify(ticketPrp_))
+    a.map(pr => {
+     pr.visible = 1 
+     let dependence = pr.dependence || ''
+     if(dependence.split(':').length > 1 )
+     {
+      a.map(p => {
+         let dependenceArr: string[] = dependence.split(':')
+         if(dependenceArr.length > 1 ){
+           if(+p.sequence === +dependenceArr[0] )
+           {
+             let value = p.value || ''
+             let fValue = form.getFieldValue(PRPID+p.id) 
+             fValue = fValue || ''
+             if(fValue instanceof Object )
+             {
+              fValue = fValue.label
+             }
+             if(fValue ) value = fValue
+             
+             if(value !== dependenceArr[1]) {
+               pr.visible = 0
+             }
+           }
+         }
+       })
+     }
+   })
+   return a
+   }
    useEffect(() => {
      if(selectedTicket.ticketProperties){
-      setTicketPrp(selectedTicket.ticketProperties)
+      setTicketPrp(hideProp(selectedTicket.ticketProperties))
      } 
   }, [selectedTicket.ticketProperties])
 
   useEffect(() => {
-    if(properties)
-    setTicketPrp(properties)
+    if(properties) {
+    setTicketPrp(hideProp(properties))
+    }
+    
  }, [properties])
 
   useEffect(() => {
@@ -238,7 +271,8 @@ const TicketDtl:FC = () => {
              if(name === 'team')
              setTeamArr(response.data)
            }
-      }     
+    }
+       
      const selectChanged = async (selectChange:any, name:string) =>
       {
        if(name==='customer') {
@@ -299,6 +333,7 @@ const TicketDtl:FC = () => {
      let val = prp_val.find(v=> v.id === p.id) || ''
      let value
      let valueObj
+     val = val || {id:"", value:""}
      val.value = val.value || ''
       if(val.value instanceof moment )
       {
@@ -319,7 +354,6 @@ const TicketDtl:FC = () => {
 
 
     const onFinish = async (values: any) => {
-      debugger 
       values = form.getFieldsValue()
       const values_ = {...values}
       ITicketRoFields.map(r => {
@@ -363,14 +397,24 @@ const TicketDtl:FC = () => {
     const customerLabel = () =>
     {
         return (
+          <>
           <span
           onClick={() => getCustomerInfoFn()}
           >
+          
           <UserAddOutlined 
           className={classes.customerLabel}
           
-          /> &nbsp;&nbsp;{ t('customer')} 
+          /> 
+          
+          &nbsp;&nbsp;{ t('customer')} 
            </span>
+            &nbsp;&nbsp;
+           <Badge 
+           size="small"
+           count={selectedTicket?.customer_info?.tickets?.length}>
+           </Badge>
+           </>
         )
     }
    
@@ -533,7 +577,27 @@ const TicketDtl:FC = () => {
          />         
     )
   }
+  const [prpHideArr, setPrpHideArr] = useState([] as INameBoolValue[])  
  
+  const changeCol = () =>  {
+    setTicketPrp(hideProp(ticketPrp)) 
+  }
+  const setDefaultPrpValue = (value:string) => {
+    if(ticketId === '0' && value )
+    {
+      console.log(value);
+      try {
+      let new_value = JSON.parse(value)
+      console.log(new_value);
+      return new_value
+      } catch (e:any) {
+        console.log(e);
+      }
+      
+      
+    }
+    return ''
+  }
   return (
   <Layout style={{height:"100vh"}}>
       {error &&  <h1>{error}</h1> }
@@ -684,8 +748,13 @@ const TicketDtl:FC = () => {
         <Row  >
         {
           ticketPrp.map(p => (
-            <Col xs={24} xl={p.width} key={p.id} >
-              
+            <>
+            {
+              p.visible === 1 &&
+              <Col xs={24} xl={p.width} key={p.id} 
+              >
+        
+       
                {
                    p.factory.label === 'Text' &&
                    <Form.Item 
@@ -694,6 +763,7 @@ const TicketDtl:FC = () => {
                    name={PRPID+p.id}
                    style={{ padding:'5px', width: 'maxContent'}} 
                    rules={getValidatorsToProp(p.pattern)}
+                   initialValue={ticketId === '0' && p.defaultValue && p.defaultValue}
                    > 
                   <Input
                   disabled={ro}
@@ -709,9 +779,14 @@ const TicketDtl:FC = () => {
                   name={PRPID+p.id}
                   style={{ padding:'5px', width: 'maxContent'}} 
                   rules={getValidatorsToProp(p.pattern)}
+                  initialValue={ticketId === '0' && p.defaultValue && p.defaultValue}
                   > 
                  
-                  <Select disabled={ro}>
+                  <Select disabled={ro} 
+                  size="large"
+                  style={{height:'35px!important'}}
+                    onChange={() => changeCol()}
+                  >
                       {
                        p.code.split(',').map(o=>
                           (
@@ -729,6 +804,7 @@ const TicketDtl:FC = () => {
                 name={PRPID+p.id}
                 style={{ padding:'5px', width: 'maxContent'}} 
                 rules={getValidatorsToProp(p.pattern)}
+                initialValue={ticketId === '0' && p.defaultValue && p.defaultValue}
                 > 
                  <DatePicker 
                  format={DATETIMEFORMAT}
@@ -747,6 +823,7 @@ const TicketDtl:FC = () => {
                   name={PRPID+p.id}
                   style={{ padding:'5px', width: 'maxContent'}} 
                   rules={getValidatorsToProp(p.pattern)}
+                  initialValue={  {label: ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? p.defaultValue.split(':')[0] : '', value: ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? p.defaultValue.split(':')[1] : ''} }
                   > 
                   <AsyncSelect 
                   menuPosition="fixed"
@@ -759,11 +836,13 @@ const TicketDtl:FC = () => {
                   defaultOptions
                   loadOptions={ (inputValue:string) => promiseOptions(inputValue, PRPID+p.id,  p.code.split(';')[0], 
                   p.code.split(';')[1], p.code.split(';')[2] , true )} 
-                  onChange={(selectChange:any) => selectChanged(selectChange, PRPID+p.id)}
+                  onChange={(selectChange:any) => {selectChanged(selectChange, PRPID+p.id);changeCol()}}
                   />
                   </Form.Item>
                }
            </Col>
+              }
+              </>
           )
             )
         }  
@@ -1144,7 +1223,7 @@ const TicketDtl:FC = () => {
        }
       </Col>
        
-  </Row>  
+     </Row>  
   <Modal
        title={t(activityType) + ' ' +  t('ticket') + ' ' + t('number') + ' '  + selectedTicket?.name }
        footer={null}

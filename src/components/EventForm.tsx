@@ -79,6 +79,7 @@ const EventForm: FC<EventFormProps> = (props) => {
         rules={[{ required: true, message: t('err_req_guest') }]}
       >
         <Select 
+         size="large"
          value="guest"
         >
           {
@@ -96,7 +97,6 @@ const EventForm: FC<EventFormProps> = (props) => {
          
         </Select>
       </Form.Item>
-
       <Form.Item
         label={t('date')}
         name="event_dt"

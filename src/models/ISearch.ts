@@ -29,8 +29,9 @@ export interface SelectOption {
 	last_mod_by: string
 	last_mod_dt: string
 	create_date: string
-  count:number
+  count:string
   index:number
+  key?:string
   }
   export interface IQueriesCache {
     factory: string

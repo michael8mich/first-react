@@ -27,6 +27,7 @@ export interface ITicket {
     attachments?: number
     ticketProperties?: ITicketPrpTpl[]
     ticketPropertiesCount?: number
+    customer_open_tickets?: number
 }
 export interface ITicketLog {
     id: string
@@ -80,8 +81,13 @@ export interface ITicketPrpTpl {
 	value: string
 	valueObj: SelectOption
     tcode_select: SelectOption
+    dependence: string
+    visible: number 
 }
-
+export interface INameBoolValue {
+    name: string
+    value: boolean
+}
 
 export const ITicketObjects:string[] = ['status','customer', 'ticket_type', 'priority','assignee','team', 'urgency', 'last_mod_by', 'log_agent', 'category']
 export const ITicketRoFields:string[] = ['active']
@@ -119,4 +125,11 @@ export const PRIORITY_LOW    =  {value:'4B099705C755214605B23F6CEC46D732', label
 export const URGENCY_HIGH    =  {value:'EDC864A88A6F54B180F0F00ECF51698B', label: 'מערכתית', code: '1'}
 export const URGENCY_MEDIUM  =  {value:'B5307E628146CF695CE1BD6409A73B9C', label: 'איזורית', code: '2'}
 export const URGENCY_LOW     =  {value:'21F6F911FF94FADDE3660D771B73D844', label: 'פרטניט', code: '3'}
+
+
+
+export const PRP_FACTORY_OBJECT =  'E14B10CAFD57AD9F72D08DD5F646FC53'
+export const PRP_FACTORY_DATE =  '2C73B5FBF41C4CA07DB83022FA9B9272'
+export const PRP_FACTORY_LIST =  '78BE32E17B6C1B2147D35FDF5086BFE7'
+export const PRP_FACTORY_TEXT =  '687F2052E72F59FC6FAE9F66AC0A2F53'
 

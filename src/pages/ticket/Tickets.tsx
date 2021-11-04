@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Col, Divider, Dropdown, Form, Input, Layout, Menu, Modal, Pagination, Popover, Radio, Row, Table, TablePaginationConfig, Tooltip } from 'antd';
+import { Badge, Button, Card, Checkbox, Col, Divider, Dropdown, Form, Input, Layout, Menu, Modal, Pagination, Popover, Radio, Row, Table, TablePaginationConfig, Tooltip } from 'antd';
 import { FilterValue, SorterResult } from 'antd/lib/table/interface';
 import { ColumnsType  } from 'antd/es/table';
 import  {FC, Key, ReactChild, ReactFragment, ReactPortal, useEffect, useState} from 'react';
@@ -13,7 +13,7 @@ import { FilterOutlined, ExclamationCircleOutlined, UsergroupAddOutlined, PaperC
 import { useHistory, useParams } from 'react-router-dom';
 import { RouteNames } from '../../router';
 import { ITicketObjects, ITicket, PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM, URGENCY_LOW, STATUS_CLOSE, ITicketLog, ITicketPrpTpl } from '../../models/ITicket';
-import { ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
+import { ANALYST_DTP, ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
 import ActivityForm from './ActivityForm';
 import QueryBuild from '../../components/QueryBuild';
 import PopoverDtl from './PopoverDtl';
@@ -33,17 +33,25 @@ const Tickets:FC = () => {
   const {error, isLoading, tickets, ticketsCount } = useTypedSelector(state => state.ticket)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {fetchTickets, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties} = useAction()
-  const {user } = useTypedSelector(state => state.auth)
+  const {user, defaultRole } = useTypedSelector(state => state.auth)
   const [typeSelect, setTypeSelect] = useState('')
   const queryParams = new URLSearchParams(window.location.hash);
   const {queriesCache } = useTypedSelector(state => state.cache)
+
+  const dataPartition = (where: string) => {
+   if(defaultRole)
+   if(defaultRole.label !== 'Admin') {
+    return ANALYST_DTP.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
+   }
+   return where
+  }
   useEffect(() => {
     if(Object.keys(queriesCache).find( k=> k === 'ticket')) {
       let arr:any = {...queriesCache}
-      fetchTickets(searchP, arr['ticket'])
+      fetchTickets(searchP, dataPartition(arr['ticket']))
     }
     else
-    fetchTickets(searchP, where)  
+    fetchTickets(searchP, dataPartition(where))  
   }, [queriesCache])
 
   useEffect(() => {
@@ -203,6 +211,13 @@ const Tickets:FC = () => {
                <>
                </>
              }
+             {
+               record?.customer_open_tickets !== 0 &&
+               <Badge 
+                size="small"
+                count={record?.customer_open_tickets}>
+                </Badge>
+             }
           </div>
           </Dropdown>
         );}
@@ -311,13 +326,13 @@ const Tickets:FC = () => {
     : SORT_DEFAULT
     setSorter(_offset)
     console.log('_offset',_offset);
-    fetchTickets({...searchP, _page: page, _offset: _offset, _limit: pageSize.toString()  } , where) 
+    fetchTickets({...searchP, _page: page, _offset: _offset, _limit: pageSize.toString()  } , dataPartition(where)) 
   }
   const handlePaginationChange = (page:number, pageSize:number | undefined) => {
     setPagination({...pagination, total: ticketsCount, pageSize, current:page   })
     setFilter(filter)
     let pageSize_ = pageSize || ''
-    fetchTickets({...searchP, _page: page.toString(), _offset: sorter, _limit: pageSize_?.toString()  } , where) 
+    fetchTickets({...searchP, _page: page.toString(), _offset: sorter, _limit: pageSize_?.toString()  } , dataPartition(where)) 
   }
    
   const initSelectOptions:any = {
@@ -376,7 +391,7 @@ const Tickets:FC = () => {
     const onFinish = async (values: any) => { 
       console.log('Success:', values);
       let where_ = searchFormWhereBuild(values, fastSearchArray)
-      fetchTickets({...searchP } , where_)
+      fetchTickets({...searchP } , dataPartition(where_))
       setWhere(where_)
       
     }

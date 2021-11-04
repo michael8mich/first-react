@@ -13,6 +13,7 @@ import TCategoryDtl from '../pages/ticket/admin/TCategoryDtl';
 import TicketDtl from '../pages/ticket/TicketDtl';
 import Tickets from '../pages/ticket/Tickets';
 import Dashboard from '../charts/dashbord';
+import Empty from '../components/Empty';
 
 
 export interface IRoute {
@@ -34,7 +35,8 @@ export enum RouteNames {
     TICKET_DTL= '/tickets/:id',
     TCATEGORIES = '/tcategories',
     TCATEGORY_DTL= '/tcategories/:id',
-    DASHBOARD= '/dashboard'
+    DASHBOARD= '/dashboard',
+    EMPTY='/empty'
 }
 
 export const privateRoutes:IRoute[] = [
@@ -50,7 +52,8 @@ export const privateRoutes:IRoute[] = [
     {path: RouteNames.TCATEGORY_DTL, component: TCategoryDtl, exact: false}, 
     {path: RouteNames.TCATEGORIES, component: TCategories,  exact: true},
     {path: RouteNames.DASHBOARD, component: Dashboard, exact: true},
-   
+    {path: RouteNames.EMPTY, component: Empty, exact: true},
+    
      
 ]
 export const publicRoutes:IRoute[] = [

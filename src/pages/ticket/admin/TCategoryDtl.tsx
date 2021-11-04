@@ -20,7 +20,7 @@ import { RouteNames } from '../../../router';
 import UserAddOutlined from '@ant-design/icons/lib/icons/UserAddOutlined';
 import Avatar from 'antd/lib/avatar/avatar';
 import { getScrollTop } from 'react-select/dist/declarations/src/utils';
-import PropertyDtl from '../PropertyDtl';
+import PropertyDtl from './PropertyDtl';
 import EditOutlined from '@ant-design/icons/lib/icons/EditOutlined';
 const { TabPane } = Tabs;
 const { Panel } = Collapse;

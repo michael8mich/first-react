@@ -65,6 +65,7 @@
         "delete": "למחוק",
         "are_you_sure": "בטוח שאת/ה רוצה למחוק פריט זה ?",
         "are_you_sure_approve": "בטוח שאת/ה רוצה לאשר ?",
+        "are_you_sure_rebuild": "האם אתה בטוח שברצונך לבנות מחדש פריט זה?",
         "create_new": "צור חדש/ה",
         "update": "עדכון",
         "edit":"עריכה",
@@ -165,9 +166,13 @@
         "no": "לא",
         "actions": "פעולות",
         "tcode": "קוד לבניהת מאפיין",
+        "dependence": "תלות",
         "sequence_exist": "Sequence Exist",
         "new": "חדש/ה",
         "select": "בחר",
+        "query_template_user": "משתמש תבנית",
+        "notify": "הודע",
+        "is_default": "ברירת מחדל",
 
 
         "TICKET_OPENED_BY_TEAM": "פניות פעילות לפי צוות",

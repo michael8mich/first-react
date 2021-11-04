@@ -1,14 +1,14 @@
 import {Form, Input, Button, Select, DatePicker,TimePicker, Row, Col, Card, Checkbox}  from 'antd';
 import  {FC, useEffect, useState} from 'react';
 import { useTranslation } from 'react-i18next';
-import { ITicket, ITicketCategory, ITicketLog, ITicketPrpTpl } from '../../models/ITicket';
-import { axiosFn } from '../../axios/axios';
-import { saveFormBuild, uTd } from '../../utils/formManipulation';
-import { useTypedSelector } from '../../hooks/useTypedSelector';
-import { useAction } from '../../hooks/useAction';
-import { validators } from '../../utils/validators';
+import { ITicket, ITicketCategory, ITicketLog, ITicketPrpTpl, PRP_FACTORY_LIST, PRP_FACTORY_OBJECT } from '../../../models/ITicket';
+import { axiosFn } from '../../../axios/axios';
+import { saveFormBuild, uTd } from '../../../utils/formManipulation';
+import { useTypedSelector } from '../../../hooks/useTypedSelector';
+import { useAction } from '../../../hooks/useAction';
+import { validators } from '../../../utils/validators';
 import AsyncSelect from 'react-select/async';
-import { SelectOption } from '../../models/ISearch';
+import { SelectOption } from '../../../models/ISearch';
 
 
 const { TextArea } = Input;
@@ -174,6 +174,13 @@ const onFinish = (values: any) => {
         }
         setSelectValues({...selectOptions, [name]: selectChange })
       }
+    function  isNeedCode() {
+      let v = formPrp.getFieldsValue()
+      if(v?.factory?.value)
+      return v.factory.value === PRP_FACTORY_OBJECT || v.factory.value === PRP_FACTORY_LIST 
+      else
+      return false
+    }  
     return (
     <Card >
       <Form
@@ -181,8 +188,8 @@ const onFinish = (values: any) => {
       form={formPrp}
       name="formPrp"
       initialValues={{active: 1}}
-      labelCol={{ span: 6 }}
-      wrapperCol={{ span: 16 }}
+      // labelCol={{ span: 6 }}
+      wrapperCol={{ span: 22 }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       autoComplete="off"
@@ -246,7 +253,7 @@ const onFinish = (values: any) => {
       </Col>
       </Row>
       <Row>
-      <Col  xs={24} xl={6}  sm={12}> 
+      <Col  xs={24} xl={2}  sm={12}> 
         <Form.Item label={t('width')}
           name="width"
           rules={[validators.isNumber(), validators.required()]}
@@ -257,7 +264,7 @@ const onFinish = (values: any) => {
           />
         </Form.Item>      
       </Col>
-      <Col  xs={24} xl={6}  sm={12}> 
+      <Col  xs={24} xl={4}  sm={12}> 
         <Form.Item  label={t('placeholder')}
           name="placeholder"
         >
@@ -277,9 +284,59 @@ const onFinish = (values: any) => {
           />
         </Form.Item>      
       </Col>
+      <Col  xs={24} xl={8}  sm={12}> 
+        <Form.Item label={t('dependence')}
+          name="dependence"
+        >
+          <Input 
+          disabled={ro}
+          value="dependence"
+          style={{height:'38px'}}
+          />
+        </Form.Item>      
+      </Col>
+      
+      </Row>
       {
+        // isNeedCode()  && 
+        //  
+         <Row  >
+         <Col  xs={24} xl={6}  sm={12}> 
+           <Form.Item 
+             label={t('select') + ' ' + t('tcode')}
+             name="tcode_select"
+           >
+             <AsyncSelect 
+              menuPosition="fixed"
+              isDisabled={ro}
+              isMulti={false}
+              styles={SelectStyles}
+              isClearable={true}
+              placeholder={t('select') + ' ' + t('tcode')}
+              cacheOptions 
+              defaultOptions
+              loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'tcode_select', ' top 20 name as label, id as value , code ', 'utils', " type = 'property_object_type'", false )} 
+              onChange={(selectChange:any) => selectChanged(selectChange, 'tcode_select')}
+              />
+           </Form.Item>      
+         </Col>
+           <Col xs={24} xl={12} sm={12} >
+            <Form.Item
+              label={ t('tcode') }
+              name="code" 
+              style={{ padding:'5px'}} 
+              rules={setValidators('tcode')}
+              > 
+              <TextArea 
+              rows={3}
+               disabled={ro}
+                placeholder={ t('code') }
+              />
+              </Form.Item>
+            </Col>
+            {
         selectedProperty?.id && 
-        <Col  xs={24} xl={4}  sm={12}> 
+        <Col  xs={24} xl={6}  sm={12}> 
       <Form.Item
            label={ t('active') }
            name="active" 
@@ -293,45 +350,10 @@ const onFinish = (values: any) => {
            />
            </Form.Item>  
       </Col>
-      }
-      
-      </Row>
-      <Row  >
-      <Col  xs={24} xl={6}  sm={12}> 
-        <Form.Item 
-          label={t('select') + ' ' + t('tcode')}
-          name="tcode_select"
-          // rules={[validators.required()]}
-        >
-          <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={t('select') + ' ' + t('tcode')}
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'tcode_select', ' top 20 name as label, id as value , code ', 'utils', " type = 'property_object_type'", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'tcode_select')}
-           />
-        </Form.Item>      
-      </Col>
-        <Col xs={24} xl={12} sm={12} >
-         <Form.Item
-           label={ t('tcode') }
-           name="code" 
-           style={{ padding:'5px'}} 
-           rules={setValidators('tcode')}
-           > 
-           <TextArea 
-           rows={3}
-            disabled={ro}
-             placeholder={ t('code') }
-           />
-           </Form.Item>
-         </Col>
+      }   
          </Row>
+      }
+    
 
       {
         !ro && 

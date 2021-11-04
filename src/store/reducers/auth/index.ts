@@ -1,3 +1,4 @@
+import { IQuery, SelectOption } from '../../../models/ISearch';
 import { IUser } from './../../../models/IUser';
 import { AuthActionEnum, Authentication, AuthState } from './types';
 
@@ -6,7 +7,9 @@ const initialState = {
     fromLocation: '',
     user: {} as IUser,
     isLoading: false,
-    error: ''
+    error: '',
+    siderQueries: [] as IQuery[],
+    defaultRole: {} as SelectOption
 }
 
 export default function authReducer(state=initialState, action:Authentication):AuthState {
@@ -20,7 +23,11 @@ export default function authReducer(state=initialState, action:Authentication):A
        case  AuthActionEnum.SET_USER:
            return {...state, user: action.payload }  
        case  AuthActionEnum.SET_IS_LOADING:
-           return {...state, isLoading: action.payload }       
+           return {...state, isLoading: action.payload }  
+       case  AuthActionEnum.SET_SIDER_QUERIES:
+            return {...state, siderQueries: action.payload }  
+    case  AuthActionEnum.SET_DEFAULT_ROLE:
+            return {...state, defaultRole: action.payload }                    
     default:
         return state
    }

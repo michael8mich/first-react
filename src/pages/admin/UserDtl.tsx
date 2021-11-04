@@ -1,6 +1,6 @@
-import { Avatar, Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs} from 'antd';
+import { Avatar, Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Menu, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs} from 'antd';
 import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
-import  {FC, useEffect, useState} from 'react';
+import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
@@ -18,15 +18,18 @@ import { DEPARTMENT_LIST, LOCATION_LIST, ORGANIZATION_LIST, SITE_LIST } from '..
 import { stubTrue } from 'lodash';
 import { ColumnsType } from 'antd/lib/table';
 import moment from 'moment';
-
+import QueriesTree from '../../components/QueriesTree';
+interface RefObject {
+  getSiderQueries: () => void
+}
 const { TabPane } = Tabs;
 const UserDtl:FC = () => {
   const { t } = useTranslation();
-  const {fetchUser, setSelectSmall, createUser, changeGroupMemberNotify, setAlert} = useAction()
+  const {fetchUser, setSelectSmall, createUser, changeGroupMemberNotify, setAlert, changeDefaultRole} = useAction()
   const {error, isLoading, users, selectedUser } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {user } = useTypedSelector(state => state.auth)
-  
+  const queriesRef=useRef<RefObject>(null)
   const { Option } = Select;
   const { TextArea } = Input;
 
@@ -37,8 +40,14 @@ const UserDtl:FC = () => {
   const {id} = useParams<Params>()
   
   function getUser() {
-    if(id!=='0') 
-      fetchUser(id)
+    if(id!=='0') {
+      fetchUser(id) 
+      // if(queriesRef.current)
+      // {
+      //   queriesRef.current.getSiderQueries()
+      // }
+    }
+      
       else
       setRo(false)
   }
@@ -110,7 +119,7 @@ const UserDtl:FC = () => {
     {
        setSelectValues({...selectOptions, [name]: selectChange })
     }
-    const SelectStyles = {
+  const SelectStyles = {
       container: (provided: any) => ({
         ...provided,
         width: '100%',
@@ -146,6 +155,18 @@ const UserDtl:FC = () => {
         if(diff.length !== 0)
         changeGroupMemberNotify(diff)
       }
+      if(defaultRole.length !== 0 && selectedUser.roles.length !== 0) {
+        let new_arr:any[] = [...defaultRole]
+        let old_arr:any[] = [...selectedUser.roles]
+        let diff = [] as any
+        new_arr.map(n=> {
+          if(old_arr.find(o=> o.is_default !== n.is_default) )
+          diff.push(n)
+        })
+        if(diff.length !== 0)
+        changeDefaultRole(diff)
+      }
+
       
       getUser()
       setRo(true)
@@ -194,7 +215,9 @@ const UserDtl:FC = () => {
         if(notifyMember.length === 0) {
           setNotifyMember(JSON.parse(JSON.stringify(selectedUser.members))  )
         }
-        
+        if(defaultRole.length === 0) {
+          setDefaultRole(JSON.parse(JSON.stringify(selectedUser.roles))  )
+        }
       }
       console.log(key);
     }
@@ -209,7 +232,6 @@ const UserDtl:FC = () => {
     })
     setNotifyMember([...arr])
   }
-
   const grpMemColumns: ColumnsType<any> = [
     {
       key: 'label',
@@ -231,7 +253,41 @@ const UserDtl:FC = () => {
             />
         );}
     }]
-
+  //----------- roles_default
+  const [defaultRole, setDefaultRole] = useState([] as any)
+  const updateDefaultRole = (event:any, id:string) => {
+      let arr:any = [...defaultRole]
+      arr.map((m: { code: string; is_default: number; }) => {
+      if(m.code === id)
+      m.is_default = 1
+      else
+      m.is_default =  0
+    })
+    setDefaultRole([...arr])
+  }
+  const roleColumns: ColumnsType<any> = [
+    {
+      key: 'label',
+      title: t('name'),
+      dataIndex: 'label',
+      sorter: true,
+    },
+    {
+      key: 'is_default',
+      title: t('is_default'),
+      dataIndex: 'is_default',
+      sorter: true,
+      render: (name, record, index) => {
+        return (
+            <Radio 
+            checked={record.is_default} 
+            disabled={ro}
+            onChange={(event) => updateDefaultRole(event, record.code)}
+            />
+        );}
+    }]
+  
+    const [collapsed,  setCollapsed]  = useState(true)
   return (
     <Layout style={{height:"100vh"}}>
       {error && 
@@ -508,6 +564,7 @@ const UserDtl:FC = () => {
            name="locale"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <Select 
+           size="large"
            disabled={ro}
            placeholder={ t('locale') }
            onChange={(selectChange:any) => selectChanged(selectChange, 'contact_type')}
@@ -583,6 +640,8 @@ const UserDtl:FC = () => {
            </Row>
       </TabPane>
     <TabPane tab={t('orgs')} key="2" forceRender={true} >
+    <Row>
+      <Col  xs={24} xl={18}>
       <Row>
       { 
            form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value !== TEAM_TYPE_ID 
@@ -783,9 +842,39 @@ const UserDtl:FC = () => {
       <Table
       columns={grpMemColumns} 
       dataSource={notifyMember} 
+      title={() => <h3>{t('teams')}</h3> } 
       >
       </Table>
-      }      
+      } 
+      {   
+      form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value !== TEAM_TYPE_ID &&
+      <Table
+      columns={roleColumns} 
+      dataSource={defaultRole} 
+      title={() => <h3>{t('roles')}</h3> } 
+      >
+      </Table>
+      } 
+      </Col>    
+       <Col  xs={24} xl={6}>
+       <Menu 
+          // theme="dark" 
+          // defaultSelectedKeys={['1','2']} 
+          defaultSelectedKeys={[]} 
+            mode="inline">
+              <QueriesTree 
+            collapsed={collapsed}
+            setCollapsed={setCollapsed} 
+            sider={false} 
+            edit={!ro} 
+            user={selectedUser}
+            ref={queriesRef}
+            />
+      </Menu>          
+         
+    </Col> 
+    </Row>
+    
     </TabPane>  
     </Tabs>   
     </Form>

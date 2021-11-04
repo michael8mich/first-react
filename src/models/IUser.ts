@@ -1,3 +1,4 @@
+import { FROM, SELECT, WHERE } from "../utils/formManipulation";
 import { SelectOption } from "./ISearch";
 import { ITicket } from "./ITicket";
 
@@ -29,9 +30,11 @@ export interface IUser {
     department: SelectOption
     site: SelectOption
     roles: SelectOption[]
+    defaultRole: SelectOption
     teams: SelectOption[]
     members: SelectOption[]
     tickets: ITicket[]
+    
 
     last_mod_by: SelectOption
     last_mod_dt: string
@@ -55,3 +58,11 @@ export const ORG_INFO_TYPE_DEPARTMENT = 'D421F990A306B50CF186BC38BFA7994A'
 export const ORG_INFO_TYPE_LOCATION = 'CAE8F8B25793ADA7D9A2E379A05A4F47'
 export const ORG_INFO_TYPE_ORGANIZATION = '70E59A35BD1EFBA2D2F022A831C93CB1'
 export const ORG_INFO_TYPE_SITE = 'CB534CE7BA39798CC250C7DF7B5E2868'
+
+
+export const ANALYST_DTP = " ( team in ("+ SELECT +" team "+ FROM +" teammember "+WHERE+" member = 'currentUser' ) " +
+"  or assignee = 'currentUser' or customer = 'currentUser' ) "
+export const ANALYST_DTP_REPORTS = " ( team in ("+ SELECT +" team "+ FROM +" teammember "+WHERE+" member = 'currentUser' ) " +
+"  ) "
+
+export const EMPLOYEE_DTP = " (  log_agent = 'currentUser' or customer = 'currentUser' ) "

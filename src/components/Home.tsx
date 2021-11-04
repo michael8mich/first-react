@@ -10,7 +10,6 @@ import { axiosFn } from '../axios/axios';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from '../hooks/useTypedSelector';
 import { Card, Col, Popconfirm, Row, Tooltip } from 'antd';
-import { TICKET_BY_WEEKDAY, TICKET_OPENED_BY_CATEGORY, TICKET_OPENED_BY_PRIORITY, TICKET_OPENED_BY_TEAM, TICKET_OPENED_BY_URGENCY, TICKET_OPENED_CLOSED_TODAY, TICKET_OPENED_PERCENT_HIGH_PRIORITY, TICKET_OPENED_PERCENT_HIGH_URGENCY } from '../models/IChart';
 import { ReloadOutlined, PlusCircleOutlined, MinusCircleOutlined,EditOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import { useAction } from '../hooks/useAction';
@@ -18,12 +17,31 @@ import { HOME_FOLDER, IQuery } from '../models/ISearch';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
 import Drd from './DrugAndDrop';
+import { ANALYST_DTP, ANALYST_DTP_REPORTS } from '../models/IUser';
+import { FROM, SELECT, WHERE } from '../utils/formManipulation';
+import { PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM } from '../models/ITicket';
+import { IChatQuery } from '../models/IChart';
+  
 
 
 
 const Home: FC = () => {
+  const { user, defaultRole } = useTypedSelector(state => state.auth)
+  const { configs} = useTypedSelector(state => state.cache)
+  const {setConfigs, setConfigsClean } = useAction()
+  const dataPartition = (where: string, report: boolean = false) => {
+    if(defaultRole)
+    if(defaultRole.label !== 'Admin') {
+      if(report)
+     return ANALYST_DTP_REPORTS.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
+     else
+     return ANALYST_DTP.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
+    }
+    return where
+   }
+  
   const { t } = useTranslation();    
-  const { user } = useTypedSelector(state => state.auth)
+
   let chart: any;
   
   const [getMore, setGetMore] =  useState(false) 
@@ -48,21 +66,24 @@ const Home: FC = () => {
     name: String
     config: any[]
   }
+
   useEffect(() => {
     const interval = setInterval(() => {
-      getData()
-      getQueries()
-    }, 60000);
+        getData()
+        getQueries()     
+    }, 15000);
     return () => clearInterval(interval);
   }, []);
-  const [configs, setCOnfigs] = useState([] as CHART_CONFIG[])
+  //const [configs, setCOnfigs] = useState([] as CHART_CONFIG[])
   const {fetchQueries,setAlert} = useAction()
   const [queries, setQueries] = useState([] as IQuery[])
 
   useEffect(  ()  => {
-    getData()
-    getQueries()
-  }, [])
+    if(user) {
+      getData()
+      getQueries()
+    }
+  }, [user])
 
 const getQueries = async () => {
   let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" + HOME_FOLDER + "' order by seq " , '' )  
@@ -70,53 +91,96 @@ const getQueries = async () => {
   
   if(result_query_Arr)
   result_query_Arr.map(async ( q, index) =>  {
-    let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.query , '' )  
+    let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.factory === 'ticket' ? dataPartition(q.query) : q.query , '' )  
     q.count = q_result.data[0].cnt
     q.index = index
   })
   setQueries(result_query_Arr)
 }  
-const getData = async () => {
-  const ticket_open_by_team_data = await  axiosFn("get", '', TICKET_OPENED_BY_TEAM.what.replace(/@none/g, t('non') + ' ' + t('team') ), TICKET_OPENED_BY_TEAM.tname, TICKET_OPENED_BY_TEAM.where , ''  )  
-  if(ticket_open_by_team_data?.data)
-  setCOnfigs( configs => [...configs , { name: 'ticket_open_by_team_data' , config: ticket_open_by_team_data.data} ] )
-
-  let ticket_open_by_priority_data = await  axiosFn("get", '', TICKET_OPENED_BY_PRIORITY.what.replace(/@none/g, t('non') + ' ' + t('priority') ), TICKET_OPENED_BY_PRIORITY.tname, TICKET_OPENED_BY_PRIORITY.where , ''  )  
-  if(ticket_open_by_priority_data?.data)
-  setCOnfigs(configs => [ ...configs, { name: 'ticket_open_by_priority_data' , config: ticket_open_by_priority_data.data} ])
+ const getData = async () => {
+    setConfigsClean([])
+    const TICKET_OPENED_BY_TEAM:IChatQuery = {
+      what: "  count(id) as value, isnull(team_name, N'@none') as type, '       ' + isnull(team_name, N'@none') as name ",
+      tname: " V_tickets ",
+      where: dataPartition(" active = 1 ", true) + " group by team_name order by count(id) desc " 
+    } 
+    const TICKET_OPENED_BY_PRIORITY:IChatQuery = {
+      what: "  count(id) as value, isnull(priority_name, N'@none') as type ",
+      tname: " V_tickets ",
+      where: dataPartition(" active = 1 ", true) + " group by priority_name order by count(id) desc " 
+    }  
+    const TICKET_OPENED_BY_URGENCY:IChatQuery = {
+      what: "  count(id) as value, isnull(urgency_name, N'@none') as type ",
+      tname: " V_tickets ",
+      where: dataPartition(" active = 1 ", true) + " group by urgency_name order by count(id) desc " 
+    } 
+    const TICKET_OPENED_BY_CATEGORY:IChatQuery = {
+      what: " top 10 count(id) as value,  isnull(category_name, N'@none') + '    '  as  type ",
+      tname: " V_tickets ",
+      where: dataPartition(" active = 1 ", true) + " group by category_name order by count(id) desc " 
+    } 
+    const TICKET_BY_WEEKDAY:IChatQuery = {
+      what: "  count(id) as value,   FORMAT( ( dateadd(s, create_date+DATEDIFF (S, GETUTCDATE(), GETDATE()), '1970-01-01')),'dddd' ) as type  ",
+      tname: " ticket ",
+      where: dataPartition(" id <> '1' ", true) + "  group by FORMAT( ( dateadd(s, create_date+DATEDIFF (S, GETUTCDATE(), GETDATE()), '1970-01-01')),'dddd' ) , datepart( weekday, dateadd(s, create_date+DATEDIFF (S, GETUTCDATE(), GETDATE()), '1970-01-01')) order by datepart( weekday, dateadd(s, create_date+DATEDIFF (S, GETUTCDATE(), GETDATE()), '1970-01-01')) " 
+    } 
+    
+    let guageQuery:string =  ` top 1 ( ${SELECT} count(id) as cnt  ${FROM} V_tickets ${WHERE}  ${dataPartition(" active = 1 ", true)} and priority in ('${PRIORITY_HIGH.value}','${PRIORITY_MEDIUM.value}')  ) as [target],
+    ( ${SELECT} count(id) as cnt ${FROM} V_tickets ${WHERE}  ${dataPartition(" active = 1 ", true)}   ) as [all] `
+    
+    const TICKET_OPENED_PERCENT_HIGH_PRIORITY:IChatQuery = {
+      what: guageQuery,
+      tname: " empty ",
+      where: "" 
+    } 
+    guageQuery =  ` top 1 ( ${SELECT} count(id) as cnt  ${FROM} V_tickets ${WHERE}  ${dataPartition(" active = 1 ", true)} and urgency in ('${URGENCY_HIGH.value}','${URGENCY_MEDIUM.value}')  ) as [target],
+    ( ${SELECT} count(id) as cnt ${FROM} V_tickets ${WHERE}  ${dataPartition(" active = 1 ", true)}   ) as [all] `
+    
+    const TICKET_OPENED_PERCENT_HIGH_URGENCY:IChatQuery = {
+      what: guageQuery,
+      tname: " empty ",
+      where: "" 
+    } 
+    guageQuery =  ` top 1 ( ${SELECT} count(id) as cnt  ${FROM}  ticket ${WHERE}  ${dataPartition(" CONVERT (date, SYSDATETIME()) =  CONVERT (date, dateadd(s, create_date+DATEDIFF (S, GETUTCDATE(), GETDATE()), '1970-01-01')) ", true)} ) as [all], 
+     ( ${SELECT} count(id) as cnt  ${FROM}  ticket ${WHERE}  ${dataPartition(" CONVERT (date, SYSDATETIME()) =  CONVERT (date, dateadd(s, close_date+DATEDIFF (S, GETUTCDATE(), GETDATE()), '1970-01-01'))", true)} ) as [target] `
+    
+    const TICKET_OPENED_CLOSED_TODAY:IChatQuery = {
+      what: guageQuery,
+      tname: " empty ",
+      where: "" 
+    } 
+    const ticket_open_by_team_data = await  axiosFn("get", '', TICKET_OPENED_BY_TEAM.what.replace(/@none/g, t('non') + ' ' + t('team') ), TICKET_OPENED_BY_TEAM.tname, TICKET_OPENED_BY_TEAM.where , ''  )  
+    if(ticket_open_by_team_data?.data)
+    setConfigs( { name: 'ticket_open_by_team_data' , config: ticket_open_by_team_data.data} )
+    let ticket_open_by_priority_data = await  axiosFn("get", '', TICKET_OPENED_BY_PRIORITY.what.replace(/@none/g, t('non') + ' ' + t('priority') ), TICKET_OPENED_BY_PRIORITY.tname, TICKET_OPENED_BY_PRIORITY.where , ''  )  
+    if(ticket_open_by_priority_data?.data)
+    setConfigs( { name: 'ticket_open_by_priority_data' , config: ticket_open_by_priority_data.data} )
+    let ticket_open_by_urgency_data = await  axiosFn("get", '', TICKET_OPENED_BY_URGENCY.what.replace(/@none/g, t('non') + ' ' + t('urgency') ), TICKET_OPENED_BY_URGENCY.tname, TICKET_OPENED_BY_URGENCY.where , ''  )  
+    if(ticket_open_by_urgency_data?.data)
+    setConfigs(  { name: 'ticket_open_by_urgency_data' , config: ticket_open_by_urgency_data.data} )
+    let ticket_open_by_category_data = await  axiosFn("get", '', TICKET_OPENED_BY_CATEGORY.what.replace(/@none/g, t('non') + ' ' + t('tcategory') ), TICKET_OPENED_BY_CATEGORY.tname, TICKET_OPENED_BY_CATEGORY.where , ''  )  
+    if(ticket_open_by_category_data?.data)
+    setConfigs(  { name: 'ticket_open_by_category_data' , config: ticket_open_by_category_data.data} )
+    let ticket_opened_percent_high_priority_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_PRIORITY.what, TICKET_OPENED_PERCENT_HIGH_PRIORITY.tname, TICKET_OPENED_PERCENT_HIGH_PRIORITY.where , ''  )  
+    if(ticket_opened_percent_high_priority_data?.data)
+    setConfigs(  { name: 'ticket_opened_percent_high_priority_data' , config: ticket_opened_percent_high_priority_data.data} )
+    let ticket_opened_percent_high_urgency_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_URGENCY.what, TICKET_OPENED_PERCENT_HIGH_URGENCY.tname, TICKET_OPENED_PERCENT_HIGH_URGENCY.where , ''  )  
+    if(ticket_opened_percent_high_urgency_data?.data)
+    setConfigs(  { name: 'ticket_opened_percent_high_urgency_data' , config: ticket_opened_percent_high_urgency_data.data} )
+    let ticket_opened_closed_today_data = await  axiosFn("get", '', TICKET_OPENED_CLOSED_TODAY.what, TICKET_OPENED_CLOSED_TODAY.tname, TICKET_OPENED_CLOSED_TODAY.where , ''  )  
+    if(ticket_opened_closed_today_data?.data)
+    setConfigs( { name: 'ticket_opened_closed_today_data' , config: ticket_opened_closed_today_data.data} )
+    let ticket_by_weekday = await  axiosFn("get", '', TICKET_BY_WEEKDAY.what, TICKET_BY_WEEKDAY.tname, TICKET_BY_WEEKDAY.where , ''  )  
+    if(ticket_by_weekday?.data)
+    {
+      let arr_ticket_by_weekday = ticket_by_weekday.data.map( (e: { type: any; }) => {
+        return {...e ,  type: t(e.type) }
   
-  let ticket_open_by_urgency_data = await  axiosFn("get", '', TICKET_OPENED_BY_URGENCY.what.replace(/@none/g, t('non') + ' ' + t('urgency') ), TICKET_OPENED_BY_URGENCY.tname, TICKET_OPENED_BY_URGENCY.where , ''  )  
-  if(ticket_open_by_urgency_data?.data)
-  setCOnfigs(configs => [ ...configs, { name: 'ticket_open_by_urgency_data' , config: ticket_open_by_urgency_data.data} ])
-
-  let ticket_open_by_category_data = await  axiosFn("get", '', TICKET_OPENED_BY_CATEGORY.what.replace(/@none/g, t('non') + ' ' + t('tcategory') ), TICKET_OPENED_BY_CATEGORY.tname, TICKET_OPENED_BY_CATEGORY.where , ''  )  
-  if(ticket_open_by_category_data?.data)
-  setCOnfigs(configs => [ ...configs, { name: 'ticket_open_by_category_data' , config: ticket_open_by_category_data.data} ])
-
-  let ticket_opened_percent_high_priority_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_PRIORITY.what, TICKET_OPENED_PERCENT_HIGH_PRIORITY.tname, TICKET_OPENED_PERCENT_HIGH_PRIORITY.where , ''  )  
-  if(ticket_opened_percent_high_priority_data?.data)
-  setCOnfigs(configs => [ ...configs, { name: 'ticket_opened_percent_high_priority_data' , config: ticket_opened_percent_high_priority_data.data} ])
-
-  let ticket_opened_percent_high_urgency_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_URGENCY.what, TICKET_OPENED_PERCENT_HIGH_URGENCY.tname, TICKET_OPENED_PERCENT_HIGH_URGENCY.where , ''  )  
-  if(ticket_opened_percent_high_urgency_data?.data)
-  setCOnfigs(configs => [ ...configs, { name: 'ticket_opened_percent_high_urgency_data' , config: ticket_opened_percent_high_urgency_data.data} ])
-
-  let ticket_opened_closed_today_data = await  axiosFn("get", '', TICKET_OPENED_CLOSED_TODAY.what, TICKET_OPENED_CLOSED_TODAY.tname, TICKET_OPENED_CLOSED_TODAY.where , ''  )  
-  if(ticket_opened_closed_today_data?.data)
-  setCOnfigs(configs => [ ...configs, { name: 'ticket_opened_closed_today_data' , config: ticket_opened_closed_today_data.data} ])
-
-  let ticket_by_weekday = await  axiosFn("get", '', TICKET_BY_WEEKDAY.what, TICKET_BY_WEEKDAY.tname, TICKET_BY_WEEKDAY.where , ''  )  
-  if(ticket_by_weekday?.data)
-  {
-    let arr_ticket_by_weekday = ticket_by_weekday.data.map( (e: { type: any; }) => {
-      return {...e ,  type: t(e.type) }
-
-    } )
-    setCOnfigs(configs => [ ...configs, { name: 'ticket_by_weekday' , config: arr_ticket_by_weekday} ])
+      } )
+      setConfigs( { name: 'ticket_by_weekday' , config: arr_ticket_by_weekday} )
+    }
+   
   }
- 
-  
-}
   
   const TICKET_OPENED_BY_TEAM_CONFIG = {
     appendPadding: 15,
@@ -403,7 +467,7 @@ const getData = async () => {
     <Card>
        <Tooltip title={t('refresh')}>
       <ReloadOutlined 
-      onClick={()=>getData()}
+      onClick={()=>{getData(); getQueries()}}
       style={{fontSize:'24px',fontWeight:900}}/>&nbsp;&nbsp;
       {moment().format("DD/MM/YY HH:mm:ss")}
       </Tooltip>

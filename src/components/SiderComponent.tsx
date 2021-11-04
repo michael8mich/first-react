@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useEffect, useRef, useState} from 'react';
 import { Menu, Avatar, Button, Tooltip, Popconfirm } from 'antd';
 import { MenuFoldOutlined, UserOutlined, MenuUnfoldOutlined, DesktopOutlined,
   PieChartOutlined,
@@ -11,7 +11,7 @@ import { useTypedSelector } from '../hooks/useTypedSelector';
 import { useAction } from '../hooks/useAction';
 import { useTranslation } from 'react-i18next';
 import { ITicket, ITicketPrpTpl } from '../models/ITicket';
-import { GROUP_LIST, IUser, NOT_GROUP_LIST } from '../models/IUser';
+import { ANALYST_DTP, GROUP_LIST, IUser, NOT_GROUP_LIST } from '../models/IUser';
 import { axiosFn } from '../axios/axios';
 import { FROM, SELECT, WHERE } from '../utils/formManipulation';
 import { replace } from 'lodash';
@@ -23,7 +23,10 @@ import EditOutlined from '@ant-design/icons/lib/icons/EditOutlined';
 import CloseCircleOutlined from '@ant-design/icons/lib/icons/CloseCircleOutlined';
 import DeleteOutlined from '@ant-design/icons/lib/icons/DeleteOutlined';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
-
+import QueriesTree from './QueriesTree';
+interface RefObject {
+  getSiderQueries: () => void
+}
 const { SubMenu } = Menu;
 interface SiderComponentProps {
   collapsed: boolean,
@@ -33,37 +36,47 @@ interface SiderComponentProps {
 const SiderComponent: FC<SiderComponentProps> = (props) => {
     const { t, i18n } = useTranslation();      
     const router = useHistory()
-    const {isAuth, user } = useTypedSelector(state => state.auth)
+    const {isAuth, user, defaultRole } = useTypedSelector(state => state.auth)
     const {logout, setSelectedProperty, setProperties, setSelectedTicket, setAlert} = useAction()
-    const {setUser, refreshStorage} = useAction()
+    const {setUser, refreshStorage, setPathForEmpty} = useAction()
     const [edit, setEdit] =  useState(false) 
     const [nowTime, setNowTime] =  useState(moment().format("DD/MM/YY HH:mm:ss")) 
-
+    const queriesRef=useRef<RefObject>(null)
     function changeLen(len:string) {
       setUser({ ...user , locale: len})
       refreshStorage({ ...user , locale: len})
       i18n.changeLanguage(len.substring(0,2));
     }
+    const pathTrowEmpty = (path:string) => {
+      setPathForEmpty(path)
+      router.push(RouteNames.EMPTY)
+    } 
     const createNewTicket = () => {
       setSelectedTicket({} as ITicket)
       setSelectedProperty({} as ITicketPrpTpl)
       setProperties([] as ITicketPrpTpl[])
-      router.push(RouteNames.TICKETS + '/0')
+      pathTrowEmpty(RouteNames.TICKETS + '/0')
     }
     useEffect(() => {
       if(user) {
         getTeams()
-        getSiderQueries()
       }
     }, [user])
     
-    useEffect(() => {
-      const siderInterval = setInterval(() => {
-        getSiderQueries()
-      }, 60000);
-      return () => clearInterval(siderInterval);
-    }, []);
-
+    // useEffect(() => {
+    //   const siderInterval = setInterval(() => {
+    //     refreshSiderQueries()
+    //   }, 60000);
+    //   return () => clearInterval(siderInterval);
+    // }, []);
+ 
+    const refreshSiderQueries = () => {
+      setNowTime(moment().format("DD/MM/YY HH:mm:ss"))
+      if(queriesRef.current)
+      {
+        queriesRef.current.getSiderQueries()
+      }
+    }
     const [teams, setTeams] = useState([] as IUser[])
     
     const getTeams = async () => {
@@ -74,31 +87,7 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
     const [siderQueries, setSiderQueries] = useState([] as IQuery[])
     const [siderFolders, setSiderFolders] = useState([] as IQuery[])
     const [siderFoldersQueries, setSiderFoldersQueries] = useState([] as IQuery[])
-    const getSiderQueries = async () => {
-      if(!user?.id) return
-      setNowTime(moment().format("DD/MM/YY HH:mm:ss"))
-      let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder <> '" +HOME_FOLDER + "' order by seq " , '' )  
-      let result_query_Arr:IQuery[] =  result_query?.data 
-      let folders:IQuery[] = result_query_Arr.filter( r => r.factory === 'folder' )
-      setSiderFolders(folders)
-      //result_query_Arr = result_query_Arr.filter( r => r.folder === SIDER_NO_FOLDER )
-      console.log('result_query_Arr', result_query_Arr);
-      let index = 1
-      if(result_query_Arr)
-      result_query_Arr.map(async ( q,i) =>  {
-        q.index = i
-        if(q.factory!=='folder') {
-          let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.query , '' )  
-          q.count = q_result.data[0].cnt
-          if(result_query_Arr.length === index)
-          setSiderQueries(result_query_Arr)
-        }
-        index++
-      })
-        
-        console.log('result_query_Arr', result_query_Arr);
-        
-    }
+
     const goToQuery = (q:IQuery) => {
       if(edit) return
       if(q.factory === 'ticket') {
@@ -142,7 +131,10 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
             visible: true,
             autoClose: 10 
            })
-           getSiderQueries()
+           if(queriesRef.current)
+        {
+          queriesRef.current.getSiderQueries()
+        }
         }
         else {
           setAlert({
@@ -156,39 +148,6 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
         }
    }
    //---------------------------------------
-  const onDragEnd = (result: DropResult): void => {
-    // dropped outside the list
-    if (!result.destination) {
-      return;
-    }
-     let queries_:IQuery[] = [...siderQueries]
-     let from_index = result.source.index
-     let to_index = result.destination.index
-     let from_index_id = ''
-     let to_index_id = ''
-     let fromObj =  queries_.find(q=>q.index===from_index) || undefined
-     if(fromObj) from_index_id = fromObj?.id
-     let toObj =  queries_.find(q=>q.index===to_index) || undefined
-     if(toObj) to_index_id = toObj?.id
-    queries_.map(q=>{
-      if(q.id===from_index_id) q.index = to_index
-      if(q.id===to_index_id) q.index = from_index
-    })
-
-
-     queries_ = queries_.sort((a,b) => a.index - b.index) 
-     setSiderQueries(queries_)
-     queries_.map(async q => {
-      let js = {seq:q.index} as Object
-      let q_result = await axiosFn("put", js,  '', 'queries', 'id',  q.id  )  
-      console.log(q_result);
-      }
-      ) 
-  }
-  const getListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
-    // background: isDraggingOver ? "lightblue" : "transparent",
-    paddingRight:'5px'
-  });
     return (
       <>
       <div className="logo" />
@@ -196,7 +155,7 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
         <div style={{fontSize:'14px',fontWeight:400,color:'white',padding:'10px'}}>
         <Tooltip title={t('refresh')}>
       <ReloadOutlined 
-      onClick={()=>getSiderQueries()}
+      onClick={()=>refreshSiderQueries()}
       style={{fontSize:'14px',fontWeight:400,color:'white'}} />
         </Tooltip>
       &nbsp;&nbsp;
@@ -217,6 +176,7 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
        </div>
     }
           <Menu theme="dark" 
+          forceSubMenuRender={true}
           // defaultSelectedKeys={['1','2']} 
           defaultSelectedKeys={[]} 
             mode="inline">
@@ -230,151 +190,18 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
             icon={<DesktopOutlined />}
             >{ t('ticket') + ' ' + t('new') } 
             </Menu.Item>
-           {
-             edit ?   
-            <> 
-            <DragDropContext  onDragEnd={onDragEnd} >
-             <Droppable droppableId="droppable">
-               {(provided, snapshot) => (
-             <div {...provided.droppableProps}  
-             ref={provided.innerRef}
-             style={getListStyle(snapshot.isDraggingOver)}
-             key="Droppable_1"
-             >   
-             <SubMenu key="queries" 
-             icon={<FileOutlined />} title={t('queries')}
-             >
-               {   
-                 siderQueries.filter(f=>f.folder===SIDER_NO_FOLDER&&f.factory!=='folder').map( (q,index) => (
-                   <Draggable key={'drag_'+q.id} draggableId={q.id}  index={q.index} isDragDisabled={!edit}>
-                   {(provided, snapshot) => (
-                   <div  
-                   key={'div_'+q.id}
-                   ref={provided.innerRef}
-                   {...provided.draggableProps}
-                   {...provided.dragHandleProps}
-                     >
-                   <Menu.Item key={q.id}
-                   onClick={() => goToQuery(q)}
-                   >
-                     {
-                           edit &&
-                           <Tooltip title={t('delete')}>
-                             <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
-                             <DeleteOutlined 
-                             ></DeleteOutlined>
-                             </Popconfirm>
-                           </Tooltip>
-                         }
-                     <Tooltip title={q.name}>
-                         {q.name.toString().substring(0,40)}-{q.count}
-                     </Tooltip>
- 
-                   </Menu.Item>
-                   </div>
-                   )}
-                   </Draggable>
-                 ))
-               }
-               {
-                 siderFolders.map( f => (
-                   <SubMenu key={f.id} 
-                     icon= 
-                     {
-                                   edit ?
-                                   <Tooltip title={t('delete')}>
-                                     <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(f.id, true)}>
-                                     <DeleteOutlined 
-                                     ></DeleteOutlined>
-                                     </Popconfirm>
-                                   </Tooltip> :
-                                   <FileOutlined />
-                     }
-                     title={f.name}>
-                   {
-                   siderQueries.filter(fq=>fq.folder===f.id).map( q => (
-                    <Draggable key={'drag_sub'+q.id} draggableId={q.id}  index={q.index} isDragDisabled={!edit}>
-                   {(index, snapshot) => (
-                   <div style={{paddingRight:'15px'}}  key={'div_'+f.id}
-                   ref={index.innerRef}
-                   {...index.draggableProps}
-                   {...index.dragHandleProps}
-                     >
-                           <Menu.Item key={q.id}
-                           onClick={() => goToQuery(q)}
-                           >
-                             {
-                                   edit &&
-                                   <Tooltip title={t('delete')}>
-                                     <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteQuery(q.id)}>
-                                     <DeleteOutlined 
-                                     ></DeleteOutlined>
-                                     </Popconfirm>
-                                   </Tooltip>
-                                 }
-                             <Tooltip title={q.name}>
-                                 {q.name.toString().substring(0,40)}-{q.count} 
-                             </Tooltip> 
-                           </Menu.Item>
-                              </div>
-                              )}
-                   </Draggable>
-                         ))
-                     } 
-                   </SubMenu> 
-                
-                 ))
-               }
-             </SubMenu>
-             </div>  
-              )}
-             </Droppable>
-           </DragDropContext> 
-           </> :
-           <>
-       <SubMenu key="queries" 
-             icon={<FileOutlined />} title={t('queries')}
-             >
-               {   
-                 siderQueries.filter(f=>f.folder===SIDER_NO_FOLDER&&f.factory!=='folder').map( (q,index) => (
-                   <Menu.Item key={q.id}
-                   onClick={() => goToQuery(q)}
-                   >
-                     <Tooltip title={q.name}>
-                         {q.name.toString().substring(0,40)}-{q.count}
-                     </Tooltip>
- 
-                   </Menu.Item>
-                 ))
-               }
-               {
-                 siderFolders.map( f => (
-                   <SubMenu key={f.id} 
-                     icon= 
-                     {
-                                   <FileOutlined />
-                     }
-                     title={f.name}>
-                   {
-                   siderQueries.filter(fq=>fq.folder===f.id).map( q => (
-                           <Menu.Item key={q.id}
-                           onClick={() => goToQuery(q)}
-                           >
-                             <Tooltip title={q.name}>
-                                 {q.name.toString().substring(0,40)}-{q.count} 
-                             </Tooltip> 
-                           </Menu.Item>
-                         ))
-                     } 
-                   </SubMenu> 
-                
-                 ))
-               }
-             </SubMenu>
-           </>
-           } 
-      
-
+           
+            <QueriesTree 
+            collapsed={props.collapsed}
+            setCollapsed={props.setCollapsed} 
+            sider={true} 
+            edit={edit} 
+            user={user}
+            ref={queriesRef}
+            />
+            { 
+            defaultRole?.label === 'Admin' &&
+            <>
             <SubMenu key="admin" icon={<SettingOutlined />} title={t('admin')}>
               <Menu.Item key="utils" onClick={() => router.push(RouteNames.UTILS) } >{ t('utils') }</Menu.Item>
               <Menu.Item key="users" onClick={() => router.push(RouteNames.USERS) } >{ t('users') }</Menu.Item>
@@ -390,6 +217,8 @@ const SiderComponent: FC<SiderComponentProps> = (props) => {
                 ))
               }
             </SubMenu>
+            </>
+            }
           </Menu>
     </>      
     )

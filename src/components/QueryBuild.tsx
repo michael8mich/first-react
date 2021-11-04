@@ -128,7 +128,7 @@ const [folders, setFolders] = useState([] as IQuery[])
             onChange={(event) => setNew_query_name(event.target.value ) }
           />&nbsp;&nbsp;&nbsp;
           <Select onChange={handleSelectChange}
-          // defaultValue="lucy"
+          size="large"
           style={{height:38, width: 200}}
           placeholder={ t('folder_name')}
           // <FolderOutlined />

@@ -481,7 +481,7 @@ export const TicketActionCreators = {
       try {
       dispatch(TicketActionCreators.setIsError(''))
         dispatch(TicketActionCreators.IsLoading(true))
-        const response = await  axiosFn("get", '', '*', 'V_tprptpls', " category = '" + categoryId + "' order by sequence" )  
+        const response = await  axiosFn("get", '', '*, 1 as visible ', 'V_tprptpls', " category = '" + categoryId + "' order by sequence" )  
         let hasError = false;
         if(response.data["error"]) hasError = true;
             if(response.data&&!hasError)
