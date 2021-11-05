@@ -26,6 +26,16 @@ import UploadFiles from '../../components/admin/UploadFiles';
 import moment from 'moment';
 import PopoverDtl from './PopoverDtl';
 import { P } from '@antv/g2plot';
+import { red, volcano, gold, yellow, lime, green, cyan, blue, geekblue, purple, magenta, grey } from '@ant-design/colors';
+import { generate, presetDarkPalettes } from '@ant-design/colors';
+
+// Generate dark color palettes by a given color
+const colors = generate('#1890ff', {
+  theme: 'dark',
+  backgroundColor: '#141414'
+});
+console.log(blue); // ['#E6F7FF', '#BAE7FF', '#91D5FF', ''#69C0FF', '#40A9FF', '#1890FF', '#096DD9', '#0050B3', '#003A8C', '#002766']
+console.log(blue.primary); // '#1890FF'
 interface RefObject {
   upload_files: (id:string) => void
   get_files: () => void
@@ -804,7 +814,7 @@ const TicketDtl:FC = () => {
                 name={PRPID+p.id}
                 style={{ padding:'5px', width: 'maxContent'}} 
                 rules={getValidatorsToProp(p.pattern)}
-                initialValue={ticketId === '0' && p.defaultValue && p.defaultValue}
+                initialValue={ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? moment().clone().add({[p.defaultValue.split(':')[0]]:p.defaultValue.split(':')[1]}) : ''}
                 > 
                  <DatePicker 
                  format={DATETIMEFORMAT}

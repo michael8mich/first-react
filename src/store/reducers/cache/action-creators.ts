@@ -10,5 +10,5 @@ export const CacheActionCreators = {
     setQueriesCache: (payload:any): SetCacheQueriesAction => ({type:CacheActionEnum.SET_QUERIES_CACHE, payload}),
     setPathForEmpty: (payload:string): SetPathForEmptyAction => ({type:CacheActionEnum.SET_PATH_FOR_EMPTY, payload}),
     setConfigs: (payload:CHART_CONFIG): SetConfigsAction => ({type:CacheActionEnum.SET_CONFIGS, payload}),
-    setConfigsClean: (payload:CHART_CONFIG[]): SetConfigsCleanAction => ({type:CacheActionEnum.SET_CONFIGS_CLEAN, payload}),
+    setConfigsArr: (payload:CHART_CONFIG[]): SetConfigsCleanAction => ({type:CacheActionEnum.SET_CONFIGS_ARR, payload}),
 }

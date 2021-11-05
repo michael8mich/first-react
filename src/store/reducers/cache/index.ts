@@ -26,7 +26,7 @@ export default function CacheReducer(state = initialState, action:CacheAction ):
             let s =  [...state.configs, action.payload] 
             return {...state, configs: s }
         } 
-         case CacheActionEnum.SET_CONFIGS_CLEAN: {
+         case CacheActionEnum.SET_CONFIGS_ARR: {
             return {...state, configs: action.payload }
         } 
         default:

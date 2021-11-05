@@ -12,7 +12,7 @@ export enum CacheActionEnum {
     SET_QUERIES_CACHE = "SET_QUERIES_CACHE",
     SET_PATH_FOR_EMPTY = "SET_PATH_FOR_EMPTY",
     SET_CONFIGS = "SET_CONFIGS",
-    SET_CONFIGS_CLEAN = "SET_CONFIGS_CLEAN"
+    SET_CONFIGS_ARR = "SET_CONFIGS_ARR"
 }
 
 export interface SetCacheSmallAction {
@@ -36,7 +36,7 @@ export interface SetConfigsAction {
 }
 
 export interface SetConfigsCleanAction {
-    type: CacheActionEnum.SET_CONFIGS_CLEAN,
+    type: CacheActionEnum.SET_CONFIGS_ARR,
     payload: CHART_CONFIG[]
 }
 
