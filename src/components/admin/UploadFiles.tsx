@@ -146,14 +146,10 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
           onChange={handleUpload}
           fileList={fileList}
         >
- 
-         <Button 
-         type="dashed"
-         size="large"
-         title= {t('select_files_for_upload')}
-         icon={[<UploadOutlined type="large"/>]}>
-          
-           </Button>
+        <UploadOutlined
+        title= {t('select_files_for_upload')}
+        style={{border:'1px dashed gray', fontSize:'33px', color:'gray'}}/>
+              
          {
            loading &&
            <>

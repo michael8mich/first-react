@@ -173,6 +173,8 @@
         "query_template_user": "משתמש תבנית",
         "notify": "הודע",
         "is_default": "ברירת מחדל",
+        "my_opened_tickets": "פניות פתוחות שלי",
+        "my_closed_tickets": "פניות סגורות שלי",
 
 
         "TICKET_OPENED_BY_TEAM": "פניות פעילות לפי צוות",
