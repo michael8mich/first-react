@@ -473,7 +473,7 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
               )}
              </Droppable>
            </DragDropContext> 
-           <Card bodyStyle={{padding: "0"}}>
+           <Card bodyStyle={{padding: "0",background:props.sider ? '#000c17': ''}}>
            <AsyncSelect 
            autoFocus={true}
            menuPosition="fixed"

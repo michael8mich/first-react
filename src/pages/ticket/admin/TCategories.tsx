@@ -244,7 +244,7 @@ const TCategories:FC = () => {
          >
          { t('clear') }
          </Button>&nbsp;&nbsp;&nbsp;
-         <Button  style={{ background: "orange", borderColor: "white" }}
+         <Button  style={{ background: "#01a77c", borderColor: "white" }}
           onClick={() => createNew()  }
           >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
           {viewForm ? 

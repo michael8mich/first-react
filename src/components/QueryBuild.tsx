@@ -114,11 +114,11 @@ const [folders, setFolders] = useState([] as IQuery[])
           disabled={(new_query_name.trim().length===0||folder.trim().length===0) 
           ||(folder.trim()===NEW_SIDER_FOLDER&&new_sider_folder.trim().length===0)
           }
-          style={{ background: "orange", borderColor: "white" }}
+          style={{ background: "#01a77c", borderColor: "white" }}
           onClick={() => create_query()  }
           >{t('save')}</Button>
           
-          &nbsp;&nbsp;&nbsp;<Button  style={{ background: "orange", borderColor: "white" }}
+          &nbsp;&nbsp;&nbsp;<Button  style={{ background: "#01a77c", borderColor: "white" }}
             onClick={() => { setNew_query_view(false); setNew_query_name('') }  }
             >{t('cancel')}</Button>  
             &nbsp;&nbsp;&nbsp;<Input 
@@ -156,7 +156,7 @@ const [folders, setFolders] = useState([] as IQuery[])
          
         :
         <>
-          &nbsp;&nbsp;&nbsp;<Button  style={{ background: "orange", borderColor: "white" }}
+          &nbsp;&nbsp;&nbsp;<Button  style={{ background: "#01a77c", borderColor: "white" }}
             onClick={() => setNew_query_view(true)  }
             >{t('create_query')}</Button>
           

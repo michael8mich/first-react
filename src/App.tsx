@@ -26,7 +26,7 @@ const { Header, Sider, Content } = Layout;
 const App:FC = () => {
   let defaultLen = 'heIL'
   const { i18n } = useTranslation();   
-  const {setUser, setIsAuth, setFromLocation} = useAction()
+  const {setUser, setIsAuth, setFromLocation, fetchLoginUser} = useAction()
   const {isAuth, user } = useTypedSelector(state => state.auth) 
   const {alert } = useTypedSelector(state => state.admin) 
   const [collapsed, setCollapsed] = useState(true)
@@ -38,6 +38,7 @@ const App:FC = () => {
     if(localStorage.getItem('isAuth')) {
       let user = JSON.parse(localStorage.getItem('isAuth')?.toString() || "") as IUser
       setUser(user)
+      fetchLoginUser(user.id)
       i18n.changeLanguage(user.locale.substring(0,2));
       setIsAuth(true)  
     }

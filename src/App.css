@@ -1,4 +1,9 @@
-@import '~antd/dist/antd.css';
+/* @import '~antd/dist/antd.css'; */
+@import '/src/uta-custom-antd.css';
+
+/* Step 5: On this path /node_module/antd/dist run this command lessc --js my-theme.less result.css or compile it inside the project style folder by running this command lessc --js my-theme.less ../../../src/style/custom-antd.css
+
+Step 6: Open the style folder created in the src directory copy the custom-antd.css , goto index.js replace import "antd/dist/antd.css" with import "../src/style/custom-antd.css". you have finally override the antd theme */
 body {
     background: #fafafa;
 }

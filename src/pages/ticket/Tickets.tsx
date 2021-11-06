@@ -445,7 +445,7 @@ const Tickets:FC = () => {
          >
          { t('clear') }
          </Button>&nbsp;&nbsp;&nbsp;
-         <Button  style={{ background: "orange", borderColor: "white" }} key="add_new"
+         <Button  style={{ background: "#01a77c", borderColor: "white" }} key="add_new"
           onClick={() => createNew()  }
           >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
           {viewForm ? 

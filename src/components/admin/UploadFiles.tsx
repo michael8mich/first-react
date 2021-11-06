@@ -148,11 +148,11 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
         >
  
          <Button 
-          type="dashed"
-         size={'large'}
-         style={{height:'100px', width:'100%' }}
-         icon={[<UploadOutlined />, <PlusOutlined />]}>
-           {t('select_files_for_upload')}
+         type="dashed"
+         size="large"
+         title= {t('select_files_for_upload')}
+         icon={[<UploadOutlined type="large"/>]}>
+          
            </Button>
          {
            loading &&
