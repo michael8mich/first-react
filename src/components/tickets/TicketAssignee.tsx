@@ -28,6 +28,7 @@ import PopoverDtl from '../../pages/ticket/PopoverDtl';
 import { P } from '@antv/g2plot';
 import { red, volcano, gold, yellow, lime, green, cyan, blue, geekblue, purple, magenta, grey } from '@ant-design/colors';
 import { generate, presetDarkPalettes } from '@ant-design/colors';
+import { fromPairs } from 'lodash';
 
 // Generate dark color palettes by a given color
 const colors = generate('#1890ff', {
@@ -313,14 +314,6 @@ const TicketAssignee:FC = () => {
     };
     
     const afterUpdateCreate = () => {
-      setAlert({
-        type: 'success' ,
-        message: id === '0' ? t('created_success') : t('updated_success'),
-        closable: true ,
-        showIcon: true ,
-        visible: true,
-        autoClose: 10 
-      })
       if(!init)
       getTicket()
       setRo(true)
@@ -644,18 +637,29 @@ const TicketAssignee:FC = () => {
          >
          { t('toComment') }
          </Button>&nbsp;&nbsp;&nbsp;
+        {
+          form.getFieldValue('assignee')?.value !== user.id &&
+          <>
+          <Button type="primary" htmlType="button"  key="toMe"
+          onClick={() => toMe() }
+          >
+          { t('toMe') }
+          </Button>&nbsp;&nbsp;&nbsp;
+          </>
+        }
+         
+        {
+             form.getFieldValue('status')?.value !== STATUS_CLOSE.value &&
+             <>
+              <Button type="primary" htmlType="button" key="toClose"
+              onClick={() => toClose('Close Comment') }
+              >
+              { t('toClose') }
+              </Button>&nbsp;&nbsp;&nbsp;
+              </>
 
-         <Button type="primary" htmlType="button"  key="toMe"
-         onClick={() => toMe() }
-         >
-         { t('toMe') }
-         </Button>&nbsp;&nbsp;&nbsp;
-
-         <Button type="primary" htmlType="button" key="toClose"
-         onClick={() => toClose('Close Comment') }
-         >
-         { t('toClose') }
-         </Button>&nbsp;&nbsp;&nbsp;
+        }
+         
 
          <Button type="primary" htmlType="button" key="getTicket"
          onClick={() => getTicket() }

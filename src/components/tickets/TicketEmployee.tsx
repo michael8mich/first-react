@@ -46,7 +46,7 @@ const { Panel } = Collapse;
 const { Option } = Select;
 const TicketEmployee:FC = () => {
   const { t } = useTranslation();
-  const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, fetchProperties, setProperties} = useAction()
+  const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, fetchProperties, setProperties, setSelectSmall} = useAction()
   const {error, isLoading, tickets, selectedTicket, properties } = useTypedSelector(state => state.ticket)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {user } = useTypedSelector(state => state.auth)
@@ -64,8 +64,42 @@ const TicketEmployee:FC = () => {
   const [ticketId, setTicketId] = useState('0') 
   let {id} = useParams<Params>()
   
+  const [sendedFromQuery, setSendedFromQuery] = useState(false)
   const router = useHistory()
+  const categorySended = async () => {
+    let router_location = router?.location?.search || ''
+    if(router_location.toString().split('?search=').length>1)
+    {
+      let cat_label = router_location.toString().split('?search=')[1]
+      let catObj = Object.keys(selectSmall).find( k=> k === 'category') 
+      let arr:any = {...selectSmall}
+      let arr_category = arr.category
+      if(arr_category) {
+        let cat = arr_category.find((c: { label: string, value:string }) => c.label == cat_label)
+        if(cat) {
+          form.setFieldsValue({ category: {label:cat_label, value:cat.value }})
+          changeCategory({label:cat_label, value:cat.value })
+        }
+      }
+      else
+      {
+        const response = await  axiosFn("get", '', " name as label, id as value , id as code ", 'ticket_category', " active = '1' order by name asc " , ''  )  
+        let hasError = false;
+        if(response.data["error"]) hasError = true;
+          if(response.data&&!hasError)
+          {
+            let cat = response.data.find((c: { label: string, value:string }) => c.label == cat_label)
+            if(cat) {
+              form.setFieldsValue({ category: {label:cat_label, value:cat.value }})
+              setSelectSmall( { category: response.data } )
+              changeCategory({label:cat_label, value:cat.value })
+            }
+          }
+      }
+    }
+  } 
   useEffect( () => {
+    categorySended()
      setTicketId(id)
       if(id==='0')  {
         setRo(false)
@@ -238,7 +272,7 @@ const TicketEmployee:FC = () => {
         {
           setSelectOptions({...selectOptions, [name]: response.data}) 
           if(inputValue.length === 0 || big)
-          //setSelectSmall( { [name]: response.data } )
+          setSelectSmall( { [name]: response.data } )
           return response.data
         } 
       }
@@ -292,19 +326,24 @@ const TicketEmployee:FC = () => {
            }   
        }
        if(name==='category') {
-        if(selectChange?.value) {
-          setTicketPrp([])
-          const response = await  axiosFn("get", '', '*', 'V_ticket_category', " id = '" + selectChange?.value + "'" , ''  )  
-          let category_info =  translateObj(response?.data, ITicketCategoryObjects)
-          if(category_info[0]?.team?.value) {
-            //form.setFieldsValue({ team: category_info[0]?.team }) 
-            setDefaultOnNew({... defaultOnNew, team:category_info[0]?.team}) 
-            fetchProperties(category_info[0].id)
-          }
-        }   
+        changeCategory(selectChange)
     }
+    
     setSelectValues({...selectOptions, [name]: selectChange })
       }
+
+    const changeCategory = async (selectChange:any) => {
+      if(selectChange?.value) {
+        setTicketPrp([])
+        const response = await  axiosFn("get", '', '*', 'V_ticket_category', " id = '" + selectChange?.value + "'" , ''  )  
+        let category_info =  translateObj(response?.data, ITicketCategoryObjects)
+        if(category_info[0]?.team?.value) {
+          //form.setFieldsValue({ team: category_info[0]?.team }) 
+          setDefaultOnNew({... defaultOnNew, team:category_info[0]?.team}) 
+          fetchProperties(category_info[0].id)
+        }
+      }   
+    }  
     const SelectStyles = {
       container: (provided: any) => ({
         ...provided,
@@ -314,14 +353,6 @@ const TicketEmployee:FC = () => {
     };
     
     const afterUpdateCreate = () => {
-      setAlert({
-        type: 'success' ,
-        message: id === '0' ? t('created_success') : t('updated_success'),
-        closable: true ,
-        showIcon: true ,
-        visible: true,
-        autoClose: 10 
-      })
       if(!init)
       getTicket()
       setRo(true)
@@ -478,7 +509,8 @@ const TicketEmployee:FC = () => {
       priority: PRIORITY_LOW,
       urgency: URGENCY_LOW,
       customer: {label: user.name, value: user.id},
-      team: {label: '', value: ''}
+      team: {label: '', value: ''},
+      category: {label: '', value: ''}
       }
   )
   
@@ -635,7 +667,7 @@ const TicketEmployee:FC = () => {
        autoComplete="off" 
        > 
         <Row >
-        <Col  xs={24} xl={14}>
+        <Col  xs={24} xl={18}>
         {ro 
         ?     
         <div className="flex-container">
@@ -652,13 +684,17 @@ const TicketEmployee:FC = () => {
          { t('toComment') }
          </Button>&nbsp;&nbsp;&nbsp;
 
-   
+         {
+            selectedTicket.status?.value !== STATUS_CLOSE.value &&
+             <>
+              <Button type="primary" htmlType="button" key="toClose"
+              onClick={() => toClose('Close Comment') }
+              >
+              { t('toClose') }
+              </Button>&nbsp;&nbsp;&nbsp;
+              </>
 
-         <Button type="primary" htmlType="button" key="toClose"
-         onClick={() => toClose('Close Comment') }
-         >
-         { t('toClose') }
-         </Button>&nbsp;&nbsp;&nbsp;
+        }
 
          <Button type="primary" htmlType="button" key="getTicket"
          onClick={() => getTicket() }
@@ -699,7 +735,7 @@ const TicketEmployee:FC = () => {
         <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
         <TabPane tab={t('detail')} key="detail" >
         <Row  >
-        <Col xs={24} xl={8}>
+        <Col xs={24} xl={8} sm={12} lg={8}>
         <Form.Item 
            key="category"
            label={ t('tcategory') }
@@ -717,12 +753,13 @@ const TicketEmployee:FC = () => {
            placeholder={ t('tcategory') }
            cacheOptions 
            defaultOptions
+           defaultMenuIsOpen={sendedFromQuery}
            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = '1' order by name asc", false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'category')}
            />
            </Form.Item>
         </Col>
-        <Col xs={24} xl={3}>
+        <Col xs={24} xl={4} sm={12} lg={8}>
            <Form.Item 
            key="ticket_type"
            label={ t('ticket_type') }
@@ -745,7 +782,7 @@ const TicketEmployee:FC = () => {
            />
            </Form.Item>
            </Col>
-        <Col xs={24} xl={3}>
+        <Col xs={24} xl={4} sm={12} lg={8}>
            <Form.Item 
            key="urgency"
            label={ t('urgency') }
@@ -1149,7 +1186,3 @@ const TicketEmployee:FC = () => {
 }
 export default TicketEmployee;
 
-
-// function setSelectSmall(arg0: { [x: string]: any; }) {
-//   throw new Error('Function not implemented.');
-// }

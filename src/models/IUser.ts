@@ -65,4 +65,4 @@ export const ANALYST_DTP = " ( team in ("+ SELECT +" team "+ FROM +" teammember 
 export const ANALYST_DTP_REPORTS = " ( team in ("+ SELECT +" team "+ FROM +" teammember "+WHERE+" member = 'currentUser' ) " +
 "  ) "
 
-export const EMPLOYEE_DTP = " (  log_agent = 'currentUser' or customer = 'currentUser' ) "
+export const EMPLOYEE_DTP = " (  customer = 'currentUser' ) "

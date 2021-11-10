@@ -1,5 +1,6 @@
 /* @import '~antd/dist/antd.css'; */
 @import '/src/uta-custom-antd.css';
+@import '~font-awesome/css/font-awesome.min.css';
 
 /* Step 5: On this path /node_module/antd/dist run this command lessc --js my-theme.less result.css or compile it inside the project style folder by running this command lessc --js my-theme.less ../../../src/style/custom-antd.css
 
@@ -60,12 +61,12 @@ body {
     box-sizing: border-box;
 }
 .homeQueryCard {
-    border: 5px solid #FAAD14;;
+    border: 5px solid #cc3333;
     border-radius:25px;
     padding:'10px';
     margin:10px;
-    color:#fafafa;
-    background:#3bc27f;
+    color:#cc6666;;
+    background: linear-gradient(to bottom, rgba(255,214,94,1) 0%,rgba(254,191,4,1) 100%);
       /* rgba(234,107,76,255); */
     /* #FAAD14;  */
     font-size:18px;

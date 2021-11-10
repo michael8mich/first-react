@@ -53,7 +53,6 @@ const UtilForm: FC<UtilFormProps> = (props) => {
     ,[props])
   const [disableButton, setDisableButton] = useState(false)
   const onFinish = async (values: any) => {
-    debugger
     setDisableButton(true)
     console.log('Success:', values);
     console.log('Util:', util);
@@ -70,7 +69,6 @@ const UtilForm: FC<UtilFormProps> = (props) => {
       code:'',
       active: 1
     } as IUtil)
-    debugger
     createUtil(values)
     props.submit(values)
   };

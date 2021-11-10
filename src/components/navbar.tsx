@@ -129,11 +129,15 @@ const Navbar: FC = () => {
                         <Menu.Item key="ticket" onClick={() => createNewTicket() } >{ t('ticket') + ' ' + t('new') }</Menu.Item>
                         <Menu.Item key="tickets" onClick={() => router.push(RouteNames.TICKETS) } >{ t('tickets') }</Menu.Item>
                       </SubMenu>
-                      <SubMenu key="charts" title={ t('charts') }
-                      icon={<RiseOutlined />}
-                      >
-                        <Menu.Item key="dashboard" onClick={() => router.push(RouteNames.DASHBOARD) } >{ t('dashboard') }</Menu.Item>
-                      </SubMenu>
+                      {
+                        defaultRole?.label !== 'Employee' &&
+                        <SubMenu key="charts" title={ t('charts') }
+                        icon={<RiseOutlined />}
+                        >
+                          <Menu.Item key="dashboard" onClick={() => router.push(RouteNames.DASHBOARD) } >{ t('dashboard') }</Menu.Item>
+                        </SubMenu>
+                      }
+                      
                   </Menu>
                 </div>
               </div>

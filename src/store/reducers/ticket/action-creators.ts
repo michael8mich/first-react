@@ -9,6 +9,8 @@ import { translateObj } from '../../../utils/translateObj';
 import { SearchPagination } from '../../../models/ISearch';
 import { nowToUnix, saveFormBuild } from '../../../utils/formManipulation';
 import { IUser, IUserObjects, IUserObjectsMulti } from '../../../models/IUser';
+import { useAction } from '../../../hooks/useAction';
+import { AdminActionCreators } from '../admin/action-creators';
 function onlyUnique(value: string, index:number, self:string[]) {
   return self.indexOf(value) === index;
 }
@@ -122,8 +124,17 @@ export const TicketActionCreators = {
           if(response.data["error"]) hasError = true;
           if(response.data&&!hasError)
           {
+            dispatch(AdminActionCreators.setAlert({
+              type: 'success' ,
+              message: i18n.t('ticket') + ' ' + (id === '0' ? i18n.t('created_success') : i18n.t('updated_success')),
+              closable: true ,
+              showIcon: true ,
+              visible: true,
+              autoClose: 10 
+            }))
           let ticket: ITicket[] = response.data
-          let p_index = 1;
+          if(prp.length>0) {
+            let p_index = 1;
             prp.map(async p=> {
               let p_ = JSON.parse(JSON.stringify(p))  
               delete p_.id
@@ -145,6 +156,9 @@ export const TicketActionCreators = {
               p_index ++ 
             })
           } else
+          dispatch(TicketActionCreators.SetSelectedTicketProperties(translateObj([], ITicketPropertyObjects)))
+          
+          } else
           {
               dispatch(TicketActionCreators.setIsError(i18n.t('data_problem'))) 
           } 
@@ -157,6 +171,14 @@ export const TicketActionCreators = {
           if(responseNew.data["error"]) hasError = true;
           if(responseNew.data&&!hasError)
           {
+            dispatch(AdminActionCreators.setAlert({
+              type: 'success' ,
+              message:  i18n.t('ticket') + ' ' + (id === '0' ? i18n.t('created_success') : i18n.t('updated_success')),
+              closable: true ,
+              showIcon: true ,
+              visible: true,
+              autoClose: 10 
+            }))
             let new_id: string = responseNew.data[0].id
             let emptyTicket = {} as ITicket
             dispatch(TicketActionCreators.setSelectedTicket( {...emptyTicket, id: new_id }))
@@ -177,12 +199,28 @@ export const TicketActionCreators = {
             })
           } else
           {
+            dispatch(AdminActionCreators.setAlert({
+              type: 'warning' ,
+              message: i18n.t('data_problem'),
+              closable: true ,
+              showIcon: true ,
+              visible: true,
+              autoClose: 10 
+            }))
               dispatch(TicketActionCreators.setIsError(i18n.t('data_problem'))) 
               console.log('Real Error', responseNew.data["error"]);
           } 
         }  
        } catch (e) {
        dispatch(TicketActionCreators.setIsError(i18n.t('axios_error')))    
+       dispatch(AdminActionCreators.setAlert({
+        type: 'warning' ,
+        message: i18n.t('axios_error'),
+        closable: true ,
+        showIcon: true ,
+        visible: true,
+        autoClose: 10 
+      }))
        console.log('createTicket',e);    
       } finally {
         dispatch(TicketActionCreators.IsLoading(false))
@@ -296,6 +334,14 @@ export const TicketActionCreators = {
           if(responseNew.data["error"]) hasError = true;
           if(responseNew.data&&!hasError)
           {
+            dispatch(AdminActionCreators.setAlert({
+              type: 'success' ,
+              message: i18n.t('log') + ' ' + i18n.t('updated_success'),
+              closable: true ,
+              showIcon: true ,
+              visible: true,
+              autoClose: 10 
+            }))
             let new_id: string = responseNew.data[0].id
             console.log('new_id',new_id);
             
@@ -643,3 +689,4 @@ export const TicketActionCreators = {
     },   
     
 }
+

@@ -175,8 +175,15 @@
         "notify": "Notify",
         "is_default": "Default",
         "my_opened_tickets": "My Open Tickets",
+        "my_last_tickets": "My Last Tickets",
         "my_closed_tickets": "My Closed Tickets",
-
+        "t-name": "Ticket Number",
+        "shortCats": "Common requests",
+        "how-can-i-help-you": "How Can I Help You",
+        "found": "Found",
+        "on": "On",
+        "knowledge":"Knowledge",
+        "close": "Close",
 
         "TICKET_OPENED_BY_TEAM": "Active Tickets by Team",
         "TICKET_OPENED_BY_PRIORITY": "Active Tickets by Priority",

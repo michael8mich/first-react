@@ -5,6 +5,7 @@ import { ITicket, ITicketLog } from '../../models/ITicket';
 import { axiosFn } from '../../axios/axios';
 import { uTd } from '../../utils/formManipulation';
 import UserAddOutlined from '@ant-design/icons/lib/icons/UserAddOutlined';
+import { useTypedSelector } from '../../hooks/useTypedSelector';
 
 const { TextArea } = Input;
 
@@ -13,14 +14,17 @@ interface PopoverDtlProps {
 }
 
 const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
+  const {defaultRole } = useTypedSelector(state => state.auth)
   const { t } = useTranslation();
   const [last_log_records, setLast_log_records]  = useState([] as ITicketLog[])
   useEffect(() => {
     getLog()
     
   }, [last_log_records.length])
+  let extra = defaultRole && defaultRole?.label === "Employee" ? "" : " and name = 'New Log Comment' "  ;
   const getLog = async () => {
-    const last_log_records =  await axiosFn('get', '', 'top 4 * ', ' V_ticket_log ', " ticket = '" +props.record.id+ "' order by create_date desc")
+    
+    const last_log_records =  await axiosFn('get', '', 'top 4 * ', ' V_ticket_log ', " ticket = '" +props.record.id+ "' " + extra + " order by create_date desc")
     let tickets_log:ITicketLog[] = last_log_records.data
     tickets_log = tickets_log.map(e => {
       return { ...e, name: t(e.name) }  
@@ -35,7 +39,10 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
     <Card 
     style={{border:'solid 1px gray'}}
     >
-      <Row key="description">
+      <>
+      {
+        extra.length !== 0 &&
+        <Row key="description">
                <Col key="description_col" xs={24} xl={24} sm={24} lg={24}>
                  <label> {t('description')}</label>
                  <TextArea 
@@ -44,7 +51,10 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
                  value={props.record.description}
                  />
                 </Col>
-       </Row>        
+       </Row>
+      }
+      </>
+              
           {
             last_log_records.length > 0 &&
             last_log_records.map((r:ITicketLog) => 
