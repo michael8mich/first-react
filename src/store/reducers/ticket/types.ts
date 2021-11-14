@@ -32,7 +32,10 @@ export enum TicketActionEnum {
     SET_PROPERTIES_COUNT = "SET_PROPERTIES_COUNT",
 
     SET_ERROR = "SET_ERROR",
-    SET_IS_LOADING = "SET_IS_LOADING"
+    SET_IS_LOADING = "SET_IS_LOADING",
+
+    GET_TICKET_STATE = "GET_TICKET_STATE"
+
 }
 
 export interface SetTicketsAction {
@@ -90,6 +93,8 @@ export interface SetIsLoadingAction {
     type: TicketActionEnum.SET_IS_LOADING,
     payload: boolean
 }
+
+
 
 export type TicketAction = 
 SetTicketsAction |

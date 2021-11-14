@@ -1,6 +1,7 @@
 import { ITicket, ITicketCategory, ITicketPrpTpl } from "../../../models/ITicket"
 import { TicketAction, TicketActionEnum, TicketState } from "./types"
 
+
 const initialState: TicketState = {
     tickets: [] as ITicket[],
     selectedTicket: {} as ITicket,
@@ -46,7 +47,7 @@ export default function TicketReducer(state = initialState, action:TicketAction 
        case  TicketActionEnum.SET_ERROR:
            return {...state, error: action.payload, isLoading: false  }           
        case  TicketActionEnum.SET_IS_LOADING:
-           return {...state, isLoading: action.payload }       
+           return {...state, isLoading: action.payload }     
         default:
            return state
     }

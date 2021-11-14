@@ -49,6 +49,7 @@ const TicketAssignee:FC = () => {
   const { t } = useTranslation();
   const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, fetchProperties, setProperties} = useAction()
   const {error, isLoading, tickets, selectedTicket, properties } = useTypedSelector(state => state.ticket)
+  const {notificationsAll } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {user } = useTypedSelector(state => state.auth)
   const { Option } = Select;
@@ -370,7 +371,7 @@ const TicketAssignee:FC = () => {
       })
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedTicket});
       saveFormBuild(values_)
-      createTicket({...values_, id:ticketId, name:selectedTicket.name}, valuesMulti, user.id, [...prp])
+      createTicket({...values_, id:ticketId, name:selectedTicket.name}, valuesMulti, user.id, [...prp], values, selectedTicket, notificationsAll)
       if(!init)
       afterUpdateCreate()
     }

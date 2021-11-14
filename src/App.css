@@ -61,12 +61,12 @@ body {
     box-sizing: border-box;
 }
 .homeQueryCard {
-    border: 5px solid #cc3333;
-    border-radius:25px;
+    border: 3px solid #cc3333;
+    border-radius:5px;
     padding:'10px';
     margin:10px;
-    color:#cc6666;;
-    background: linear-gradient(to bottom, rgba(255,214,94,1) 0%,rgba(254,191,4,1) 100%);
+    color:white;;
+    background: linear-gradient(to bottom, #01a77c 0%,#28a4ae 100%);
       /* rgba(234,107,76,255); */
     /* #FAAD14;  */
     font-size:18px;
@@ -147,3 +147,37 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* .ant-btn-primary {
+  background: linear-gradient(to bottom, #01a77c 0%,#28a4ae 100%);
+} */
+
+
+.preview-box {
+  position: relative;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  padding: 40px 15px 20px;
+  font-weight: 500;
+  margin: 10px 0;
+  color: #333;
+}
+ 
+  
+  .preview-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    background: #eee;
+    font-weight: 600;
+    border: 1px solid #ddd;
+    border-top: 0;
+    border-left: 0;
+    border-radius: 5px 0 5px 0;
+    padding: 5px 12px;
+    letter-spacing: 1px;
+  }
+  

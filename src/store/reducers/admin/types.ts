@@ -1,4 +1,5 @@
 import { IUtil, IFilter, AlertPrp } from '../../../models/admin/IUtil';
+import { INotification } from '../../../models/INotification';
 import { IOrg } from '../../../models/IOrg';
 import { IUser } from '../../../models/IUser';
 
@@ -10,6 +11,12 @@ export interface AdminState {
     orgs: IOrg[]
     orgsCount: number
     selectedOrg: IOrg
+
+    notifications: INotification[]
+    notificationsAll: INotification[]
+    notificationCount: number
+    selectedNotification: INotification
+
     utils: IUtil[]
     utilsCount: number
     filters: IFilter[]
@@ -26,6 +33,12 @@ export enum AdminActionEnum {
     SET_ORGS = "SET_ORGS",
     SET_SELECTED_ORG = "SET_SELECTED_ORG",
     SET_ORGS_COUNT = "SET_ORGS_COUNT",
+
+    SET_NOTIFICATIONS = "SET_NOTIFICATIONS",
+    SET_NOTIFICATIONS_ALL = "SET_NOTIFICATIONS_ALL",
+    SET_SELECTED_NOTIFICATION = "SET_SELECTED_NOTIFICATION",
+    SET__NOTIFICATION_COUNT = "SET__NOTIFICATION_COUNT",
+
     SET_UTILS = "SET_UTILS",
     SET_UTILS_COUNT = "SET_UTILS_COUNT",
     SET_FILTERS = "SET_FILTERS",
@@ -59,6 +72,26 @@ export interface SetOrgsCountAction {
     type: AdminActionEnum.SET_ORGS_COUNT,
     payload: number
 }
+
+
+export interface SetNotificationsAction {
+    type: AdminActionEnum.SET_NOTIFICATIONS,
+    payload: INotification[]
+}
+export interface SetNotificationsAllAction {
+    type: AdminActionEnum.SET_NOTIFICATIONS_ALL,
+    payload: INotification[]
+}
+
+export interface SetSelectedNotificationsAction {
+    type: AdminActionEnum.SET_SELECTED_NOTIFICATION,
+    payload: INotification
+}
+export interface SetNotificationsCountAction {
+    type: AdminActionEnum.SET__NOTIFICATION_COUNT,
+    payload: number
+}
+
 export interface SetErrorAction {
     type: AdminActionEnum.SET_ERROR,
     payload: string
@@ -101,7 +134,11 @@ SetUtilsAction |
 SetIsLoadingAction |
 SetFiltersAction |
 SetUtilsCountAction |
-SetAlertAction
+SetAlertAction |
+SetNotificationsAction | 
+SetSelectedNotificationsAction | 
+SetNotificationsCountAction |
+SetNotificationsAllAction
 
 
 

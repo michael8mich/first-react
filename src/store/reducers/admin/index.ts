@@ -2,6 +2,7 @@ import { IOrg } from './../../../models/IOrg';
 import { AlertPrp, IFilter, IUtil } from '../../../models/admin/IUtil';
 import { IUser } from "../../../models/IUser"
 import { AdminAction, AdminActionEnum, AdminState } from "./types"
+import { INotification } from '../../../models/INotification';
 
 
 const initialState: AdminState = {
@@ -11,6 +12,14 @@ const initialState: AdminState = {
     orgs: [] as IOrg[],
     selectedOrg: {} as IOrg,
     orgsCount: 0,
+
+
+    notifications:  [] as INotification[],
+    notificationsAll:  [] as INotification[],
+    notificationCount: 0,
+    selectedNotification: {} as INotification,
+
+
     utils: [] as IUtil[],
     utilsCount: 0,
     filters: [] as IFilter[],
@@ -36,6 +45,16 @@ export default function AdminReducer(state = initialState, action:AdminAction ):
         case  AdminActionEnum.SET_ORGS_COUNT:
             return {...state, orgsCount: action.payload }  
             
+            case AdminActionEnum.SET_NOTIFICATIONS:
+                return {...state, notifications: action.payload, isLoading: false }
+            case AdminActionEnum.SET_NOTIFICATIONS_ALL:
+                    return {...state, notificationsAll: action.payload, isLoading: false }    
+             case  AdminActionEnum.SET_SELECTED_NOTIFICATION:
+                 return {...state, selectedNotification: action.payload }  
+             case  AdminActionEnum.SET__NOTIFICATION_COUNT:
+                 return {...state, notificationCount: action.payload }  
+
+
        case  AdminActionEnum.SET_ERROR:
            return {...state, error: action.payload, isLoading: false  }  
        case  AdminActionEnum.SET_UTILS:

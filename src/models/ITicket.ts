@@ -96,6 +96,9 @@ export interface IIFrame {
   }
 
 
+
+
+
 export const ITicketObjects:string[] = ['status','customer', 'ticket_type', 'priority','assignee','team', 'urgency', 'last_mod_by', 'log_agent', 'category']
 export const ITicketRoFields:string[] = ['active']
 export const ITicketObjectsMulti:string[] = []

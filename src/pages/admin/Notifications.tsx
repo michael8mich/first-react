@@ -1,46 +1,39 @@
-import { Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Modal, Row, Table, TablePaginationConfig } from 'antd';
+import { Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Modal, Radio, Row, Table, TablePaginationConfig } from 'antd';
 import { FilterValue, SorterResult } from 'antd/lib/table/interface';
 import { ColumnsType  } from 'antd/es/table';
 import  {FC, useEffect, useState} from 'react';
 import { useTranslation } from 'react-i18next';
-import UtilForm from '../../components/admin/UtilForm';
 import { useAction } from '../../hooks/useAction';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
-import { IUtil } from '../../models/admin/IUtil';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import { SearchPagination, SelectOption } from '../../models/ISearch';
 import { searchFormWhereBuild } from '../../utils/formManipulation';
 import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
+import { useHistory } from 'react-router-dom';
+import { RouteNames } from '../../router';
+import { INotificationObjects, INotification } from '../../models/INotification';
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
 const WHERE_DEFAULT = ' active = 1 '
 
-
-const Utils:FC = () => {
+const Notifications:FC = () => {
   const { t } = useTranslation();
   const searchP = {
     _limit: LIMIT_DEFAULT,
     _page: '1',
-    _offset: SORT_DEFAULT 
+    _offset: SORT_DEFAULT
   } as SearchPagination
-  const [modalVisible, setModalVisible] = useState(false)
-  const {error, isLoading, utils,filters,utilsCount } = useTypedSelector(state => state.admin)
+  const {error, isLoading, notifications, notificationCount } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
-  const {fetchUtils, setSelectSmall} = useAction()
+  const {fetchNotifications, setSelectSmall} = useAction()
 
   const [typeSelect, setTypeSelect] = useState('')
-  function  SubmitUtil(util:IUtil) {
-    if(!error) {
-       setModalVisible(false)
-       fetchUtils(searchP, where)
-       setSelectedId('')
-    }
-  }
+
 
   useEffect(() => {
-    fetchUtils(searchP, where)
+    fetchNotifications(searchP, where)
       
   }, [])
 
@@ -49,22 +42,20 @@ const Utils:FC = () => {
   }, [error])
 
   useEffect( () => {
-    setPagination({...pagination, total: utilsCount})
-    }, [utilsCount]
+    setPagination({...pagination, total: notificationCount})
+    }, [notificationCount]
   )
-
-  const [pagination, setPagination] = useState({ current: +searchP._page, pageSize: +searchP._limit, total: utilsCount} as TablePaginationConfig )
+  const router = useHistory()
+  const [pagination, setPagination] = useState({ current: +searchP._page, pageSize: +searchP._limit, total: notificationCount} as TablePaginationConfig )
   const [where, setWhere] = useState(WHERE_DEFAULT as string )
   const [filter, setFilter] = useState({ } as Record<string, FilterValue | null> )
-  const [selectedId, setSelectedId] = useState('')
   const [form] = Form.useForm()
   const [viewForm, setViewForm] = useState(true )
   const goToObject = (event:any, id:string) => {
     event.stopPropagation()
-    setModalVisible(true)
-    setSelectedId(id)
+    router.push(RouteNames.NOTIFICATIONS + '/' + id )
   }
-  const columns: ColumnsType<IUtil> = [
+  const columns: ColumnsType<INotification> = [
     {
       key: 'name',
       title: t('name'),
@@ -79,22 +70,28 @@ const Utils:FC = () => {
     
     },
     {
-      key: 'type',
-      title: t('type'),
-      dataIndex: 'type',
+      key: 'notification_type',
+      title: t('notification_type'),
+      dataIndex: 'notification_type',
       sorter: true,
-      // filters: filters
-    },
+      render: (name, record, index) => {
+        return (
+            <>        
+            {record.notification_type.label} 
+            </>
+        );}
+    }
+    ,
     {
-      key: 'code',
-      title: t('code'),
-      dataIndex: 'code',
+      key: 'send_to',
+      title: t('send_to'),
+      dataIndex: 'send_to',
       sorter: true,
     }
   ]
 
-  const handleTableChange = (pagination: TablePaginationConfig, filter: Record<string, FilterValue | null>, sorter: SorterResult<any> | SorterResult<any>[]   ) => {  
-    setPagination({...pagination, total: utilsCount})
+    const handleTableChange = (pagination: TablePaginationConfig, filter: Record<string, FilterValue | null>, sorter: SorterResult<any> | SorterResult<any>[]   ) => {  
+    setPagination({...pagination, total: notificationCount})
     setFilter(filter)
     let page = pagination.current?.toString() || '1'
     let sorter_ = JSON.parse(JSON.stringify(sorter))
@@ -105,18 +102,16 @@ const Utils:FC = () => {
     : SORT_DEFAULT
     
     console.log('_offset',_offset);
-    fetchUtils({...searchP, _page: page, _offset: _offset, _limit: pageSize.toString() } , where) 
-  }
-  const openCloseModal = (value:boolean) => {
-    if(!value)  setSelectedId('')
-    setModalVisible(value)
+    fetchNotifications({...searchP, _page: page, _offset: _offset, _limit: pageSize.toString()  } , where) 
   }
 
    
   const initSelectOptions:any = {
+
   }
   const [selectOptions , setSelectOptions] = useState(initSelectOptions)
   const initSelectValues:any = {
+  
   }
   const [selectValues , setSelectValues] = useState(initSelectValues) 
   const promiseOptions = async (inputValue: string, name: string, what:string, tname:string, where:string, big: boolean = false) => {
@@ -162,27 +157,30 @@ const Utils:FC = () => {
         opacity: '1 !important'
       })
     };
-    const fastSearchArray = ['type', 'name']
+
+    const fastSearchArray = ['notification_type_name', 'send_to', 'subject', 'name']
     const onFinish = async (values: any) => { 
       console.log('Success:', values);
       let where_ = searchFormWhereBuild(values, fastSearchArray)
-      console.log(where_);
-      fetchUtils({...searchP } , where_)
+      fetchNotifications({...searchP } , where_)
       setWhere(where_)
       
     }
     const onFinishFailed = (errorInfo: any) => {
       console.log('Failed:', errorInfo);
     }
+    const createNew = () => {
+      router.push(RouteNames.NOTIFICATIONS + '/0')
+    }
     const buildTitle = () =>
     {
         return (
-          <h1 style={{padding:'10px'}}>{   t('search')} { t('utils')}</h1>
+          <h1 style={{padding:'10px'}}>{   t('search')} { t('notifications')}</h1>
         )
     }
   return (
     <Layout style={{height:"100vh"}}>
-       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
+      <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
       <h1>{error}</h1>
       }
@@ -203,7 +201,7 @@ const Utils:FC = () => {
         
          {buildTitle()}
          </Col>
-         <Col  xs={12} xl={24}>
+        <Col  xs={12} xl={24}>
          <Button type="primary" htmlType="submit" loading={isLoading}
          >
          { t('search') }
@@ -214,7 +212,7 @@ const Utils:FC = () => {
          { t('clear') }
          </Button>&nbsp;&nbsp;&nbsp;
          <Button  style={{ background: "orange", borderColor: "white" }}
-          onClick={() => openCloseModal(true)  }
+          onClick={() => createNew()  }
           >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
           {viewForm ? 
          <FilterOutlined style={{color:'gray', fontSize: '24px'}}
@@ -231,9 +229,8 @@ const Utils:FC = () => {
         </Row>
         {viewForm &&
         <>
-       
         <Row  >
-           <Col xs={24} xl={8}  >
+           <Col  xs={24} xl={6}  >
            <Form.Item
            // label={ t('name') }
            name="name" 
@@ -244,26 +241,25 @@ const Utils:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col  xs={24} xl={8}>
+           <Col  xs={24} xl={6}  >
            <Form.Item 
            // label={ t('type') }
-           name="type"
+           name="notification_type"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-            menuPosition="fixed"
+           menuPosition="fixed"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
-           placeholder={ t('type') }
+           placeholder={ t('notification_type') }
            cacheOptions 
-           autoFocus
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'type',  'distinct type as label, type as value , type as code', 'utils', '', false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'type')}
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'notification_type',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'notification_type' ", false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'notification_type')}
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={8}  >
+           <Col  xs={24} xl={6}  >
            <Form.Item
            label={ t('active') }
            name="active" 
@@ -279,41 +275,27 @@ const Utils:FC = () => {
      </Row>
      </>
       }
-       </Form>
+   </Form>
      
       <Row justify="center" align="middle" >
-      <Table<IUtil> 
+      <Table<INotification> 
       rowClassName={(record) => record.active === 1 ? 'table-row-light' :  'table-row-dark'}
       columns={columns} 
-      dataSource={utils} 
+      dataSource={notifications} 
       loading={isLoading}
       rowKey="id"
       bordered
       pagination={pagination}
       onChange={handleTableChange}
-      title={() => <h3>{t('utils')}</h3> }
-      footer={() => t('total_count') + ' ' + utilsCount}
+      title={() => <h3>{t('notifications')}</h3> }
+      footer={() => t('total_count') + ' ' + notificationCount}
       style={{width: '100%', padding: '5px'}}
       // scroll={{ x: 1500, y: 700 }}
+      expandable={{
+        expandedRowRender: record => <p style={{ margin: 0 }}>{record.body}</p>,
+        rowExpandable: record => record.body !== '',
+      }}
       />
-      </Row>
-      <Row justify="center" align="middle" >
-       <Modal
-       title={t('add_new')}
-       footer={null}
-       onCancel={() => openCloseModal(false) }
-       visible={modalVisible}
-       >
-         <Card>
-           <UtilForm
-           submit={util => SubmitUtil(util) }
-           utils={utils}
-           modalVisible={modalVisible}
-           selectedId={selectedId}
-           clearSelectedId={() => setSelectedId('') }
-           />
-         </Card>
-       </Modal>
       </Row>
       </Card>
     </Layout>
@@ -322,5 +304,5 @@ const Utils:FC = () => {
 
 
 
-export default Utils;
+export default Notifications;
 

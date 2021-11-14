@@ -1,6 +1,7 @@
 import axios from 'axios'
 import FormData from 'form-data'
 const Base_URL = "https://localhost:44367/v1/qtrm"
+const Base_URL_Email = "https://localhost:44367/api/Mail/send"
 
 export async function axiosFn(type, data, first, second, third, id='', limit='', page='',offset='' ) {
   let path = Base_URL;
@@ -63,5 +64,25 @@ export async function axiosFnUpload(file, id ) {
       console.log(e)
       return [{error: e}]
   }   
-
+}
+export async function axiosFnEmail(ToEmail, Subject, Body ) {
+    let path = Base_URL_Email
+      const headers = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE'
+        }
+        try {
+          let data = new FormData();
+          data.append('ToEmail', ToEmail)
+          data.append('Subject', Subject)
+          data.append('Body', Body)
+            return await axios.post(path, data, {
+              headers: headers
+            })
+            
+        } catch (e) {
+        console.log(e)
+        return [{error: e}]
+    } 
 }

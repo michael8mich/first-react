@@ -14,6 +14,8 @@ import TicketDtl from '../pages/ticket/TicketDtl';
 import Tickets from '../pages/ticket/Tickets';
 import Dashboard from '../charts/dashbord';
 import Empty from '../components/Empty';
+import NotificationDtl from '../pages/admin/NotificationDtl';
+import Notifications from '../pages/admin/Notifications';
 
 
 export interface IRoute {
@@ -31,6 +33,8 @@ export enum RouteNames {
     EVENT='/events',
     ORGS= '/orgs',
     ORG_DTL= '/orgs/:id',
+    NOTIFICATION_DTL= '/notifications/:id',
+    NOTIFICATIONS= '/notifications',
     TICKETS= '/tickets',
     TICKET_DTL= '/tickets/:id',
     TCATEGORIES = '/tcategories',
@@ -47,6 +51,8 @@ export const privateRoutes:IRoute[] = [
     {path: RouteNames.USERS, component: Users, exact: true},
     {path: RouteNames.ORG_DTL, component: OrgDtl, exact: false}, 
     {path: RouteNames.ORGS, component: Orgs, exact: true},
+    {path: RouteNames.NOTIFICATION_DTL, component: NotificationDtl, exact: false}, 
+    {path: RouteNames.NOTIFICATIONS, component:  Notifications, exact: true},
     {path: RouteNames.TICKET_DTL, component: TicketDtl, exact: true}, 
     {path: RouteNames.TICKETS, component: Tickets,  exact: true},
     {path: RouteNames.TCATEGORY_DTL, component: TCategoryDtl, exact: false}, 

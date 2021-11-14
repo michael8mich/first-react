@@ -11,9 +11,14 @@ import { nowToUnix, saveFormBuild } from '../../../utils/formManipulation';
 import { IUser, IUserObjects, IUserObjectsMulti } from '../../../models/IUser';
 import { useAction } from '../../../hooks/useAction';
 import { AdminActionCreators } from '../admin/action-creators';
+import { notify } from '../../../utils/notificatinSend';
+import { INotification } from '../../../models/INotification';
+
 function onlyUnique(value: string, index:number, self:string[]) {
   return self.indexOf(value) === index;
 }
+
+
 
 export const TicketActionCreators = {
     setTickets: (payload:ITicket[]): SetTicketsAction => ({type:TicketActionEnum.SET_TICKETS, payload}),
@@ -102,11 +107,12 @@ export const TicketActionCreators = {
        }
  
      },   
-    createTicket: (ticket: ITicket,  multi:any, loginTicketId:string, prp: ITicketPrpTpl[] = [] ) => async (dispatch: AppDispatch) => {
+    createTicket: (ticket: ITicket,  multi:any, loginTicketId:string, prp: ITicketPrpTpl[] = [], values:any = {}, selectedTicket:ITicket = {} as ITicket, notificationsAll:INotification[] = [] as INotification[]) => async (dispatch: AppDispatch) => {
       dispatch(TicketActionCreators.setIsError(''))
       try { 
         let hasError = false;
         let ticket_ = JSON.parse(JSON.stringify(ticket)) 
+        let ticket_notify = JSON.parse(JSON.stringify(ticket)) 
         ITicketObjectsMulti.map(v => {
           delete ticket_[v]
         })
@@ -132,6 +138,9 @@ export const TicketActionCreators = {
               visible: true,
               autoClose: 10 
             }))
+           
+            
+            notify(true, values, selectedTicket, notificationsAll )  
           let ticket: ITicket[] = response.data
           if(prp.length>0) {
             let p_index = 1;
@@ -179,7 +188,17 @@ export const TicketActionCreators = {
               visible: true,
               autoClose: 10 
             }))
+            
+            
+            notify(true, values)
             let new_id: string = responseNew.data[0].id
+            let init_values:any = { "name": 'Create New', "ticket": new_id , old_value: '', new_value: '' }
+            init_values.last_mod_by = loginTicketId
+            init_values.last_mod_dt =  nowToUnix().toString()
+            const responseNewLog = await  axiosFn("post", init_values, '*', 'ticket_log', "id" , ''  )  
+            
+            debugger
+            
             let emptyTicket = {} as ITicket
             dispatch(TicketActionCreators.setSelectedTicket( {...emptyTicket, id: new_id }))
             let p_index = 1;

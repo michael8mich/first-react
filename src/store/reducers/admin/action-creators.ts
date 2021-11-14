@@ -1,13 +1,15 @@
+
 import { IOrg, IOrgObjects, IOrgObjectsMulti } from './../../../models/IOrg';
 import { IUtil, IFilter, AlertPrp } from '../../../models/admin/IUtil';
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
 import { IUserObjects, IUserObjectsMulti, IUser } from '../../../models/IUser';
-import { AdminActionEnum, SetUsersAction, SetErrorAction, SetIsLoadingAction, SetUtilsAction, SetFiltersAction, SetUtilsCountAction, SetUsersCountAction, SetSelectedUserAction, SetOrgsAction, SetSelectedOrgAction, SetOrgsCountAction, SetAlertAction } from './types';
+import { AdminActionEnum, SetUsersAction, SetErrorAction, SetIsLoadingAction, SetUtilsAction, SetFiltersAction, SetUtilsCountAction, SetUsersCountAction, SetSelectedUserAction, SetOrgsAction, SetSelectedOrgAction, SetOrgsCountAction, SetAlertAction, SetNotificationsAction, SetNotificationsCountAction, SetSelectedNotificationsAction, SetNotificationsAllAction } from './types';
 import i18n from "i18next";
 import { translateObj } from '../../../utils/translateObj';
 import { SearchPagination } from '../../../models/ISearch';
 import { nowToUnix } from '../../../utils/formManipulation';
+import { INotification, INotificationObjects } from '../../../models/INotification';
 function onlyUnique(value: string, index:number, self:string[]) {
   return self.indexOf(value) === index;
 }
@@ -22,6 +24,12 @@ export const AdminActionCreators = {
     setOrgs: (payload:IOrg[]): SetOrgsAction => ({type:AdminActionEnum.SET_ORGS, payload}),
     setSelectedOrg: (payload:IOrg): SetSelectedOrgAction => ({type:AdminActionEnum.SET_SELECTED_ORG, payload}),
     setOrgsCount: (payload:number): SetOrgsCountAction => ({type:AdminActionEnum.SET_ORGS_COUNT, payload}),
+
+    setNotifications: (payload:INotification[]): SetNotificationsAction => ({type:AdminActionEnum.SET_NOTIFICATIONS, payload}),
+    setNotificationsAll: (payload:INotification[]): SetNotificationsAllAction => ({type:AdminActionEnum.SET_NOTIFICATIONS_ALL, payload}),
+    setSelectedNotification: (payload:INotification): SetSelectedNotificationsAction => ({type:AdminActionEnum.SET_SELECTED_NOTIFICATION, payload}),
+    setNotificationsCount: (payload:number): SetNotificationsCountAction => ({type:AdminActionEnum.SET__NOTIFICATION_COUNT, payload}),
+
 
     setUtils: (payload:IUtil[]): SetUtilsAction => ({type:AdminActionEnum.SET_UTILS, payload}),
     setUtilsCount: (payload:number): SetUtilsCountAction => ({type:AdminActionEnum.SET_UTILS_COUNT, payload}),
@@ -272,7 +280,7 @@ export const AdminActionCreators = {
       }
 
      },
-     changeGroupMemberNotify: (notify:any[] ) => async (dispatch: AppDispatch) => {
+    changeGroupMemberNotify: (notify:any[] ) => async (dispatch: AppDispatch) => {
       try { 
         notify.map(async v => {
             const response = await  axiosFn("put", {notify:v.notify}, '*', 'teammember', "id" , v.code  )        
@@ -284,7 +292,7 @@ export const AdminActionCreators = {
       }
 
      },
-     changeDefaultRole: (is_default:any[] ) => async (dispatch: AppDispatch) => {
+    changeDefaultRole: (is_default:any[] ) => async (dispatch: AppDispatch) => {
       try {   
         is_default.map(async v => {
           const response = await  axiosFn("put", {is_default:v.is_default}, '*', 'util_parent', "id" , v.code  )        
@@ -377,7 +385,7 @@ export const AdminActionCreators = {
        }
  
      }, 
-     createOrg: (org: IOrg, multi:any ) => async (dispatch: AppDispatch) => {
+    createOrg: (org: IOrg, multi:any ) => async (dispatch: AppDispatch) => {
       dispatch(AdminActionCreators.setIsError(''))
       try { 
         let hasError = false;
@@ -534,6 +542,165 @@ export const AdminActionCreators = {
             //     multiObject = { ...multiObject, [m]: response_multi.data}
             //     dispatch(AdminActionCreators.setSelectedUser({...user, ...multiObject}))
             // })
+             } else
+             {
+                 dispatch(AdminActionCreators.setIsError(i18n.t('data_problem')))
+             }   
+       
+        } catch (e) {
+        dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
+       } finally {
+         dispatch(AdminActionCreators.IsLoading(false))
+       }
+     }, 
+
+
+     fetchNotifications: (searchP: SearchPagination, where: string ) => async (dispatch: AppDispatch) => {
+      try {
+       dispatch(AdminActionCreators.setIsError(''))
+         dispatch(AdminActionCreators.IsLoading(true))
+         const response = await  axiosFn("get", '', '*', 'V_notifications', where , '', searchP._limit, searchP._page,  searchP._offset  )  
+         let hasError = false;
+         if(response.data["error"]) hasError = true;
+             if(response.data&&!hasError)
+             {
+             let notifications_: any[] = response.data
+             let _count =  response.headers['x-total-count'] || 0
+             dispatch(AdminActionCreators.setNotificationsCount(_count))
+             notifications_ = translateObj(notifications_, INotificationObjects)
+             let notifications:INotification[] = notifications_
+             dispatch(AdminActionCreators.setNotifications(notifications))
+             } else
+             {
+                 dispatch(AdminActionCreators.setIsError(i18n.t('data_problem')))
+             }   
+       
+        } catch (e) {
+        dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
+       } finally {
+         dispatch(AdminActionCreators.IsLoading(false))
+       }
+ 
+     }, 
+     
+     fetchNotificationsAll: ( ) => async (dispatch: AppDispatch) => {
+      try {
+       dispatch(AdminActionCreators.setIsError(''))
+         dispatch(AdminActionCreators.IsLoading(true))
+         const response = await  axiosFn("get", '', '*', 'V_notifications', "active = 1" , '' )  
+         let hasError = false;
+         if(response.data["error"]) hasError = true;
+             if(response.data&&!hasError)
+             {
+             let notifications_: any[] = response.data
+
+             notifications_ = translateObj(notifications_, INotificationObjects)
+             let notifications:INotification[] = notifications_
+             dispatch(AdminActionCreators.setNotificationsAll(notifications))
+             } else
+             {
+                 dispatch(AdminActionCreators.setIsError(i18n.t('data_problem')))
+             }   
+       
+        } catch (e) {
+        dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
+       } finally {
+         dispatch(AdminActionCreators.IsLoading(false))
+       }
+ 
+     }, 
+    createNotification: (notifications: INotification, multi:any ) => async (dispatch: AppDispatch) => {
+      dispatch(AdminActionCreators.setIsError(''))
+      try { 
+        let hasError = false;
+        let notifications_ = JSON.parse(JSON.stringify(notifications)) 
+        IOrgObjectsMulti.map(v => {
+          delete notifications_[v]
+        })
+        const id = notifications_.id
+        delete notifications_.id
+        //update
+        if(id!=='0') {
+          dispatch(AdminActionCreators.IsLoading(true))
+          const response = await  axiosFn("put", notifications_, '*', 'notification', "id" , id  )  
+          if(response.data["error"]) hasError = true;
+          if(response.data&&!hasError)
+          {
+          let notifications: INotification[] = response.data
+          dispatch(AdminActionCreators.setAlert({
+            type: 'success' ,
+            message:  i18n.t('notification') + ' ' + (id === '0' ? i18n.t('created_success') : i18n.t('updated_success')),
+            closable: true ,
+            showIcon: true ,
+            visible: true,
+            autoClose: 10 
+          }))
+          
+          } else
+          {
+              dispatch(AdminActionCreators.setIsError(i18n.t('data_problem'))) 
+              dispatch(AdminActionCreators.setAlert({
+                type: 'warning' ,
+                message: i18n.t('data_problem'),
+                closable: true ,
+                showIcon: true ,
+                visible: true,
+                autoClose: 10 
+              }))
+          } 
+        }
+        else //create
+        {
+          dispatch(AdminActionCreators.IsLoading(true))
+          const responseNew = await  axiosFn("post", notifications_, '*', 'notification', "id" , ''  )  
+          if(responseNew.data["error"]) hasError = true;
+          if(responseNew.data&&!hasError)
+          {
+            let new_id: any = responseNew.data[0].id
+            dispatch(AdminActionCreators.setAlert({
+              type: 'success' ,
+              message:  i18n.t('notification') + ' ' + (id === '0' ? i18n.t('created_success') : i18n.t('updated_success')),
+              closable: true ,
+              showIcon: true ,
+              visible: true,
+              autoClose: 10 
+            }))
+          
+          } else
+          {
+              dispatch(AdminActionCreators.setIsError(i18n.t('data_problem'))) 
+              console.log('Real Error', responseNew.data["error"]);
+              dispatch(AdminActionCreators.setAlert({
+                type: 'warning' ,
+                message: i18n.t('data_problem'),
+                closable: true ,
+                showIcon: true ,
+                visible: true,
+                autoClose: 10 
+              }))
+          } 
+        }  
+       } catch (e) {
+       dispatch(AdminActionCreators.setIsError(i18n.t('axios_error')))        
+      } finally {
+        dispatch(AdminActionCreators.IsLoading(false))
+      }
+
+     },
+    fetchNotification: (id: string) => async (dispatch: AppDispatch) => {
+      try {
+       dispatch(AdminActionCreators.setIsError(''))
+         dispatch(AdminActionCreators.IsLoading(true))
+         const response = await  axiosFn("get", '', '*', 'V_notifications', '' , id  )  
+         let hasError = false;
+         if(response.data["error"]) hasError = true;
+             if(response.data&&!hasError)
+             {
+             let notifications_: any[] = response.data
+             notifications_ = translateObj(notifications_, INotificationObjects)
+             let notifications:INotification = notifications_[0]
+             dispatch(AdminActionCreators.setSelectedNotification(notifications))
+            
              } else
              {
                  dispatch(AdminActionCreators.setIsError(i18n.t('data_problem')))

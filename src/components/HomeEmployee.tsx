@@ -11,7 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from '../hooks/useTypedSelector';
 import { AutoComplete, Avatar, Badge, Button, Card, Col, Input, Popconfirm, Row, Tooltip } from 'antd';
 import { SelectProps } from 'antd/es/select';
-import { ReloadOutlined, PlusCircleOutlined, MinusCircleOutlined,EditOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { ReloadOutlined, PlusCircleOutlined, MinusCircleOutlined,EditOutlined, 
+  CloseCircleOutlined, DeleteOutlined,SearchOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import { useAction } from '../hooks/useAction';
 import { HOME_FOLDER, IQuery } from '../models/ISearch';
@@ -27,6 +28,7 @@ import { IUtil } from '../models/admin/IUtil';
 import classes from './HomeEmployee.module.css'
 import Iframe from 'react-iframe'
 import CloseOutlined from '@ant-design/icons/lib/icons/CloseOutlined';
+import useWindowDimensions from '../hooks/useWindowDimensions';
 const {Meta} = Card
   
 
@@ -89,7 +91,7 @@ const HomeEmployee: FC = () => {
             }}
           >
             <span
-            onClick={() => setSelectedKn({ width:'100%', height:'800px' , url:'http://mx/kn/'+kn.code} ) }
+            onClick={() => setSelectedKn({ width:'100%', height:'600px' , url:'http://mx/kn/'+kn.code} ) }
             >
               {t('found')} <label style={{color:'green',textDecoration:'underline'}}>{query} </label>  {t('on')} {' '}
               {kn.name}
@@ -227,8 +229,11 @@ const getQueries = async () => {
   const getListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
     background: isDraggingOver ? "lightblue" : "transparent",
   });
-
-
+  const { height, width } = useWindowDimensions();
+  const autocompleteStyle = () => {
+    let width_ = width<400 ? 250 : 700
+    return { width: width_, height: '32px'}
+  }
   return (
     <Card>
        <Tooltip title={t('refresh')}>
@@ -267,7 +272,7 @@ const getQueries = async () => {
     <Col  xs={24} xl={8} >
     <AutoComplete
       dropdownMatchSelectWidth={252}
-      style={{ width: 600 }}
+      style={autocompleteStyle()}
       options={options}
       onSelect={onSelect}
       onSearch={handleSearch}
@@ -275,7 +280,13 @@ const getQueries = async () => {
         option!.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
       }
     >
-      <Input.Search size="large" placeholder={t('how-can-i-help-you')} enterButton />
+      <Input.Search 
+       placeholder={t('how-can-i-help-you')} 
+      enterButton={<Button type="primary"
+        style={{height:'53px'}}
+      ><SearchOutlined /></Button>} 
+      size="large"
+      allowClear       />
       
     </AutoComplete>
     
@@ -308,9 +319,9 @@ const getQueries = async () => {
     </Row>
     <br/><br/>
     <Row>
-    <Col  xs={24} xl={8} ></Col>
-    <Col  xs={24} xl={8} ><h1 style={{color:'gray',fontSize:'24px'}}>{t('shortCats')}</h1></Col>
-    <Col  xs={24} xl={8} ></Col> 
+    <Col  xs={24} xl={2} lg={2}  sm={2}></Col>
+    <Col  xs={24} xl={12} lg={12}  sm={18}  ><h1 style={{color:'gray',fontSize:'24px'}}>{t('shortCats')}</h1></Col>
+    <Col  xs={24} xl={2} lg={2}  sm={2}></Col> 
     </Row>
     <Row> 
       {

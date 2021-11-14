@@ -26,7 +26,7 @@ const { Header, Sider, Content } = Layout;
 const App:FC = () => {
   let defaultLen = 'heIL'
   const { i18n } = useTranslation();   
-  const {setUser, setIsAuth, setFromLocation, fetchLoginUser} = useAction()
+  const {setUser, setIsAuth, setFromLocation, fetchLoginUser, fetchNotificationsAll} = useAction()
   const {isAuth, user } = useTypedSelector(state => state.auth) 
   const {alert } = useTypedSelector(state => state.admin) 
   const [collapsed, setCollapsed] = useState(true)
@@ -49,6 +49,7 @@ const App:FC = () => {
       setUser({...user_obj, locale: defaultLen })
       i18n.changeLanguage(defaultLen.substring(0,2));
     }
+    fetchNotificationsAll()
   }, [])
 
   
