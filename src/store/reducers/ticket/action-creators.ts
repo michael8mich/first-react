@@ -1,3 +1,4 @@
+
 import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, ITicketPropertyObjects, ITicketPropertyObjectsMulti, ITicketPrpTpl } from './../../../models/ITicket';
 
 import { AppDispatch } from '../..';
@@ -106,7 +107,45 @@ export const TicketActionCreators = {
          dispatch(TicketActionCreators.IsLoading(false))
        }
  
-     },   
+     },  
+    fetchTicketNotifications: (selectedTicket:ITicket ) => async (dispatch: AppDispatch) => {
+      try {
+       dispatch(TicketActionCreators.setIsError(''))
+         dispatch(TicketActionCreators.IsLoading(true))
+         let tickets_notifications: INotification[] = []
+         const response = await  axiosFn("get", '', '*', 'notification_sended', " ticket = '" + selectedTicket.id + "' order by create_date desc"  , ''  )  
+         let hasError = false;
+         if(response.data["error"]) hasError = true;
+             if(response.data&&!hasError)
+             {
+              tickets_notifications = response.data
+             let _count =  response.headers['x-total-count'] || 0
+             
+            //  tickets_notification = tickets_notification.map(e=> {
+            //   return { ...e, name:i18n.t(e.name) }  
+            //    }
+            //   ) 
+              
+             
+             const new_selectedTicket = {...selectedTicket, tickets_notifications: tickets_notifications}
+             dispatch(TicketActionCreators.setSelectedTicket({...new_selectedTicket}))
+             } 
+             else
+             {
+              dispatch(TicketActionCreators.setTickets([]))   
+              dispatch(TicketActionCreators.setIsError(i18n.t('data_problem')))
+             }   
+       
+        } catch (e) {
+          dispatch(TicketActionCreators.setTickets([])) 
+          console.log('fetchTicketLog',e);
+              
+          dispatch(TicketActionCreators.setIsError(i18n.t('axios_error')))        
+       } finally {
+         dispatch(TicketActionCreators.IsLoading(false))
+       }
+ 
+     },    
     createTicket: (ticket: ITicket,  multi:any, loginTicketId:string, prp: ITicketPrpTpl[] = [], values:any = {}, selectedTicket:ITicket = {} as ITicket, notificationsAll:INotification[] = [] as INotification[]) => async (dispatch: AppDispatch) => {
       dispatch(TicketActionCreators.setIsError(''))
       try { 
@@ -140,7 +179,7 @@ export const TicketActionCreators = {
             }))
            
             
-            notify(true, values, selectedTicket, notificationsAll )  
+            notify(false, values, selectedTicket, notificationsAll )  
           let ticket: ITicket[] = response.data
           if(prp.length>0) {
             let p_index = 1;
@@ -189,16 +228,14 @@ export const TicketActionCreators = {
               autoClose: 10 
             }))
             
-            
-            notify(true, values)
+           
             let new_id: string = responseNew.data[0].id
+            notify(true, values, {...selectedTicket, id:new_id }, notificationsAll )  
             let init_values:any = { "name": 'Create New', "ticket": new_id , old_value: '', new_value: '' }
             init_values.last_mod_by = loginTicketId
             init_values.last_mod_dt =  nowToUnix().toString()
             const responseNewLog = await  axiosFn("post", init_values, '*', 'ticket_log', "id" , ''  )  
-            
-            debugger
-            
+                    
             let emptyTicket = {} as ITicket
             dispatch(TicketActionCreators.setSelectedTicket( {...emptyTicket, id: new_id }))
             let p_index = 1;

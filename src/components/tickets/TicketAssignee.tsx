@@ -29,6 +29,7 @@ import { P } from '@antv/g2plot';
 import { red, volcano, gold, yellow, lime, green, cyan, blue, geekblue, purple, magenta, grey } from '@ant-design/colors';
 import { generate, presetDarkPalettes } from '@ant-design/colors';
 import { fromPairs } from 'lodash';
+import { INotification } from '../../models/INotification';
 
 // Generate dark color palettes by a given color
 const colors = generate('#1890ff', {
@@ -47,7 +48,7 @@ const { Option } = Select;
 
 const TicketAssignee:FC = () => {
   const { t } = useTranslation();
-  const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, fetchProperties, setProperties} = useAction()
+  const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, fetchProperties, setProperties, fetchTicketNotifications} = useAction()
   const {error, isLoading, tickets, selectedTicket, properties } = useTypedSelector(state => state.ticket)
   const {notificationsAll } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
@@ -445,7 +446,10 @@ const TicketAssignee:FC = () => {
       if(key==='log')
       {
         fetchTicketLog(selectedTicket)
-        
+      }
+      if(key==='notifications')
+      {
+        fetchTicketNotifications(selectedTicket)
       }
       console.log(key);
     }
@@ -510,6 +514,41 @@ const TicketAssignee:FC = () => {
         );}
     }
   ]
+  const ticketNotificationColumns: ColumnsType<INotification> = [
+   { 
+    key: 'name',
+    title: t('action'),
+    dataIndex: 'name',
+    sorter: (a:any, b:any) =>  a.name.localeCompare(b.name),
+    width: '10%',
+  },
+  {
+    key: 'send_to',
+    title: t('send_to'),
+    dataIndex: 'sended_to',
+    sorter: (a:any, b:any) =>  a.sended_to.localeCompare(b.sended_to),
+    width: '35%',
+  },
+  {
+    key: 'subject',
+    title: t('subject'),
+    dataIndex: 'sended_subject',
+    sorter: (a:any, b:any) =>  a.sended_subject.localeCompare(b.sended_subject),
+    width: '35%',
+  },
+  {
+    key: 'create_date',
+    title: t('create_date'),
+    sorter: (a:any, b:any) =>  a.create_date - b.create_date,
+    render: ( record) => {
+      return (
+          <>        
+          {uTd(record.create_date)} 
+          </>
+      );}
+  },
+  ]
+
   const  buildCustomer_info_title = () => {
     return (
       <>
@@ -686,422 +725,435 @@ const TicketAssignee:FC = () => {
      }
         </Col>
         </Row>
-        <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
-        <TabPane tab={t('detail')} key="detail" >
-        <Row  >
-        <Col xs={24} xl={6}>
+   <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
+      <TabPane tab={t('detail')} key="detail" >
+          <Row  >
+          <Col xs={24} xl={6}>
+          
+            <Form.Item 
+            key="customer"
+            label={customerLabel()}
+            name="customer"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            rules={[validators.required()]}
+            > 
+            
+            <AsyncSelect 
+            autoFocus={true}
+            menuPosition="fixed"
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('customer') }
+            cacheOptions 
+            defaultOptions
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'customer',  ' top 20 name as label, id as value , id as code ', 'V_contacts', NOT_GROUP_LIST , true )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'customer')}
+            />
+            </Form.Item>
+            </Col>
+          <Col xs={24} xl={15}>
+          <Form.Item 
+            key="category"
+            label={ t('tcategory') }
+            name="category"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            rules={[validators.required()]}
+            > 
+            <AsyncSelect 
+            menuPosition="fixed"
+            className={classes.selectClass}
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('tcategory') }
+            cacheOptions 
+            defaultOptions
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = '1' order by name asc", false )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'category')}
+            />
+            </Form.Item>
+          </Col>
+          <Col xs={24} xl={3}>
+            <Form.Item 
+            key="ticket_type"
+            label={ t('ticket_type') }
+            name="ticket_type"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            rules={[validators.required()]}
+            > 
+            <AsyncSelect 
+            menuPosition="fixed"
+            className={classes.selectClass}
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('ticket_type') }
+            cacheOptions 
+            defaultOptions
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_type',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_type'", false )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_type')}
+            />
+            </Form.Item>
+            </Col>
+          </Row> 
+          <Row  >
+          {
+            ticketPrp.map(p => (
+              <>
+              {
+                p.visible === 1 &&
+                <Col xs={24} xl={p.width} key={p.id} 
+                >
+          
         
-           <Form.Item 
-           key="customer"
-           label={customerLabel()}
-           name="customer"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           rules={[validators.required()]}
-           > 
-           
-           <AsyncSelect 
-           autoFocus={true}
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('customer') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'customer',  ' top 20 name as label, id as value , id as code ', 'V_contacts', NOT_GROUP_LIST , true )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'customer')}
-           />
-           </Form.Item>
-           </Col>
-        <Col xs={24} xl={15}>
-        <Form.Item 
-           key="category"
-           label={ t('tcategory') }
-           name="category"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           className={classes.selectClass}
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('tcategory') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = '1' order by name asc", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'category')}
-           />
-           </Form.Item>
-        </Col>
-        <Col xs={24} xl={3}>
-           <Form.Item 
-           key="ticket_type"
-           label={ t('ticket_type') }
-           name="ticket_type"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           className={classes.selectClass}
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('ticket_type') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_type',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_type'", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_type')}
-           />
-           </Form.Item>
-           </Col>
-        </Row> 
-        <Row  >
-        {
-          ticketPrp.map(p => (
-            <>
-            {
-              p.visible === 1 &&
-              <Col xs={24} xl={p.width} key={p.id} 
-              >
-        
-       
-               {
-                   p.factory.label === 'Text' &&
-                   <Form.Item 
-                   key={p.id+'_Text'}
-                   label={p.name}
-                   name={PRPID+p.id}
-                   style={{ padding:'5px', width: 'maxContent'}} 
-                   rules={getValidatorsToProp(p.pattern)}
-                   initialValue={ticketId === '0' && p.defaultValue && p.defaultValue}
-                   > 
-                  <Input
+                {
+                    p.factory.label === 'Text' &&
+                    <Form.Item 
+                    key={p.id+'_Text'}
+                    label={p.name}
+                    name={PRPID+p.id}
+                    style={{ padding:'5px', width: 'maxContent'}} 
+                    rules={getValidatorsToProp(p.pattern)}
+                    initialValue={ticketId === '0' && p.defaultValue && p.defaultValue}
+                    > 
+                    <Input
+                    disabled={ro}
+                    placeholder={p.placeholder}
+                    />
+                    </Form.Item>
+                  }
+                  {    
+                    p.factory.label === 'List' &&
+                    <Form.Item 
+                    key={p.id+'_List'}
+                    label={p.name}
+                    name={PRPID+p.id}
+                    style={{ padding:'5px', width: 'maxContent'}} 
+                    rules={getValidatorsToProp(p.pattern)}
+                    initialValue={ticketId === '0' && p.defaultValue && p.defaultValue}
+                    > 
+                  
+                    <Select disabled={ro} 
+                    size="large"
+                    style={{height:'35px!important'}}
+                      onChange={() => changeCol()}
+                    >
+                        {
+                        p.code.split(',').map(o=>
+                            (
+                              <Option value={o} key={o}>{o}</Option>
+                            )) 
+                        }    
+                    </Select>
+                    </Form.Item>
+                }
+                {
+                  p.factory.label === 'Date' &&
+                  <Form.Item 
+                  key={p.id+'_Date'}
+                  label={p.name}
+                  name={PRPID+p.id}
+                  style={{ padding:'5px', width: 'maxContent'}} 
+                  rules={getValidatorsToProp(p.pattern)}
+                  initialValue={ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? moment().clone().add({[p.defaultValue.split(':')[0]]:p.defaultValue.split(':')[1]}) : ''}
+                  > 
+                  <DatePicker 
+                  format={DATETIMEFORMAT}
                   disabled={ro}
                   placeholder={p.placeholder}
-                  />
+                  showTime={{ format: 'HH:mm' }} 
+                  >
+                  </DatePicker>
                   </Form.Item>
                 }
                 {    
-                   p.factory.label === 'List' &&
-                  <Form.Item 
-                  key={p.id+'_List'}
-                  label={p.name}
-                  name={PRPID+p.id}
-                  style={{ padding:'5px', width: 'maxContent'}} 
-                  rules={getValidatorsToProp(p.pattern)}
-                  initialValue={ticketId === '0' && p.defaultValue && p.defaultValue}
-                  > 
-                 
-                  <Select disabled={ro} 
-                  size="large"
-                  style={{height:'35px!important'}}
-                    onChange={() => changeCol()}
-                  >
-                      {
-                       p.code.split(',').map(o=>
-                          (
-                            <Option value={o} key={o}>{o}</Option>
-                          )) 
-                      }    
-                  </Select>
-                  </Form.Item>
-               }
-               {
-                p.factory.label === 'Date' &&
-                <Form.Item 
-                key={p.id+'_Date'}
-                label={p.name}
-                name={PRPID+p.id}
-                style={{ padding:'5px', width: 'maxContent'}} 
-                rules={getValidatorsToProp(p.pattern)}
-                initialValue={ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? moment().clone().add({[p.defaultValue.split(':')[0]]:p.defaultValue.split(':')[1]}) : ''}
-                > 
-                 <DatePicker 
-                 format={DATETIMEFORMAT}
-                 disabled={ro}
-                 placeholder={p.placeholder}
-                 showTime={{ format: 'HH:mm' }} 
-                >
-                </DatePicker>
-                </Form.Item>
-               }
-               {    
-                   p.factory.label === 'Object' &&
-                  <Form.Item 
-                  key={p.id+'_Object'}
-                  label={p.name}
-                  name={PRPID+p.id}
-                  style={{ padding:'5px', width: 'maxContent'}} 
-                  rules={getValidatorsToProp(p.pattern)}
-                  initialValue={  {label: ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? p.defaultValue.split(':')[0] : '', value: ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? p.defaultValue.split(':')[1] : ''} }
-                  > 
-                  <AsyncSelect 
-                  menuPosition="fixed"
-                  isDisabled={ro}
-                  isMulti={false}
-                  styles={SelectStyles}
-                  isClearable={true}
-                  placeholder={ p.placeholder }
-                  cacheOptions 
-                  defaultOptions
-                  loadOptions={ (inputValue:string) => promiseOptions(inputValue, PRPID+p.id,  p.code.split(';')[0], 
-                  p.code.split(';')[1], p.code.split(';')[2] , true )} 
-                  onChange={(selectChange:any) => {selectChanged(selectChange, PRPID+p.id);changeCol()}}
-                  />
-                  </Form.Item>
-               }
-           </Col>
-              }
-              </>
-          )
+                    p.factory.label === 'Object' &&
+                    <Form.Item 
+                    key={p.id+'_Object'}
+                    label={p.name}
+                    name={PRPID+p.id}
+                    style={{ padding:'5px', width: 'maxContent'}} 
+                    rules={getValidatorsToProp(p.pattern)}
+                    initialValue={  {label: ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? p.defaultValue.split(':')[0] : '', value: ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? p.defaultValue.split(':')[1] : ''} }
+                    > 
+                    <AsyncSelect 
+                    menuPosition="fixed"
+                    isDisabled={ro}
+                    isMulti={false}
+                    styles={SelectStyles}
+                    isClearable={true}
+                    placeholder={ p.placeholder }
+                    cacheOptions 
+                    defaultOptions
+                    loadOptions={ (inputValue:string) => promiseOptions(inputValue, PRPID+p.id,  p.code.split(';')[0], 
+                    p.code.split(';')[1], p.code.split(';')[2] , true )} 
+                    onChange={(selectChange:any) => {selectChanged(selectChange, PRPID+p.id);changeCol()}}
+                    />
+                    </Form.Item>
+                }
+            </Col>
+                }
+                </>
             )
-        }  
-        </Row> 
-        <Row  >
-        <Col xs={24} xl={6} onClick={
-          () => loadAssTeam('team')
-        }>
-           <Form.Item 
-           key="team"
-           label={ t('team') }
-           name="team"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('team') }
-           cacheOptions 
-           defaultOptions={teamArr}
-          //  loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'team',  ' top 20 name as label, id as value , id as code ', 'V_contacts', GROUP_LIST , true )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'team')}
-           />
-           </Form.Item>
-           </Col>
-        <Col xs={24} xl={6} onClick={
-          () => loadAssTeam('assignee')
-        }>
-           <Form.Item 
-           key="assignee"
-           label={ t('assignee') }
-           name="assignee"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           
-           > 
-           <AsyncSelect
-           name="select_assignee" 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('assignee') }
-           cacheOptions 
-           defaultOptions={assigneeArr}
-          //  loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'assignee',  ' top 200 name as label, id as value , id as code ', 'V_contacts', ASSIGNEE_LIST , false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'assignee')}
-           />
-           </Form.Item>
-           </Col>
-        <Col xs={24} xl={6}>
-           <Form.Item 
-           key="ticket_status"
-           label={ t('ticket_status') }
-           name="status"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           className={classes.selectClass}
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('ticket_status') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'status',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_status'", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'status')}
-           />
-           </Form.Item>
-           </Col>        
-        <Col xs={24} xl={3}>
-           <Form.Item 
-           key="priority"
-           label={ t('priority') }
-           name="priority"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('priority') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'priority', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'priority_type'", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'priority')}
-           />
-           </Form.Item>
-           </Col>
-        <Col xs={24} xl={3}>
-           <Form.Item 
-           key="urgency"
-           label={ t('urgency') }
-           name="urgency"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('urgency') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'urgency', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'urgency_type'", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'urgency')}
-           />
-           </Form.Item>
-           </Col> 
-        </Row>   
-        
-        <Row  >
-        <Col xs={24} xl={12}  >
-         <Form.Item
-           label={ t('description') }
-           name="description" 
-           style={{ padding:'5px'}} > 
-           <TextArea 
-           rows={5}
-            disabled={ro}
-            showCount maxLength={3999}
-            //  style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('description') }
-           />
-           </Form.Item>
-         </Col>
-        <Col xs={24} xl={12}  >
-           <UploadFiles
-           ref={uploadRef}
-           id={selectedTicket?.id ? selectedTicket?.id : ticketId}
-           factory="ticket"
-           />
-           </Col>
-        </Row>   
-        {
-          ticketId && ticketId!=='0' &&
+              )
+          }  
+          </Row> 
           <Row  >
-           <Col xs={24} xl={5} sm={5} lg={5}  >
-           <Form.Item
-           label={ t('log_agent') }
-           style={{ padding:'5px'}} 
-           > 
-           <Input 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('log_agent') }
-             value={selectedTicket.log_agent && selectedTicket.log_agent.label}
-           />
-           </Form.Item>
-           </Col>
-           
-           <Col xs={24} xl={5} sm={5} lg={5}  >
-           <Form.Item
-           label={ t('last_mod_by') }
-           style={{ padding:'5px'}} 
-           > 
-           <Input 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('last_mod_by') }
-             value={selectedTicket.last_mod_by && selectedTicket.last_mod_by.label}
-           />
-           </Form.Item>
-           </Col>
-           <Col xs={24} xl={5} sm={5} lg={5}  >
-           <Form.Item
-           label={ t('last_mod_dt') }
-           style={{ padding:'5px'}} 
-           > 
-           <Input 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('last_mod_dt') }
-             value={ uTd(selectedTicket.last_mod_dt)}
-           />
-           </Form.Item>
-           </Col>
-           <Col xs={24} xl={5} sm={5} lg={5}  >
-           <Form.Item
-           label={ t('create_date') }
-           style={{ padding:'5px'}} 
-           > 
-           <Input 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('create_date') }
-             value={uTd(selectedTicket.create_date)}
-           />
-           </Form.Item>
-           </Col>
-           <Col xs={24} xl={4} sm={4} lg={4}  
-           hidden={!selectedTicket.close_date}>
-           <Form.Item
-           label={ t('close_date') }
-           style={{ padding:'5px'}} 
-           > 
-           <Input 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('close_date') }
-             value={uTd(selectedTicket.close_date)}
-           />
-           </Form.Item>
-           </Col>
-           <Col xs={24} xl={4}  >
-           <Form.Item
-           label={ t('active') }
-           name="active" 
-           style={{ padding:'5px'}} 
-           valuePropName="checked"
-           > 
-           <Checkbox 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             defaultChecked={true}
-           />
-           </Form.Item>
-           </Col>
-           </Row> 
-    
-        }
-    </TabPane>
-    <TabPane tab={t('log')} key="log" forceRender={true} >
-    <Table<ITicketLog>
-      scroll={{ x: 1200, y: 700 }}
-      columns={ticketLogColumns} 
-      dataSource={selectedTicket.tickets_log} 
-      rowKey={record => record.id}
-      >
-      </Table>    
-    </TabPane>  
+          <Col xs={24} xl={6} onClick={
+            () => loadAssTeam('team')
+          }>
+            <Form.Item 
+            key="team"
+            label={ t('team') }
+            name="team"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            rules={[validators.required()]}
+            > 
+            <AsyncSelect 
+            menuPosition="fixed"
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('team') }
+            cacheOptions 
+            defaultOptions={teamArr}
+            //  loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'team',  ' top 20 name as label, id as value , id as code ', 'V_contacts', GROUP_LIST , true )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'team')}
+            />
+            </Form.Item>
+            </Col>
+          <Col xs={24} xl={6} onClick={
+            () => loadAssTeam('assignee')
+          }>
+            <Form.Item 
+            key="assignee"
+            label={ t('assignee') }
+            name="assignee"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            
+            > 
+            <AsyncSelect
+            name="select_assignee" 
+            menuPosition="fixed"
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('assignee') }
+            cacheOptions 
+            defaultOptions={assigneeArr}
+            //  loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'assignee',  ' top 200 name as label, id as value , id as code ', 'V_contacts', ASSIGNEE_LIST , false )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'assignee')}
+            />
+            </Form.Item>
+            </Col>
+          <Col xs={24} xl={6}>
+            <Form.Item 
+            key="ticket_status"
+            label={ t('ticket_status') }
+            name="status"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            rules={[validators.required()]}
+            > 
+            <AsyncSelect 
+            menuPosition="fixed"
+            className={classes.selectClass}
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('ticket_status') }
+            cacheOptions 
+            defaultOptions
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'status',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_status'", false )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'status')}
+            />
+            </Form.Item>
+            </Col>        
+          <Col xs={24} xl={3}>
+            <Form.Item 
+            key="priority"
+            label={ t('priority') }
+            name="priority"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            rules={[validators.required()]}
+            > 
+            <AsyncSelect 
+            menuPosition="fixed"
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('priority') }
+            cacheOptions 
+            defaultOptions
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'priority', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'priority_type'", false )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'priority')}
+            />
+            </Form.Item>
+            </Col>
+          <Col xs={24} xl={3}>
+            <Form.Item 
+            key="urgency"
+            label={ t('urgency') }
+            name="urgency"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            rules={[validators.required()]}
+            > 
+            <AsyncSelect 
+            menuPosition="fixed"
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('urgency') }
+            cacheOptions 
+            defaultOptions
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'urgency', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'urgency_type'", false )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'urgency')}
+            />
+            </Form.Item>
+            </Col> 
+          </Row>   
+          
+          <Row  >
+          <Col xs={24} xl={12}  >
+          <Form.Item
+            label={ t('description') }
+            name="description" 
+            style={{ padding:'5px'}} > 
+            <TextArea 
+            rows={5}
+              disabled={ro}
+              showCount maxLength={3999}
+              //  style={{ height:'38px', width: 'maxContent'}}
+              placeholder={ t('description') }
+            />
+            </Form.Item>
+          </Col>
+          <Col xs={24} xl={12}  >
+            <UploadFiles
+            ref={uploadRef}
+            id={selectedTicket?.id ? selectedTicket?.id : ticketId}
+            factory="ticket"
+            />
+            </Col>
+          </Row>   
+          {
+            ticketId && ticketId!=='0' &&
+            <Row  >
+            <Col xs={24} xl={5} sm={5} lg={5}  >
+            <Form.Item
+            label={ t('log_agent') }
+            style={{ padding:'5px'}} 
+            > 
+            <Input 
+              disabled={true}
+              style={{ height:'38px', width: 'maxContent'}}
+              placeholder={ t('log_agent') }
+              value={selectedTicket.log_agent && selectedTicket.log_agent.label}
+            />
+            </Form.Item>
+            </Col>
+            
+            <Col xs={24} xl={5} sm={5} lg={5}  >
+            <Form.Item
+            label={ t('last_mod_by') }
+            style={{ padding:'5px'}} 
+            > 
+            <Input 
+              disabled={true}
+              style={{ height:'38px', width: 'maxContent'}}
+              placeholder={ t('last_mod_by') }
+              value={selectedTicket.last_mod_by && selectedTicket.last_mod_by.label}
+            />
+            </Form.Item>
+            </Col>
+            <Col xs={24} xl={5} sm={5} lg={5}  >
+            <Form.Item
+            label={ t('last_mod_dt') }
+            style={{ padding:'5px'}} 
+            > 
+            <Input 
+              disabled={true}
+              style={{ height:'38px', width: 'maxContent'}}
+              placeholder={ t('last_mod_dt') }
+              value={ uTd(selectedTicket.last_mod_dt)}
+            />
+            </Form.Item>
+            </Col>
+            <Col xs={24} xl={5} sm={5} lg={5}  >
+            <Form.Item
+            label={ t('create_date') }
+            style={{ padding:'5px'}} 
+            > 
+            <Input 
+              disabled={true}
+              style={{ height:'38px', width: 'maxContent'}}
+              placeholder={ t('create_date') }
+              value={uTd(selectedTicket.create_date)}
+            />
+            </Form.Item>
+            </Col>
+            <Col xs={24} xl={4} sm={4} lg={4}  
+            hidden={!selectedTicket.close_date}>
+            <Form.Item
+            label={ t('close_date') }
+            style={{ padding:'5px'}} 
+            > 
+            <Input 
+              disabled={true}
+              style={{ height:'38px', width: 'maxContent'}}
+              placeholder={ t('close_date') }
+              value={uTd(selectedTicket.close_date)}
+            />
+            </Form.Item>
+            </Col>
+            <Col xs={24} xl={4}  >
+            <Form.Item
+            label={ t('active') }
+            name="active" 
+            style={{ padding:'5px'}} 
+            valuePropName="checked"
+            > 
+            <Checkbox 
+              disabled={true}
+              style={{ height:'38px', width: 'maxContent'}}
+              defaultChecked={true}
+            />
+            </Form.Item>
+            </Col>
+            </Row> 
+      
+          }
+      </TabPane>
+      <TabPane tab={t('log')} key="log" forceRender={true} >
+      <Table<ITicketLog>
+        scroll={{ x: 1200, y: 700 }}
+        columns={ticketLogColumns} 
+        dataSource={selectedTicket.tickets_log} 
+        rowKey={record => record.id}
+        >
+        </Table>    
+      </TabPane> 
+      <TabPane tab={t('notifications')} key="notifications" forceRender={true} >
+      <Table<INotification>
+        scroll={{ x: 1200, y: 700 }}
+        columns={ticketNotificationColumns} 
+        dataSource={selectedTicket.tickets_notifications} 
+        rowKey={record => record.id}
+        expandable={{
+          expandedRowRender: record => <div dangerouslySetInnerHTML={{__html: record.sended_body?.toString() ? record.sended_body?.toString() : ''}} />,
+          rowExpandable: record => record.sended_body !== '' && ro,
+        }}
+        >
+        </Table>    
+      </TabPane>  
     </Tabs>  
    </Form>
        </Card>

@@ -1,3 +1,4 @@
+import { INotification } from './INotification';
 import { SelectOption } from "./ISearch";
 import { IUser } from "./IUser";
 
@@ -28,6 +29,7 @@ export interface ITicket {
     ticketProperties?: ITicketPrpTpl[]
     ticketPropertiesCount?: number
     customer_open_tickets?: number
+    tickets_notifications: INotification[]
 }
 export interface ITicketLog {
     id: string

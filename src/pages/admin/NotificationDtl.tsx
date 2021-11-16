@@ -319,6 +319,11 @@ const exportHtml = () => {
            label={ t('body') }
            name="body" 
            style={{ padding:'5px'}} > 
+           {
+
+           ro ? 
+           <div dangerouslySetInnerHTML={{__html: selectedNotification.body?.toString() ? selectedNotification.body?.toString() : ''}} />
+           :
            <TextArea 
             disabled={ro}
             rows={10}
@@ -326,6 +331,8 @@ const exportHtml = () => {
             //  style={{ height:'38px', width: 'maxContent'}}
              placeholder={ t('body') }
            />
+           }
+           
   
            </Form.Item>
          </Col>

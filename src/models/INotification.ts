@@ -4,6 +4,9 @@ export interface INotification {
     name:string,
 	id:string,
 	ticket?: SelectOption
+	sended_to?: string
+	sended_subject?: string
+	sended_body?: string
 	notification_type:SelectOption
 	active: number
 	send_to:string
