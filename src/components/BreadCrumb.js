@@ -15,7 +15,8 @@ const BreadCrumb = () => {
       <div>
         <Breadcrumb key="Breadcrumb">
           {pathnames.length > 0 ? (
-            <Breadcrumb.Item key="home">
+            <Breadcrumb.Item 
+            key="home">
               <Link to="/">{i18n.t('home')}</Link>
             </Breadcrumb.Item>
           ) : (
@@ -27,10 +28,10 @@ const BreadCrumb = () => {
             const routeTo = `/${pathnames.slice(0, index + 1).join("/")}`;
             const isLast = index === pathnames.length - 1;
             return isLast ? (
-              <Breadcrumb.Item key={index+'_'+name+'_'+index}>{capatilize(name)}</Breadcrumb.Item>
+              <Breadcrumb.Item key={index+'_'+name+'__'+index + routeTo }>{capatilize(name)}</Breadcrumb.Item>
             ) : (
               <Breadcrumb.Item >
-                <Link to={`${routeTo}`} key={index+name+'_'+index}>{capatilize(name)}</Link>
+                <Link to={`${routeTo}`} key={index+name+'_'+index + routeTo} >{capatilize(name)}</Link>
               </Breadcrumb.Item>
             );
           })}

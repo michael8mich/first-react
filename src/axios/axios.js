@@ -1,7 +1,11 @@
 import axios from 'axios'
 import FormData from 'form-data'
-const Base_URL = "https://localhost:44367/v1/qtrm"
-const Base_URL_Email = "https://localhost:44367/api/Mail/send"
+//----------local
+//const SERVER = "https://localhost:44367"
+//----------iis
+const SERVER = "https://mx/uta50"
+const Base_URL = SERVER + "/v1/qtrm"
+const Base_URL_Email =  SERVER + "/api/Mail/send"
 
 export async function axiosFn(type, data, first, second, third, id='', limit='', page='',offset='' ) {
   let path = Base_URL;
