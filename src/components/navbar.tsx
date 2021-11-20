@@ -14,8 +14,7 @@ import { axiosFn } from '../axios/axios';
 import { IUser, NOT_GROUP_LIST } from '../models/IUser';
 import { setSourceMapRange } from 'typescript';
 import { SelectOption } from '../models/ISearch';
-// import CodeTagsIcon from '@2fd/ant-design-icons/lib/CodeTagsIcon'
-
+import AdminBar from './Adminbar';
 
 const Navbar: FC = () => {
     const { t, i18n } = useTranslation();      
@@ -112,16 +111,7 @@ const Navbar: FC = () => {
                     
                     {
                       defaultRole?.label === 'Admin' &&
-                    
-                      <SubMenu key="admin" title={ t('admin') } 
-                      icon={<SettingOutlined />}
-                      >
-                        <Menu.Item key="utils" onClick={() => router.push(RouteNames.UTILS) } >{ t('utils') }</Menu.Item>
-                        <Menu.Item key="users" onClick={() => router.push(RouteNames.USERS) } >{ t('users') }</Menu.Item>
-                        <Menu.Item key="orgs" onClick={() => router.push(RouteNames.ORGS ) } >{ t('orgs') }</Menu.Item>
-                        <Menu.Item key="notifications" onClick={() => router.push(RouteNames.NOTIFICATIONS ) } >{ t('notifications') }</Menu.Item>
-                        <Menu.Item key="tcategories" onClick={() => router.push(RouteNames.TCATEGORIES) } >{ t('tcategories') }</Menu.Item>
-                      </SubMenu>
+                      <AdminBar />
                       }
                       <SubMenu key="ticketsMain" 
                       title={ t('tickets') }

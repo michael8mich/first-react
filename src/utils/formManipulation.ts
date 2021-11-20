@@ -54,6 +54,11 @@ export const saveFormBuild = (values: any) => {
         if(val === true || val === false )
         values[v]  = val  ? 1 : 0 
         else 
+        if(val instanceof moment )
+        {
+          val = val
+          values[v] = val.unix() 
+        } else
         if(Array.isArray(val))
         {
         //  delete values[v]

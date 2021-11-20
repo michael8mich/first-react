@@ -17,6 +17,7 @@ export interface ITicket {
     asset: SelectOption 
     log_agent: SelectOption
     ticket_type: SelectOption
+    ci: SelectOption
     description: string
     last_mod_by: SelectOption
     last_mod_dt: string
@@ -101,7 +102,7 @@ export interface IIFrame {
 
 
 
-export const ITicketObjects:string[] = ['status','customer', 'ticket_type', 'priority','assignee','team', 'urgency', 'last_mod_by', 'log_agent', 'category']
+export const ITicketObjects:string[] = ['status','customer', 'ticket_type', 'priority','assignee','team', 'urgency', 'last_mod_by', 'log_agent', 'category', 'ci']
 export const ITicketRoFields:string[] = ['active']
 export const ITicketObjectsMulti:string[] = []
 

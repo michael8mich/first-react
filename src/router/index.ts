@@ -1,5 +1,4 @@
 import React from 'react';
-import i18n from "i18next";
 import Home from '../components/Home';
 import OrgDtl from '../pages/admin/OrgDtl';
 import Orgs from '../pages/admin/Orgs';
@@ -16,6 +15,8 @@ import Dashboard from '../charts/dashbord';
 import Empty from '../components/Empty';
 import NotificationDtl from '../pages/admin/NotificationDtl';
 import Notifications from '../pages/admin/Notifications';
+import CisDtl from '../pages/cis/CiDtl';
+import Cis from '../pages/cis/Cis';
 
 
 export interface IRoute {
@@ -30,6 +31,8 @@ export enum RouteNames {
     UTILS= '/utils',
     USERS= '/users',
     USER_DTL= '/users/:id',
+    CIS= '/cis',
+    CI_DTL= '/cis/:id',
     EVENT='/events',
     ORGS= '/orgs',
     ORG_DTL= '/orgs/:id',
@@ -49,6 +52,8 @@ export const privateRoutes:IRoute[] = [
     {path: RouteNames.UTILS, component: Utils, exact: true}, 
     {path: RouteNames.USER_DTL, component: UserDtl, exact: false}, 
     {path: RouteNames.USERS, component: Users, exact: true},
+    {path: RouteNames.CI_DTL, component: CisDtl, exact: false}, 
+    {path: RouteNames.CIS, component: Cis, exact: true},
     {path: RouteNames.ORG_DTL, component: OrgDtl, exact: false}, 
     {path: RouteNames.ORGS, component: Orgs, exact: true},
     {path: RouteNames.NOTIFICATION_DTL, component: NotificationDtl, exact: false}, 

@@ -205,6 +205,7 @@ const SiderAssignee: FC<SiderComponentProps> = (props) => {
             <SubMenu key="admin" icon={<SettingOutlined />} title={t('admin')}>
               <Menu.Item key="utils" onClick={() => router.push(RouteNames.UTILS) } >{ t('utils') }</Menu.Item>
               <Menu.Item key="users" onClick={() => router.push(RouteNames.USERS) } >{ t('users') }</Menu.Item>
+              <Menu.Item key="cis" onClick={() => router.push(RouteNames.CIS) } >{ t('cis') }</Menu.Item>
               <Menu.Item key="orgs" onClick={() => router.push(RouteNames.ORGS ) } >{ t('orgs') }</Menu.Item>
               <Menu.Item key="notifications" onClick={() => router.push(RouteNames.NOTIFICATIONS ) } >{ t('notifications') }</Menu.Item>
               <Menu.Item key="tcategories" onClick={() => router.push(RouteNames.TCATEGORIES) } >{ t('tcategories') }</Menu.Item>
