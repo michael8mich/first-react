@@ -73,7 +73,7 @@ const Navbar: FC = () => {
                 <Avatar size={32} icon={<UserOutlined />} 
                 src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
                 />&nbsp;
-                  {user.name} - {user.email} {user.locale === 'heIL' ? 'עברית' : 'English'}
+                  {user.name} - {user.locale === 'heIL' ? 'עברית' : 'English'}
                 </div> 
                 <div  style={{ width: '100vh',background:'#001529' }} >
                   <Menu theme="dark" mode="horizontal" 

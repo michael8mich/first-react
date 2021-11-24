@@ -1,6 +1,6 @@
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
-import { ICiObjects, ICiObjectsMulti, ICi } from '../../../models/ICi';
+import { ICiObjects, ICiObjectsMulti, ICi, ICiLog } from '../../../models/ICi';
 import { CiActionEnum, SetCisAction, SetErrorAction, SetIsLoadingAction, SetCisCountAction, SetSelectedCiAction } from './types';
 import i18n from "i18next";
 import { translateObj } from '../../../utils/translateObj';
@@ -140,6 +140,44 @@ export const CiActionCreators = {
        } finally {
          dispatch(CiActionCreators.IsLoading(false))
        }
+     },  
+     fetchCiLog: (selectedCi:ICi ) => async (dispatch: AppDispatch) => {
+      try {
+       dispatch(CiActionCreators.setIsError(''))
+         dispatch(CiActionCreators.IsLoading(true))
+         let ci_log: ICiLog[] = []
+         const response = await  axiosFn("get", '', '*', 'V_ci_log', " ci = '" + selectedCi.id + "' order by last_mod_dt desc"  , ''  )  
+         let hasError = false;
+         if(response.data["error"]) hasError = true;
+             if(response.data&&!hasError)
+             {
+             ci_log = response.data
+             let _count =  response.headers['x-total-count'] || 0
+             
+             ci_log = ci_log.map(e=> {
+              return { ...e, name:i18n.t(e.name) }  
+               }
+              ) 
+              
+             
+             const new_selectedCi = {...selectedCi, ci_log: ci_log}
+             dispatch(CiActionCreators.setSelectedCi({...new_selectedCi}))
+             } 
+             else
+             {
+              dispatch(CiActionCreators.setCis([]))   
+              dispatch(CiActionCreators.setIsError(i18n.t('data_problem')))
+             }   
+       
+        } catch (e) {
+          dispatch(CiActionCreators.setCis([])) 
+          console.log('fetchCiLog',e);
+              
+          dispatch(CiActionCreators.setIsError(i18n.t('axios_error')))        
+       } finally {
+         dispatch(CiActionCreators.IsLoading(false))
+       }
+ 
      },  
 
 }

@@ -119,6 +119,7 @@ export const saveFormBuildMulti = (values: any, pre_values: any ) => {
 return values_ret
 }
 export const uTd = (value:any) => {
+  value= value || 0
   const v:number = value
    if( v!==0 )
    return  moment.unix(value).format(DATETIMEFORMAT) 

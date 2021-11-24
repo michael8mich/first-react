@@ -28,11 +28,12 @@ export interface ICi {
     create_date: string
     open_tickets_count?: number
     open_tickets: ITicket[]
+    ci_log: ICiLog[]
 }
-export interface ICisLog {
+export interface ICiLog {
     id: string
 	name: string
-	ticket: SelectOption
+	ci: SelectOption
 	old_value: string
 	new_value: string
 	value_obj: string

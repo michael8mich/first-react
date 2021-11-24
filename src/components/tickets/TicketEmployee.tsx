@@ -1,6 +1,6 @@
 import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover, Badge} from 'antd';
 import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined,
-  TeamOutlined, ToolOutlined } from '@ant-design/icons';
+  TeamOutlined, ToolOutlined, UnorderedListOutlined, LayoutOutlined  } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
@@ -733,7 +733,14 @@ const TicketEmployee:FC = () => {
         </Col>
         </Row>
         <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
-        <TabPane tab={t('detail')} key="detail" >
+        <TabPane 
+        tab={
+          <span> 
+          <LayoutOutlined />
+          {t('detail')} 
+          </span>
+        }
+        key="detail" >
         <Row  >
         <Col xs={24} xl={8} sm={12} lg={8}>
         <Form.Item 
@@ -1020,8 +1027,15 @@ const TicketEmployee:FC = () => {
            </Row> 
     
         }
-    </TabPane>
-    <TabPane tab={t('log')} key="log" forceRender={true} >
+        </TabPane>
+        <TabPane 
+         tab={
+          <span> 
+          <UnorderedListOutlined /> 
+          {t('log')} 
+          </span>
+        }
+        forceRender={true} >
     <Table<ITicketLog>
       scroll={{ x: 1200, y: 700 }}
       columns={ticketLogColumns} 
@@ -1030,7 +1044,7 @@ const TicketEmployee:FC = () => {
       >
       </Table>    
     </TabPane>  
-    </Tabs>  
+       </Tabs>  
    </Form>
        </Card>
       </Col>

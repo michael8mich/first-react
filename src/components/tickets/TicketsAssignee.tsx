@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Checkbox, Col, Divider, Dropdown, Form, Input, Layout, Menu, Modal, Pagination, Popover, Radio, Row, Table, TablePaginationConfig, Tooltip } from 'antd';
+import { Alert, Badge, Button, Card, Checkbox, Col, Divider, Dropdown, Form, Input, Layout, Menu, Modal, Pagination, Popover, Radio, Row, Table, TablePaginationConfig, Tooltip } from 'antd';
 import { FilterValue, SorterResult } from 'antd/lib/table/interface';
 import { ColumnsType  } from 'antd/es/table';
 import  {FC, Key, ReactChild, ReactFragment, ReactPortal, useEffect, useState} from 'react';
@@ -9,7 +9,8 @@ import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import { IQueriesCache, IQuery, SearchPagination, SelectOption } from '../../models/ISearch';
 import { searchFormWhereBuild, uTd } from '../../utils/formManipulation';
-import { FilterOutlined, ExclamationCircleOutlined, UsergroupAddOutlined, PaperClipOutlined, FileSearchOutlined }  from '@ant-design/icons/lib/icons';
+import { FilterOutlined, ExclamationCircleOutlined, UsergroupAddOutlined, PaperClipOutlined, FileSearchOutlined,
+  FileExcelOutlined }  from '@ant-design/icons/lib/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import { RouteNames } from '../../router';
 import { ITicketObjects, ITicket, PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM, URGENCY_LOW, STATUS_CLOSE, ITicketLog, ITicketPrpTpl } from '../../models/ITicket';
@@ -17,7 +18,8 @@ import { ANALYST_DTP, ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../mo
 import ActivityForm from '../../pages/ticket/ActivityForm';
 import QueryBuild from '../QueryBuild';
 import PopoverDtl from '../../pages/ticket/PopoverDtl';
-
+import useWindowDimensions from '../../hooks/useWindowDimensions';
+import {CSVLink} from "react-csv"
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '25'
@@ -32,7 +34,7 @@ const TicketsAssignee:FC = () => {
   } as SearchPagination
   const {error, isLoading, tickets, ticketsCount } = useTypedSelector(state => state.ticket)
   const {selectSmall } = useTypedSelector(state => state.cache)
-  const {fetchTickets, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties} = useAction()
+  const {fetchTickets, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties,setAlert} = useAction()
   const {user, defaultRole } = useTypedSelector(state => state.auth)
   const [typeSelect, setTypeSelect] = useState('')
   const queryParams = new URLSearchParams(window.location.hash);
@@ -172,13 +174,16 @@ const TicketsAssignee:FC = () => {
          />         
     )
   }
-  
+  const { height, width } = useWindowDimensions();
+
   const columns: ColumnsType<ITicket> = [
     {
       key: 'name',
       title: t('ticket_name'),
       dataIndex: 'name',
       sorter: true,
+      fixed: 'left',
+      width: 140,
       render: (name, record, index) => {
         return (
           <Dropdown overlay={() => RightClickMenu(record)} trigger={['contextMenu']} >
@@ -261,19 +266,6 @@ const TicketsAssignee:FC = () => {
         );}
     }
     ,
-    {
-      key: 'category',
-      title: t('tcategory'),
-      dataIndex: 'category',
-      sorter: true,
-      render: (category, record ) => {
-        return (
-            <div>        
-            {record.category && record.category.label} 
-            </div>
-        );}
-    }
-    ,
     // {
     //   key: 'priority',
     //   title: t('priority'),
@@ -312,7 +304,57 @@ const TicketsAssignee:FC = () => {
             </div>
         );}
     }
+    ,
+    {
+      key: 'category',
+      title: t('tcategory'),
+      dataIndex: 'category',
+      sorter: true,
+      fixed: width > 500 && 'right' ,
+      render: (category, record ) => {
+        return (
+            <div>        
+            {record.category && record.category.label} 
+            </div>
+        );}
+    }
   ]
+  const columnsCsv: { label: string, key: string }[] = [
+    { label: t('ticket_name'), key: "ticket_name" }, 
+    { label: t('create_date'), key: "create_date" }, 
+    { label: t('customer'), key: "customer" }, 
+    { label: t('ticket_status'), key: "ticket_status" }, 
+    { label: t('team'), key: "team" }, 
+    { label: t('assignee'), key: "assignee" }, 
+    { label: t('category'), key: "category" }, 
+    { label: t('priority'), key: "priority" }, 
+    { label: t('urgency'), key: "urgency" }, 
+    { label: t('description'), key: "description" }, 
+    { label: t('close_date'), key: "close_date" }, 
+  ]
+   
+  const csvConvert = () => {
+    let tickets_csv:any[] = []
+        tickets.map( t => 
+          tickets_csv.push(
+            {
+              ticket_name: t.name,
+              create_date: uTd(t.create_date),
+              customer: t.customer.label,
+              ticket_status: t.status.label,
+              team: t.team.label,
+              assignee: t.assignee.label,
+              category: t.category.label,
+              priority: t.priority.label,
+              urgency: t.urgency.label,
+              description: t.description,
+              close_date:uTd(t.close_date)
+            }
+          )
+        )
+            return   tickets_csv
+  }
+  
 
     const handleTableChange = (pagination: TablePaginationConfig, filter: Record<string, FilterValue | null>, sorter: SorterResult<any> | SorterResult<any>[]   ) => {  
     setPagination({...pagination, total: ticketsCount })
@@ -458,6 +500,28 @@ const TicketsAssignee:FC = () => {
           rotate={180} />  
         } 
          </Col>
+         <Button 
+         >
+         <FileExcelOutlined style={{color:'#1eb386'}}/>&nbsp;
+         <CSVLink
+              filename={"Expense_Table.csv"}
+              data={csvConvert()}
+              headers={columnsCsv}
+              className="btn btn-primary"
+              onClick={()=>{
+                setAlert({
+                  type: 'success' ,
+                  message: t('list_to_csv_success') ,
+                  closable: true ,
+                  showIcon: true ,
+                  visible: true,
+                  autoClose: 10 
+                })
+              }}
+            >
+              {t('export_to_csv')}
+            </CSVLink> 
+            </Button>
          </div>
         </Row>
         {viewForm &&
@@ -643,7 +707,7 @@ const TicketsAssignee:FC = () => {
       title={() => <h3>{t('tickets') + ' ' + t('total_count') + ' ' + ticketsCount }</h3> }
       footer={() => t('total_count') + ' ' + ticketsCount}
       style={{width: '100%', padding: '5px'}}
-      // scroll={{ x: 1500, y: 700 }}
+      scroll={{ x: 1500, y: 350 }}
       expandable={{
         expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
         rowExpandable: record => record.description !== '',

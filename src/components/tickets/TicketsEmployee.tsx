@@ -9,7 +9,8 @@ import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import { IQueriesCache, IQuery, SearchPagination, SelectOption } from '../../models/ISearch';
 import { searchFormWhereBuild, uTd } from '../../utils/formManipulation';
-import { FilterOutlined, ExclamationCircleOutlined, UsergroupAddOutlined, PaperClipOutlined, FileSearchOutlined }  from '@ant-design/icons/lib/icons';
+import { FilterOutlined, ExclamationCircleOutlined, UsergroupAddOutlined, PaperClipOutlined, 
+  FileSearchOutlined  }  from '@ant-design/icons/lib/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import { RouteNames } from '../../router';
 import { ITicketObjects, ITicket, PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM, URGENCY_LOW, STATUS_CLOSE, ITicketLog, ITicketPrpTpl } from '../../models/ITicket';

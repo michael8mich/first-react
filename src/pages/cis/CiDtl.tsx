@@ -1,5 +1,6 @@
 import { Avatar, Button, Card, Checkbox, Col, DatePicker, Divider, Form, Input, Layout, Menu, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs} from 'antd';
-import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined,
+  UnorderedListOutlined, LayoutOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
@@ -8,7 +9,7 @@ import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
 import { DATETIMEFORMAT, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
-import {  ICiRoFields, ICi} from '../../models/ICi';
+import {  ICiRoFields, ICi, ICiLog} from '../../models/ICi';
 import { useHistory, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { validators } from '../../utils/validators';
@@ -26,7 +27,7 @@ interface RefObject {
 const { TabPane } = Tabs;
 const CisDtl:FC = () => {
   const { t } = useTranslation();
-  const {fetchCi, setSelectSmall, createCi, setAlert, setPathForEmpty} = useAction()
+  const {fetchCi, setSelectSmall, createCi, setAlert, setPathForEmpty, fetchCiLog} = useAction()
   const {error, isLoading, cis, selectedCi } = useTypedSelector(state => state.ci)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {user } = useTypedSelector(state => state.auth)
@@ -139,7 +140,7 @@ const CisDtl:FC = () => {
     };
     const router = useHistory()
     const onFinish = async (values: any) => { 
-debugger
+
       values = form.getFieldsValue()
       const values_ = {...values}
       ICiRoFields.map(r => {
@@ -200,21 +201,72 @@ debugger
       setRo(false)
     }  
     const tabChangeFunction = (key:any) => {
-      if(key==='2')
+      if(key==='log')
       {
-        // if(notifyMember.length === 0) {
-        //   setNotifyMember(JSON.parse(JSON.stringify(selectedCi.members))  )
-        // }
-        // if(defaultRole.length === 0) {
-        //   setDefaultRole(JSON.parse(JSON.stringify(selectedCi.roles))  )
-        // }
+       fetchCiLog(selectedCi)
       }
-      console.log(key);
     }
   const localeteArr = [{'label': t('english') , 'value': 'enUS', 'code': 'enUS'},{'label': t('hebrew'), 'value': 'heIL', 'code': 'heIL'}]
- 
-  
     const [collapsed,  setCollapsed]  = useState(true)
+    const ciLogColumns: ColumnsType<ICiLog> = [
+      {
+        key: 'name',
+        title: t('action'),
+        dataIndex: 'name',
+        sorter: (a:any, b:any) =>  a.name.localeCompare(b.name),
+        width: '10%',
+      },
+      {
+        key: 'old_value',
+        title: t('old_value'),
+        // dataIndex: 'old_value',
+        sorter: (a:any, b:any) =>  a.old_value.localeCompare(b.old_value),
+        width: '35%',
+        render: ( record) => {
+          return (
+              <>        
+              {  record.name.indexOf(' date ') != -1 ?  uTd(record.old_value) : record.old_value} 
+              </>
+          );}
+      },
+      {
+        key: 'new_value',
+        title: t('new_value'),
+        // dataIndex: 'new_value',
+        sorter: (a:any, b:any) =>  a.new_value.localeCompare(b.new_value),
+        width: '35%',
+        render: ( record) => {
+          return (
+              <>        
+               {  record.name.indexOf(' date ') != -1 ?  uTd(record.new_value) : record.new_value} 
+              </>
+          );}
+      },
+      {
+        key: 'last_mod_dt',
+        title: t('last_mod_dt'),
+        sorter: (a:any, b:any) =>  a.last_mod_dt - b.last_mod_dt,
+        render: ( record) => {
+          return (
+              <>        
+              {uTd(record.last_mod_dt)} 
+              </>
+          );}
+      },
+      {
+        key: 'last_mod_by',
+        title: t('last_mod_by'),
+        sorter: (a:any, b:any) =>  a.last_mod_by_name.localeCompare(b.last_mod_by_name),
+        width: '10%',
+        render: ( record) => {
+          return (
+              <>        
+              {record.last_mod_by_name && record.last_mod_by_name} 
+              </>
+          );}
+      }
+    ]
+  
   return (
     <Layout style={{height:"100vh"}}>
       {error && 
@@ -274,7 +326,14 @@ debugger
          </Col>
         </Row>
   <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
-    <TabPane tab={t('detail')} key="1" >
+    <TabPane
+    tab={
+      <span> 
+      <LayoutOutlined />
+      {t('detail')} 
+      </span>
+    }
+     key="1" >
         <Row  >
            <Col xs={24} xl={4} sm={12} lg={8} >
            <Form.Item
@@ -479,6 +538,66 @@ debugger
                   </DatePicker>
            </Form.Item>
            </Col>
+           <Col xs={24} xl={4} sm={12} lg={8}>
+           <Form.Item 
+           label={ t('install_dt') }
+           name="install_dt"
+           style={{ padding:'5px', width: 'maxContent'}}
+           > 
+            <DatePicker 
+                  format={DATETIMEFORMAT}
+                  disabled={ro}
+                  placeholder={t('install_dt')}
+                  showTime={{ format: 'HH:mm' }} 
+                  >
+                  </DatePicker>
+           </Form.Item>
+           </Col>  
+           <Col xs={24} xl={4} sm={12} lg={8}>
+           <Form.Item 
+           label={ t('expiration_dt') }
+           name="expiration_dt"
+           style={{ padding:'5px', width: 'expiration_dt'}}
+           > 
+            <DatePicker 
+                  format={DATETIMEFORMAT}
+                  disabled={ro}
+                  placeholder={t('expiration_dt')}
+                  showTime={{ format: 'HH:mm' }} 
+                  >
+                  </DatePicker>
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={4} sm={12} lg={8}>
+           <Form.Item 
+           label={ t('warranty_start_dt') }
+           name="warranty_start_dt"
+           style={{ padding:'5px', width: 'warranty_start_dt'}}
+           > 
+            <DatePicker 
+                  format={DATETIMEFORMAT}
+                  disabled={ro}
+                  placeholder={t('warranty_start_dt')}
+                  showTime={{ format: 'HH:mm' }} 
+                  >
+                  </DatePicker>
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={4} sm={12} lg={8}>
+           <Form.Item 
+           label={ t('warranty_end_dt') }
+           name="warranty_end_dt"
+           style={{ padding:'5px', width: 'maxContent'}}
+           > 
+            <DatePicker 
+                  format={DATETIMEFORMAT}
+                  disabled={ro}
+                  placeholder={t('warranty_end_dt')}
+                  showTime={{ format: 'HH:mm' }} 
+                  >
+                  </DatePicker>
+           </Form.Item>
+           </Col>
           
         </Row> 
         <Row  >
@@ -539,243 +658,21 @@ debugger
            </Form.Item>
            </Col>
            </Row>
-      </TabPane>
-    <TabPane tab={t('log')} key="2" forceRender={true} >
-    {/* <Row>
-      <Col  xs={24} xl={18}>
-      <Row>
-      { 
-           form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value !== TEAM_TYPE_ID 
-           ?
-           <>
-           <Col xs={24} xl={12}>
-           <Form.Item 
-           label={ t('roles') }
-           name="roles"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           //  rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={true}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('roles') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'roles',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'role'", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'roles')}
-           />
-           </Form.Item>
-           </Col>
-           <Col xs={24} xl={12}>
-           <Form.Item 
-           label={ t('teams') }
-           name="teams"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           //  rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={true}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('teams') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'teams',  ' top 200 name as label, id as value , id as code ', 'V_contacts', " contact_type = 'F349B208096C5B982D8205DED91F5FA4'", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'teams')}
-           />
-           </Form.Item>
-           </Col>
-           </>
-           :
-           <Col xs={24} xl={24}>
-           <Form.Item 
-           label={ t('members') }
-           name="members"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           //  rules={[validators.required()]}
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={true}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('members') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'members',  ' top 200 name as label, id as value , id as code ', 'V_contacts', ASSIGNEE_LIST, true )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'members')}
-           />
-           </Form.Item>
-           </Col>
-        }
-      </Row>
-      <Row  hidden={form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value === TEAM_TYPE_ID}>
-           <Col xs={24} xl={5}>
-           <Form.Item 
-           label={ t('organization') }
-           name="organization"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('organization') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'organization',  ' top 200 name as label, id as value , id as code ', 'V_organizational_info', ORGANIZATION_LIST , true )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'organization')}
-           />
-           </Form.Item>
-           </Col>
-           <Col xs={24} xl={5}>
-           <Form.Item 
-           label={ t('location') }
-           name="location"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('location') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'location',  ' top 200 name as label, id as value , id as code ', 'V_organizational_info', LOCATION_LIST , true )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'location')}
-           />
-           </Form.Item>
-           </Col>
-           <Col xs={24} xl={5}>
-           <Form.Item 
-           label={ t('department') }
-           name="department"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('department') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'department',  ' top 200 name as label, id as value , id as code ', 'V_organizational_info', DEPARTMENT_LIST , true )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'department')}
-           />
-           </Form.Item>
-           </Col>
-           <Col xs={24} xl={5}>
-           <Form.Item 
-           label={ t('site') }
-           name="site"
-           style={{ padding:'5px', width: 'maxContent'}} 
-           > 
-           <AsyncSelect 
-           menuPosition="fixed"
-           isDisabled={ro}
-           isMulti={false}
-           styles={SelectStyles}
-           isClearable={true}
-           placeholder={ t('site') }
-           cacheOptions 
-           defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'site',  ' top 200 name as label, id as value , id as code ', 'V_organizational_info', SITE_LIST , true )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'site')}
-           />
-           </Form.Item>
-           </Col>
-      </Row>
-      <Row  hidden={form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value === TEAM_TYPE_ID}>
-           <Col xs={24} xl={5}  >
-           <Form.Item
-           label={ t('address1') }
-           name="location_address1" 
-           style={{ padding:'5px'}} 
-           > 
-           <Input 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('address1') }
-           />
-           </Form.Item>
-           </Col> 
-           <Col xs={24} xl={5}  >
-           <Form.Item
-           label={ t('address2') }
-           name="location_address2" 
-           style={{ padding:'5px'}} 
-           > 
-           <Input 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('address2') }
-           />
-           </Form.Item>
-           </Col> 
-           <Col xs={24} xl={5}  >
-           <Form.Item
-           label={ t('address3') }
-           name="location_address3" 
-           style={{ padding:'5px'}} 
-           > 
-           <Input 
-             disabled={true}
-             style={{ height:'38px', width: 'maxContent'}}
-             placeholder={ t('address3') }
-           />
-           </Form.Item>
-           </Col> 
-      </Row>      
-      {   
-           form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value === TEAM_TYPE_ID &&
-      <Table
-      columns={grpMemColumns} 
-      dataSource={notifyMember} 
-      title={() => <h3>{t('teams')}</h3> } 
-      >
-      </Table>
-      } 
-      {   
-      form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value !== TEAM_TYPE_ID &&
-      <Table
-      columns={roleColumns} 
-      dataSource={defaultRole} 
-      title={() => <h3>{t('roles')}</h3> } 
-      >
-      </Table>
-      } 
-      </Col>    
-       <Col  xs={24} xl={6}>
-       <Menu 
-          // theme="dark" 
-          // defaultSelectedKeys={['1','2']} 
-          defaultSelectedKeys={[]} 
-            mode="inline">
-              <QueriesTree 
-            collapsed={collapsed}
-            setCollapsed={setCollapsed} 
-            sider={false} 
-            edit={!ro} 
-            ci={selectedCi}
-            ref={queriesRef}
-            />
-      </Menu>          
-         
-    </Col> 
-    </Row> */}
-    
+    </TabPane>
+    <TabPane tab={
+      <span> 
+      <UnorderedListOutlined /> 
+      {t('log')} 
+      </span>
+    } 
+    key="log" forceRender={true} >
+      <Table<ICiLog>
+        scroll={{ x: 1200, y: 700 }}
+        columns={ciLogColumns} 
+        dataSource={selectedCi.ci_log} 
+        rowKey={record => record.id}
+        >
+        </Table>  
     </TabPane>  
     </Tabs>   
     </Form>

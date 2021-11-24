@@ -31,6 +31,7 @@ export interface ITicket {
     ticketPropertiesCount?: number
     customer_open_tickets?: number
     tickets_notifications: INotification[]
+
 }
 export interface ITicketLog {
     id: string

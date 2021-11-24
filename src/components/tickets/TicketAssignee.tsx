@@ -1,5 +1,6 @@
-import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover, Badge} from 'antd';
-import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover, Badge, Tooltip} from 'antd';
+import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined, MailOutlined, 
+  UnorderedListOutlined, LayoutOutlined, FilePdfOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
@@ -28,8 +29,12 @@ import PopoverDtl from '../../pages/ticket/PopoverDtl';
 import { P } from '@antv/g2plot';
 import { red, volcano, gold, yellow, lime, green, cyan, blue, geekblue, purple, magenta, grey } from '@ant-design/colors';
 import { generate, presetDarkPalettes } from '@ant-design/colors';
-import { fromPairs } from 'lodash';
+import { fromPairs, size } from 'lodash';
 import { INotification } from '../../models/INotification';
+import * as htmlToImage from 'html-to-image';
+import { toPng, toJpeg, toBlob, toPixelData, toSvg } from 'html-to-image';
+import { jsPDF } from "jspdf";
+import Title from 'antd/lib/skeleton/Title';
 
 // Generate dark color palettes by a given color
 const colors = generate('#1890ff', {
@@ -642,8 +647,32 @@ const TicketAssignee:FC = () => {
     }
     return ''
   }
+  const toPdf = () => {
+    let screen = document.getElementById('screen')
+    if(screen)
+    htmlToImage.toPng(screen , { quality: 0.95 })
+        .then(function (dataUrl) {
+          var link = document.createElement('a');
+          link.download = 'my-image-name.jpeg';
+          const pdf = new jsPDF();
+          const imgProps= pdf.getImageProperties(dataUrl);
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+          pdf.addImage(dataUrl, 'PNG', 0, 0,pdfWidth, pdfHeight);
+          pdf.save( t('ticket') + "_" +  selectedTicket.name +   ".pdf"); 
+
+          setAlert({
+            type: 'success' ,
+            message: t('list_to_pdf_success') ,
+            closable: true ,
+            showIcon: true ,
+            visible: true,
+            autoClose: 10 
+          })
+        });
+  }
   return (
-  <Layout style={{height:"100vh"}}>
+  <Layout style={{height:"100vh"}} id='screen'>
       {error &&  <h1>{error}</h1> }
       {isLoading && <Spin style={{padding:'20px'}} size="large" />}
       <Row> 
@@ -706,6 +735,12 @@ const TicketAssignee:FC = () => {
          >
          { t('refresh') }
          </Button>&nbsp;&nbsp;&nbsp;
+         <Tooltip title={t('export_to_pdf')} >
+         <FilePdfOutlined 
+          style={{color:'gray',fontSize:'24px'}}
+          onClick={() => toPdf() }
+         />
+          </Tooltip>
         </div> 
          :
          <div style={{display:'flex', justifyContent:'start'}} className="flex-container">
@@ -723,10 +758,16 @@ const TicketAssignee:FC = () => {
          </Button>&nbsp;&nbsp;&nbsp;
         </div>    
      }
+     
         </Col>
         </Row>
    <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
-      <TabPane tab={t('detail')} key="detail" >
+      <TabPane tab={
+          <span> 
+          <LayoutOutlined />
+          {t('detail')} 
+          </span>
+        } key="detail" >
           <Row  >
           <Col xs={24} xl={6}>
           
@@ -1132,7 +1173,12 @@ const TicketAssignee:FC = () => {
       
           }
       </TabPane>
-      <TabPane tab={t('log')} key="log" forceRender={true} >
+      <TabPane tab={
+          <span> 
+          <UnorderedListOutlined /> 
+          {t('log')} 
+          </span>
+        }key="log" forceRender={true} >
       <Table<ITicketLog>
         scroll={{ x: 1200, y: 700 }}
         columns={ticketLogColumns} 
@@ -1141,7 +1187,14 @@ const TicketAssignee:FC = () => {
         >
         </Table>    
       </TabPane> 
-      <TabPane tab={t('notifications')} key="notifications" forceRender={true} >
+      <TabPane 
+      tab={
+        <span> 
+        <MailOutlined /> 
+        {t('notifications')} 
+        </span>
+      }
+       key="notifications" forceRender={true} >
       <Table<INotification>
         scroll={{ x: 1200, y: 700 }}
         columns={ticketNotificationColumns} 

@@ -64,6 +64,8 @@ const Cis:FC = () => {
       title: t('name'),
       dataIndex: 'name',
       sorter: true,
+      fixed: 'left',
+      width: 120,
       render: (name, record, index) => {
         return (
           <a onClick={(event) => goToObject(event, record.id  ) }>
@@ -364,7 +366,7 @@ const Cis:FC = () => {
       title={() => <h3>{t('cis')}/{t('teams')}</h3> }
       footer={() => t('total_count') + ' ' + cisCount}
       style={{width: '100%', padding: '5px'}}
-      // scroll={{ x: 1500, y: 700 }}
+      scroll={{ x: 1500, y: 350 }}
       expandable={{
         expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
         rowExpandable: record => record.description !== '',
