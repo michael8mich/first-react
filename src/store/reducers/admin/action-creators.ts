@@ -208,7 +208,14 @@ export const AdminActionCreators = {
                   }
                   const response = await  axiosFn("post", json_, '*', 'teammember', "id" , ''  )  
                 }
-                
+                else
+                if(v === 'cis')
+                {
+                  let json_ = {
+                    ci_user: id
+                  }
+                  const response = await  axiosFn("put", json_, '*', 'ci', "id" , m.value  )  
+                }
               }
               else {
                 if(v === 'roles')
@@ -218,6 +225,13 @@ export const AdminActionCreators = {
                 if(v === 'teams' || v === 'members')
                 {
                 const response = await  axiosFn("delete", '', '*', 'teammember', "id" , m.code  )  
+                }
+                if(v === 'cis')
+                {
+                  let json_ = {
+                    ci_user: " "
+                  }
+                  const response = await  axiosFn("put", json_, '*', 'ci', "id" , m.value  )  
                 }
               }
             })
@@ -342,6 +356,12 @@ export const AdminActionCreators = {
                 second = 'V_tickets'
                 third = " customer  = '" + id + "'"
               } 
+              if(m==='cis') {  
+                first = '  id as value, name as label, id as code, * '
+                second = 'V_cis'
+                third = " ci_user  = '" + id + "' AND active = 1 "
+              } 
+                 
                 const response_multi = await  axiosFn("get", '', first, second,  third , ''  )  
                 console.log('m', m);
                 multiObject = { ...multiObject, [m]: response_multi.data}

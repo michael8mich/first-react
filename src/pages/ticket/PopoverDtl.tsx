@@ -21,10 +21,10 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
     getLog()
     
   }, [last_log_records.length])
-  let extra = defaultRole && defaultRole?.label === "Employee" ? "" : " and name = 'New Log Comment' "  ;
+  let extra = defaultRole && defaultRole?.label !== "Employee" ? "" : " and name = 'New Log Comment' "  ;
   const getLog = async () => {
     
-    const last_log_records =  await axiosFn('get', '', 'top 4 * ', ' V_ticket_log ', " ticket = '" +props.record.id+ "' " + extra + " order by create_date desc")
+    const last_log_records =  await axiosFn('get', '', 'top 3 * ', ' V_ticket_log ', " ticket = '" +props.record.id+ "' " + extra + " order by create_date desc")
     let tickets_log:ITicketLog[] = last_log_records.data
     tickets_log = tickets_log.map(e => {
       return { ...e, name: t(e.name) }  
@@ -36,11 +36,14 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
   const  buildTitle = () =>
   {
     return (
-    <Card 
+      <>
+      {
+        last_log_records?.length > 0 &&
+        <Card 
     style={{border:'solid 1px gray'}}
     >
       <>
-      {
+      {/* {
         extra.length !== 0 &&
         <Row key="description">
                <Col key="description_col" xs={24} xl={24} sm={24} lg={24}>
@@ -52,7 +55,7 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
                  />
                 </Col>
        </Row>
-      }
+      } */}
       </>
               
           {
@@ -69,20 +72,26 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
                {
                  r.old_value ? 
                  <Col key="3" xs={24} xl={24} sm={24} lg={24}>
-                   <TextArea
+                   {/* <TextArea
                    disabled={true}
                    value={ t('from') +': ' + r.old_value + ' ' + t('to') + ': ' + r.new_value }
                    >
-                   </TextArea>
+                   </TextArea> */}
+                   <div>
+                   { t('from') +': ' + r.old_value + ' ' + t('to') + ': ' + r.new_value }
+                   </div>
                 </Col>
                  :
                  <Col key="4" xs={24} xl={24} sm={24} lg={24} > 
-                  <TextArea
+                  {/* <TextArea
                   disabled={true}
                   value={r.new_value}
                   >
                
-                 </TextArea>
+                 </TextArea> */}
+                 <div>
+                 {r.new_value}
+                 </div>
                  </Col>
                }
                 </Row>
@@ -93,6 +102,8 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
             )
           }
         </Card>
+      }
+    </>
     )
   }
   return (

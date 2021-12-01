@@ -411,6 +411,10 @@ const getQueries = async () => {
       setQueriesCache({ [q.factory]: q.query })
       router.push(RouteNames.USERS)
     } 
+    else if(q.factory === 'ci') {
+      setQueriesCache({ [q.factory]: q.query })
+      router.push(RouteNames.CIS)
+    } 
 
   }
   const deleteQuery = async (id:string) => {

@@ -90,25 +90,29 @@ const SiderAssignee: FC<SiderComponentProps> = (props) => {
 
     const goToQuery = (q:IQuery) => {
       if(edit) return
-      if(q.factory === 'ticket') {
-        setQueriesCache({ [q.factory]: q.query })
+      setQueriesCache({ [q.factory]: q.query })
+      if(q.factory === 'ticket') { 
         router.push(RouteNames.TICKETS)
       } else if(q.factory === 'contact') {
-        setQueriesCache({ [q.factory]: q.query })
         router.push(RouteNames.USERS)
       } 
+      else if(q.factory === 'ci') {
+        router.push(RouteNames.CIS)
+      }
   
     }
     const {setQueriesCache} = useAction()
     const goTo = (factory:string, query:string) => {
-
+      setQueriesCache({ [factory]: query })
       if(factory === 'ticket') {
-        setQueriesCache({ [factory]: query })
         router.push(RouteNames.TICKETS)
       } else if(factory === 'contact') {
-        setQueriesCache({ [factory]: query })
+
         router.push( RouteNames.USERS )
       } 
+      else if(factory === 'ci') {
+        router.push(RouteNames.CIS)
+      }
   
     }
     const deleteQuery = async (id:string, folder=false) => {

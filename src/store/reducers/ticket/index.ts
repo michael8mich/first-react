@@ -5,6 +5,8 @@ import { TicketAction, TicketActionEnum, TicketState } from "./types"
 const initialState: TicketState = {
     tickets: [] as ITicket[],
     selectedTicket: {} as ITicket,
+    copiedTicket: {} as ITicket,
+
     ticketsCount: 0,
     categories: [] as ITicketCategory[],
     categoriesCount: 0,
@@ -19,11 +21,14 @@ const initialState: TicketState = {
 
 }
 export default function TicketReducer(state = initialState, action:TicketAction ):TicketState {
+
     switch (action.type) {
         case TicketActionEnum.SET_TICKETS:
            return {...state, tickets: action.payload, isLoading: false }
         case  TicketActionEnum.SET_SELECTED_TICKET:
             return {...state, selectedTicket: action.payload } 
+        case  TicketActionEnum.SET_COPIED_TICKET:
+                return {...state, copiedTicket: action.payload }     
 
         case  TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES:
                 return {...state,  selectedTicket:  { ...state.selectedTicket,  ticketProperties: action.payload }}  

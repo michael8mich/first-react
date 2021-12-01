@@ -246,7 +246,7 @@ const getQueries = async () => {
       <Col  xs={24} xl={3} lg={5}  sm={12} key={'q_col_first'}></Col>
       {queries.map((q, index) =>( 
                 
-                        <Col  xs={24} xl={6} lg={8}  sm={12} key={q.id}
+                        <Col  xs={24} xl={6} sm={24} lg={6}   key={q.id}
                         >
                         <Card   key={q.id} 
                         className={'homeQueryCard'}
@@ -268,8 +268,8 @@ const getQueries = async () => {
     </Row>
     <br/><br/>
     <Row>
-    <Col  xs={24} xl={8} ></Col>
-    <Col  xs={24} xl={8} >
+    <Col  xs={24} xl={6}  sm={4}  lg={2}></Col>
+    <Col  xs={24} xl={12} sm={16} lg={24}>
     <AutoComplete
       dropdownMatchSelectWidth={252}
       style={autocompleteStyle()}
@@ -292,6 +292,7 @@ const getQueries = async () => {
     
     <Col  xs={24} xl={8} ></Col>
     </Col>
+    <Col  xs={24} xl={6}  sm={4}  lg={2}  ></Col>
     </Row>
     <br/><br/>
     <Row>
@@ -320,14 +321,14 @@ const getQueries = async () => {
     <br/><br/>
     <Row>
     <Col  xs={24} xl={2} lg={2}  sm={2}></Col>
-    <Col  xs={24} xl={12} lg={12}  sm={18}  ><h1 style={{color:'gray',fontSize:'24px'}}>{t('shortCats')}</h1></Col>
+    <Col  xs={24} xl={22} sm={24} lg={22}  ><h1 style={{color:'gray',fontSize:'24px'}}>{t('shortCats')}</h1></Col>
     <Col  xs={24} xl={2} lg={2}  sm={2}></Col> 
     </Row>
     <Row> 
       {
         shortCats.length>0 &&
         shortCats.map( q => (
-        <Col  xs={24} xl={4} lg={8}  sm={12} 
+        <Col    xl={8}  lg={8} sm={12} xs={24}
         onClick={() => openTicketWithParameters(q.code) }
         style={{cursor:'pointer'}}
         >

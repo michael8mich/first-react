@@ -20,13 +20,15 @@ import { useHistory } from 'react-router-dom';
 import { RouteNames } from './router';
 import Login from './pages/Login';
 import FooterComponent from './components/FooterComponent';
+import axios from 'axios'
+import { SSO_PATH } from './axios/axios';
 
 
 const { Header, Sider, Content } = Layout;
 const App:FC = () => {
   let defaultLen = 'heIL'
   const { i18n } = useTranslation();   
-  const {setUser, setIsAuth, setFromLocation, fetchLoginUser, fetchNotificationsAll} = useAction()
+  const {setUser, setIsAuth, setFromLocation, fetchLoginUser, fetchNotificationsAll, sso} = useAction()
   const {isAuth, user } = useTypedSelector(state => state.auth) 
   const {alert } = useTypedSelector(state => state.admin) 
   const [collapsed, setCollapsed] = useState(true)
@@ -44,15 +46,42 @@ const App:FC = () => {
     }
     else
     {
-      setFromLocation(router?.location?.pathname.toString() || '')
-      let user_obj = {} as IUser
-      setUser({...user_obj, locale: defaultLen })
-      i18n.changeLanguage(defaultLen.substring(0,2));
+      goToLogin()
+      //check_sso()
     }
     fetchNotificationsAll()
   }, [])
-
-  
+ 
+  const  check_sso = async () => {
+      try {
+        let fromLocation = router?.location?.pathname.toString() || ''
+        const headers = { 'Content-Type': 'text'}
+        let ssoName =  await axios.get(SSO_PATH, { headers: headers })
+        let username = ''
+        let ssoName_: string = ssoName?.data|| '';
+            if (ssoName_ != '') {
+              let usernameAr: string[] = [];
+              usernameAr = ssoName_.split('\\');
+              if (usernameAr.length === 2) {
+                username = usernameAr[1];
+              }
+            }
+        if(username.length>0)  {
+          sso(username, fromLocation) 
+        }
+        else {
+          throw new Error
+        }
+      } catch {
+        goToLogin()
+      }
+  }
+  const  goToLogin =  () => {
+    setFromLocation(router?.location?.pathname.toString() || '')
+    let user_obj = {} as IUser
+    setUser({...user_obj, locale: defaultLen })
+    i18n.changeLanguage(defaultLen.substring(0,2));
+  }
   const direction = user.locale === 'heIL' ? 'rtl' : 'ltr'
   return (
     <ConfigProvider locale={user.locale === 'heIL' ? heIL : enUS } direction={direction}>

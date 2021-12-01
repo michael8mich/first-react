@@ -1,5 +1,5 @@
 import { Avatar, Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Menu, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs} from 'antd';
-import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
+import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined,  CrownOutlined, ApiOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
@@ -133,6 +133,7 @@ const UserDtl:FC = () => {
       IUserRoFields.map(r => {
         delete values_[r]
       })
+
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedUser});
       saveFormBuild(values_)
       createUser({...values_, id},  valuesMulti, user.id)
@@ -286,7 +287,26 @@ const UserDtl:FC = () => {
             />
         );}
     }]
-  
+  const ciColumns: ColumnsType<any> = [
+      {
+        key: 'label',
+        title: t('name'),
+        dataIndex: 'label',
+        sorter: true,
+      },
+      {
+        key: 'ci_class',
+        title: t('ci_class'),
+        dataIndex: 'ci_class_name',
+        sorter: true
+      },
+      {
+        key: 'ci_family',
+        title: t('ci_family'),
+        dataIndex: 'ci_family',
+        sorter: true
+      }
+    ]
     const [collapsed,  setCollapsed]  = useState(true)
   return (
     <Layout style={{height:"100vh"}}>
@@ -647,7 +667,7 @@ const UserDtl:FC = () => {
            form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value !== TEAM_TYPE_ID 
            ?
            <>
-           <Col xs={24} xl={12}>
+           <Col xs={24} xl={8}>
            <Form.Item 
            label={ t('roles') }
            name="roles"
@@ -668,7 +688,7 @@ const UserDtl:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={12}>
+           <Col xs={24} xl={8}>
            <Form.Item 
            label={ t('teams') }
            name="teams"
@@ -686,6 +706,27 @@ const UserDtl:FC = () => {
            defaultOptions
            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'teams',  ' top 200 name as label, id as value , id as code ', 'V_contacts', " contact_type = 'F349B208096C5B982D8205DED91F5FA4'", false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'teams')}
+           />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={8}>
+           <Form.Item 
+           label={ t('cis') }
+           name="cis"
+           style={{ padding:'5px', width: 'maxContent'}} 
+           //  rules={[validators.required()]}
+           > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isDisabled={ro}
+           isMulti={true}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('cis') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'cis',  ' top 200 name as label, id as value , id as code ', 'V_cis', " active = 1 ", false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'cis')}
            />
            </Form.Item>
            </Col>
@@ -848,12 +889,25 @@ const UserDtl:FC = () => {
       } 
       {   
       form.getFieldsValue().contact_type && form.getFieldsValue().contact_type.value !== TEAM_TYPE_ID &&
-      <Table
-      columns={roleColumns} 
-      dataSource={defaultRole} 
-      title={() => <h3>{t('roles')}</h3> } 
-      >
-      </Table>
+      <Row> 
+         <Col xs={24} xl={12}  style={{padding:'5px'}}>
+         <Table
+          columns={roleColumns} 
+          dataSource={defaultRole} 
+          title={() => <h3><CrownOutlined />{t('roles')}</h3> }
+          >
+         </Table>
+         </Col>
+         <Col xs={24} xl={12}  style={{padding:'5px'}}>
+         <Table
+          columns={ciColumns} 
+          dataSource={selectedUser.cis} 
+          title={() => <h3><ApiOutlined />{t('cis')}</h3> } 
+          >
+         </Table>
+         </Col>
+      </Row>
+      
       } 
       </Col>    
        <Col  xs={24} xl={6}>

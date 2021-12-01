@@ -61,7 +61,7 @@ body {
     box-sizing: border-box;
 }
 .homeQueryCard {
-    border: 3px solid #cc3333;
+    /* border: 3px solid #cc3333; */
     border-radius:5px;
     padding:'10px';
     margin:10px;
@@ -79,15 +79,15 @@ body {
     text-align: center;
     color: white;
     font-size: 19px;
-    border: 10 solid green;
+    /* border: 10 solid green; */
   }
 
   .homeQueryCardEdit {
-    border: 5px solid rgba(234,107,76,255);
-    border-radius:25px;
+    /* border: 5px solid rgba(234,107,76,255); */
+    border-radius:5px;
     padding:'10px';
     margin:10px;
-    color:green;
+    color:gray;
     background:lightgray; 
     font-size:18px;
     font-weight:400;

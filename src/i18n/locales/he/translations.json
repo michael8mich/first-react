@@ -133,6 +133,7 @@
         "New Log Comment": "הודעה חדשה",
         "Close Comment": "הודעה ל סגירה",
         "Assignee Changed": "גורם מטפל השתנה",
+        "Ci Changed": "הציוד השתנה",
         "Ticket Type Changed": "סוג הפניה השתנה",
         "Description Changed": "תיאור השתנה",
         "Team Changed": "צוות השתנה",
@@ -222,8 +223,13 @@
          "warranty_start_dt date Changed":"תאריך תחילת האחריות השתנה",
          "warranty_end_dt date Changed":"תאריך סיום האחריות השתנה",
          "expiration_dt date Changed":"תאריך התפוגה השתנה",
-
-
+         "go_to_same_tickets": "עבור לרשימת פניות דומות",
+         "select_ci": "בחר ציוד",
+         "go_to_ci": "פתח ציוד",
+         "open_additionalFilter": "פתח מסנן נוסף",
+         "close_additionalFilter": "סגור מסנן נוסף",
+         "toCopy": "העתק",
+         
         "TICKET_OPENED_BY_TEAM": "פניות פעילות לפי צוות",
         "TICKET_OPENED_BY_PRIORITY": "פניות פעילות לפי עדיפות",
         "TICKET_OPENED_BY_URGENCY": "פניות פעילות לפי דחיפות",

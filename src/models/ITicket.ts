@@ -24,6 +24,7 @@ export interface ITicket {
     create_date: string
     close_date: string
     customer_info: IUser
+    customer_phone: string
     category_info: ITicketCategory
     tickets_log?: ITicketLog[]
     attachments?: number

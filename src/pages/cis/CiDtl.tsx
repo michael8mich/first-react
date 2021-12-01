@@ -140,7 +140,7 @@ const CisDtl:FC = () => {
     };
     const router = useHistory()
     const onFinish = async (values: any) => { 
-
+debugger
       values = form.getFieldsValue()
       const values_ = {...values}
       ICiRoFields.map(r => {
@@ -518,6 +518,26 @@ const CisDtl:FC = () => {
              disabled={ro}
              style={{ height:'38px', width: 'maxContent'}}
              placeholder={ t('mac') }
+           />
+           </Form.Item>
+           </Col>
+           <Col  xs={24} xl={4} sm={12} lg={8}>
+           <Form.Item 
+           label={ t('location') }
+           name="location"
+           style={{ padding:'5px', width: 'maxContent'}} 
+           > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isDisabled={ro}
+           isMulti={false}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('location') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'location',  ' top 200 name as label, id as value , id as code ', 'V_organizational_info', LOCATION_LIST , true )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'location')}
            />
            </Form.Item>
            </Col>

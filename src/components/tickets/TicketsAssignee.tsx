@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Card, Checkbox, Col, Divider, Dropdown, Form, Input, Layout, Menu, Modal, Pagination, Popover, Radio, Row, Table, TablePaginationConfig, Tooltip } from 'antd';
+import { Alert, Badge, Button, Card, Checkbox, Col, DatePicker, Divider, Dropdown, Form, Input, Layout, Menu, Modal, Pagination, Popover, Radio, Row, Table, TablePaginationConfig, Tooltip } from 'antd';
 import { FilterValue, SorterResult } from 'antd/lib/table/interface';
 import { ColumnsType  } from 'antd/es/table';
 import  {FC, Key, ReactChild, ReactFragment, ReactPortal, useEffect, useState} from 'react';
@@ -8,9 +8,9 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import { IQueriesCache, IQuery, SearchPagination, SelectOption } from '../../models/ISearch';
-import { searchFormWhereBuild, uTd } from '../../utils/formManipulation';
+import { DATETIMEFORMAT, searchFormWhereBuild, uTd } from '../../utils/formManipulation';
 import { FilterOutlined, ExclamationCircleOutlined, UsergroupAddOutlined, PaperClipOutlined, FileSearchOutlined,
-  FileExcelOutlined }  from '@ant-design/icons/lib/icons';
+  FileExcelOutlined, PlusCircleOutlined, MinusCircleOutlined }  from '@ant-design/icons/lib/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import { RouteNames } from '../../router';
 import { ITicketObjects, ITicket, PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM, URGENCY_LOW, STATUS_CLOSE, ITicketLog, ITicketPrpTpl } from '../../models/ITicket';
@@ -20,7 +20,7 @@ import QueryBuild from '../QueryBuild';
 import PopoverDtl from '../../pages/ticket/PopoverDtl';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import {CSVLink} from "react-csv"
-
+const { RangePicker } = DatePicker;
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '25'
 const WHERE_DEFAULT = ' active = 1 '
@@ -34,7 +34,7 @@ const TicketsAssignee:FC = () => {
   } as SearchPagination
   const {error, isLoading, tickets, ticketsCount } = useTypedSelector(state => state.ticket)
   const {selectSmall } = useTypedSelector(state => state.cache)
-  const {fetchTickets, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties,setAlert} = useAction()
+  const {fetchTickets, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties,setAlert, setPathForEmpty, setCopiedTicket} = useAction()
   const {user, defaultRole } = useTypedSelector(state => state.auth)
   const [typeSelect, setTypeSelect] = useState('')
   const queryParams = new URLSearchParams(window.location.hash);
@@ -108,7 +108,20 @@ const TicketsAssignee:FC = () => {
     })
 
   }
-
+  const pathTrowEmpty = (path:string) => {
+    setPathForEmpty(path)
+    router.push(RouteNames.EMPTY)
+  }
+  const toCopy = (record:ITicket) =>
+  {
+     
+      setSelectedProperty({} as ITicketPrpTpl)
+      setProperties([] as ITicketPrpTpl[])
+      setCopiedTicket(record)
+      setSelectedTicket({} as ITicket)
+      pathTrowEmpty(RouteNames.TICKETS + '/0')
+  }
+  
   const toClose = (record:ITicket, type: string) =>
   {
     setSelectedTicket(record)
@@ -163,6 +176,9 @@ const TicketsAssignee:FC = () => {
       <Menu.Item key="3"
        onClick={()=>toClose(record,'Close Comment')}
       >{t('toClose')}</Menu.Item>
+      <Menu.Item key="4"
+       onClick={()=>toCopy(record)}
+      >{t('toCopy') + ' ' + t('ticket')}</Menu.Item>
     </Menu>
   );
   function  popover(event:any, record:ITicket) 
@@ -453,7 +469,7 @@ const TicketsAssignee:FC = () => {
         )
     }
     
-    
+  const [vewAdditionalFilter, setVewAdditionalFilter ] = useState(false)
   return (
     <Layout style={{height:"100vh"}}>
       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
@@ -527,7 +543,8 @@ const TicketsAssignee:FC = () => {
         {viewForm &&
         <>
         <Row  >
-           <Col xs={24} xl={3}  >
+         
+           <Col xs={24} xl={3}  sm={12} lg={8} >
            <Form.Item
            // label={ t('name') }
            name="name" 
@@ -537,8 +554,22 @@ const TicketsAssignee:FC = () => {
              placeholder={ t('t-name') }
            />
            </Form.Item>
+           {
+               vewAdditionalFilter ? 
+               <Tooltip title={t('close_additionalFilter')}>
+               <MinusCircleOutlined  
+               onClick={()=>setVewAdditionalFilter(false)}
+               />
+               </Tooltip> : 
+               <Tooltip title={  t('open_additionalFilter')}>
+               <PlusCircleOutlined 
+               onClick={()=>setVewAdditionalFilter(true)}
+               />
+                </Tooltip>
+
+             }
            </Col>
-           <Col xs={24} xl={5} >
+           <Col xs={24} xl={5}  sm={12} lg={8} >
            <Form.Item 
            // label={ t('type') }
            name="customer"
@@ -556,7 +587,7 @@ const TicketsAssignee:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={10} >
+           <Col xs={24} xl={10}  sm={12} lg={8} >
            <Form.Item 
            // label={ t('tcategory') }
            name="category"
@@ -574,7 +605,7 @@ const TicketsAssignee:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={3}  >
+           <Col xs={24} xl={3}  sm={12} lg={8} >
            <Form.Item
            label={ t('active') }
            name="active" 
@@ -588,8 +619,10 @@ const TicketsAssignee:FC = () => {
            </Form.Item>
            </Col>
         </Row>
-        <Row >
-        <Col xs={24} xl={3}  >
+     {
+        vewAdditionalFilter && <>
+           <Row >
+        <Col xs={24} xl={3}  sm={12} lg={8}>
            <Form.Item 
            // label={ t('type') }
            name="ticket_type"
@@ -607,7 +640,7 @@ const TicketsAssignee:FC = () => {
            />
            </Form.Item>
            </Col>
-        <Col xs={24} xl={4} >
+        <Col xs={24} xl={4}  sm={12} lg={8}>
            <Form.Item 
            // label={ t('type') }
            name="status"
@@ -625,7 +658,7 @@ const TicketsAssignee:FC = () => {
            />
            </Form.Item>
            </Col>   
-        <Col xs={24} xl={5} >
+        <Col xs={24} xl={5}  sm={12} lg={8}>
            <Form.Item 
            // label={ t('type') }
            name="team"
@@ -643,7 +676,7 @@ const TicketsAssignee:FC = () => {
            />
            </Form.Item>
            </Col>
-        <Col xs={24} xl={4}  > 
+        <Col xs={24} xl={4}  sm={12} lg={8} > 
            <Form.Item 
            // label={ t('type') }
            name="assignee"
@@ -661,6 +694,40 @@ const TicketsAssignee:FC = () => {
            />
            </Form.Item>
            </Col>
+        </Row>
+      
+        <Row>
+          <Col xs={24} xl={8} sm={12} lg={8} >
+           <Form.Item
+           label={ t('create_date') }
+           name="create_date" 
+           style={{ padding:'5px'}} > 
+            <RangePicker 
+            format={DATETIMEFORMAT}
+            placeholder={t('create_date')}
+            showTime={{ format: 'HH:mm' }} 
+            />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={8} sm={12} lg={8} >
+           <Form.Item
+           label={ t('close_date') }
+           name="close_date" 
+           style={{ padding:'5px'}} > 
+            <RangePicker 
+            format={DATETIMEFORMAT}
+            placeholder={t('close_date')}
+            showTime={{ format: 'HH:mm' }} 
+            />
+           </Form.Item>
+           </Col>
+        </Row>
+
+        </>
+     }
+     
+
+        <Row>	
         <Col xs={24} xl={12} >
         <Form.Item
        //  label={ t('fast_search') }
@@ -707,7 +774,7 @@ const TicketsAssignee:FC = () => {
       title={() => <h3>{t('tickets') + ' ' + t('total_count') + ' ' + ticketsCount }</h3> }
       footer={() => t('total_count') + ' ' + ticketsCount}
       style={{width: '100%', padding: '5px'}}
-      scroll={{ x: 1500, y: 350 }}
+      scroll={{ x: 1500, y: 550 }}
       expandable={{
         expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
         rowExpandable: record => record.description !== '',

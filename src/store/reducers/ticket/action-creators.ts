@@ -4,7 +4,7 @@ import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, I
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
 import { ITicketObjects, ITicketObjectsMulti, ITicket, ITicketLog } from '../../../models/ITicket';
-import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction, SetTicketsCountAction, SetSelectedTicketAction, SetCategoriesAction, SetSelectedCategoryAction, SetCategoriesCountAction, SetPropertiesAction, SetSelectedPropertyAction, SetPropertiesCountAction, SetSelectedTicketPropertiesAction } from './types';
+import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction, SetTicketsCountAction, SetSelectedTicketAction, SetCategoriesAction, SetSelectedCategoryAction, SetCategoriesCountAction, SetPropertiesAction, SetSelectedPropertyAction, SetPropertiesCountAction, SetSelectedTicketPropertiesAction, SetCopiedTicketAction } from './types';
 import i18n from "i18next";
 import { translateObj } from '../../../utils/translateObj';
 import { SearchPagination } from '../../../models/ISearch';
@@ -14,6 +14,7 @@ import { useAction } from '../../../hooks/useAction';
 import { AdminActionCreators } from '../admin/action-creators';
 import { notify } from '../../../utils/notificatinSend';
 import { INotification } from '../../../models/INotification';
+import { ICiObjects } from '../../../models/ICi';
 
 function onlyUnique(value: string, index:number, self:string[]) {
   return self.indexOf(value) === index;
@@ -24,6 +25,7 @@ function onlyUnique(value: string, index:number, self:string[]) {
 export const TicketActionCreators = {
     setTickets: (payload:ITicket[]): SetTicketsAction => ({type:TicketActionEnum.SET_TICKETS, payload}),
     setSelectedTicket: (payload:ITicket): SetSelectedTicketAction => ({type:TicketActionEnum.SET_SELECTED_TICKET, payload}),
+    setCopiedTicket: (payload: ITicket): SetCopiedTicketAction => ({type:TicketActionEnum.SET_COPIED_TICKET, payload}),
     SetSelectedTicketProperties: (payload:ITicketPrpTpl[]): SetSelectedTicketPropertiesAction => ({type:TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES, payload}),
     
     setTicketsCount: (payload:number): SetTicketsCountAction => ({type:TicketActionEnum.SET_TICKETS_COUNT, payload}),
@@ -352,11 +354,16 @@ export const TicketActionCreators = {
                second = 'V_tickets'
                third = " customer  = '" + id + "' AND active = 1 and id<>'" + selectedTicket.id + "'"
              } 
+             if(m==='cis') {  
+              first = ' * '
+              second = 'V_cis'
+              third = " ci_user  = '" + id + "' AND active = 1 "
+            } 
                const response_multi = await  axiosFn("get", '', first, second,  third , ''  )  
                
              let mObj = response_multi.data
              if(m==='tickets') mObj = translateObj(mObj, ITicketObjects)
-
+             if(m==='cis') mObj = translateObj(mObj, ICiObjects)
                multiObject = { ...multiObject, [m]: mObj}
              
                let user___ = {...user, ...multiObject }  

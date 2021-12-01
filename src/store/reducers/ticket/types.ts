@@ -4,6 +4,7 @@ export interface TicketState {
     tickets: ITicket[]
     ticketsCount: number
     selectedTicket: ITicket
+    copiedTicket: ITicket
 
     categories: ITicketCategory[]
     categoriesCount: number
@@ -20,6 +21,7 @@ export interface TicketState {
 export enum TicketActionEnum {
     SET_TICKETS = "SET_TICKETS",
     SET_SELECTED_TICKET = "SET_SELECTED_TICKET",
+    SET_COPIED_TICKET = "SET_COPIED_TICKET",
     SET_SELECTED_TICKET_PROPERTIES = "SET_SELECTED_TICKET_PROPERTIES",
     SET_TICKETS_COUNT = "SET_TICKETS_COUNT",
     
@@ -44,6 +46,11 @@ export interface SetTicketsAction {
 }
 export interface SetSelectedTicketAction {
     type: TicketActionEnum.SET_SELECTED_TICKET,
+    payload: ITicket
+}
+
+export interface SetCopiedTicketAction {
+    type: TicketActionEnum.SET_COPIED_TICKET,
     payload: ITicket
 }
 
@@ -99,6 +106,7 @@ export interface SetIsLoadingAction {
 export type TicketAction = 
 SetTicketsAction |
 SetSelectedTicketAction |
+SetCopiedTicketAction |
 SetSelectedTicketPropertiesAction |
 SetTicketsCountAction |
 SetCategoriesAction |

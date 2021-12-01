@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Modal, Radio, Row, Table, TablePaginationConfig } from 'antd';
+import { Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Modal, Radio, Row, Table, TablePaginationConfig, DatePicker } from 'antd';
 import { FilterValue, SorterResult } from 'antd/lib/table/interface';
 import { ColumnsType  } from 'antd/es/table';
 import  {FC, useEffect, useState} from 'react';
@@ -8,13 +8,14 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import { SearchPagination, SelectOption } from '../../models/ISearch';
-import { searchFormWhereBuild } from '../../utils/formManipulation';
+import { DATETIMEFORMAT, searchFormWhereBuild } from '../../utils/formManipulation';
 import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
 import { ICiObjects, ICi,  } from '../../models/ICi';
 import { useHistory } from 'react-router-dom';
 import { RouteNames } from '../../router';
 import QueryBuild from '../../components/QueryBuild';
-
+import { NOT_GROUP_LIST } from '../../models/IUser';
+const { RangePicker } = DatePicker;
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
 const WHERE_DEFAULT = ' active = 1  '
@@ -211,7 +212,6 @@ const Cis:FC = () => {
     const fastSearchArray = ['ci_class_name', 'name', 'ci_family','serial','ip','ci_user_name']
     const onFinish = async (values: any) => { 
       console.log('Success:', values);
-      debugger
       let where_ = searchFormWhereBuild(values, fastSearchArray)
      
       console.log(where_);
@@ -243,7 +243,7 @@ const Cis:FC = () => {
        name="basic"
        // labelCol={{ span: 8 }}
        // wrapperCol={{ span: 30 }}
-      //  initialValues={{active: true, cisTeams: NOT_GROUP_LIST}}
+       initialValues={{active: true}}
        onFinish={onFinish}
        onFinishFailed={onFinishFailed}
        autoComplete="off" 
@@ -283,7 +283,7 @@ const Cis:FC = () => {
         {viewForm &&
         <>
         <Row  >
-           <Col xs={24} xl={6}  >
+           <Col xs={24} xl={4} sm={12} lg={8} >
            <Form.Item
            // label={ t('name') }
            name="name" 
@@ -294,7 +294,7 @@ const Cis:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={6}>
+           <Col xs={24} xl={4} sm={12} lg={8}>
            <Form.Item 
            // label={ t('type') }
            name="ci_class"
@@ -312,7 +312,54 @@ const Cis:FC = () => {
            />
            </Form.Item>
            </Col>
-           <Col xs={24} xl={6}  >
+           <Col xs={24} xl={4} sm={12} lg={8} >
+           <Form.Item
+           // label={ t('name') }
+           name="ci_family" 
+           style={{ padding:'5px'}} > 
+           <Input 
+             style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('ci_family') }
+           />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={4} sm={12} lg={8}>
+           <Form.Item 
+           // label={ t('type') }
+           name="ci_status"
+           style={{ padding:'5px', width: 'maxContent'}} > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isMulti={true}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('ci_status') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ci_status',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'ci_status' ", false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'ci_status')}
+           />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={4} sm={12} lg={8} >
+           <Form.Item 
+           // label={ t('type') }
+           name="ci_user"
+           style={{ padding:'5px', width: 'maxContent'}} > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isMulti={true}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('ci_user') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ci_user',  ' top 20 name as label, id as value , id as code ', 'V_contacts', NOT_GROUP_LIST , false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'ci_user')}
+           />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={4}  >
            <Form.Item
            label={ t('active') }
            name="active" 
@@ -326,6 +373,64 @@ const Cis:FC = () => {
            </Form.Item>
            </Col>
            
+     </Row>
+     <Row  >
+           <Col xs={24} xl={4} sm={12} lg={8}>
+           <Form.Item 
+           // label={ t('type') }
+           name="ci_model"
+           style={{ padding:'5px', width: 'maxContent'}} > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isMulti={true}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('ci_model') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ci_model',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'ci_model' ", false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'ci_model')}
+           />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={4} sm={12} lg={8} >
+           <Form.Item
+           // label={ t('name') }
+           name="manufacturer" 
+           style={{ padding:'5px'}} > 
+           <Input 
+             style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('manufacturer') }
+           />
+           </Form.Item>
+           </Col>
+
+           <Col xs={24} xl={8} sm={12} lg={8} >
+           <Form.Item
+           label={ t('expiration_dt') }
+           name="expiration_dt" 
+           style={{ padding:'5px'}} > 
+            <RangePicker 
+            format={DATETIMEFORMAT}
+            placeholder={t('expiration_dt')}
+            showTime={{ format: 'HH:mm' }} 
+            />
+           </Form.Item>
+           </Col>
+           <Col xs={24} xl={8} sm={12} lg={8} >
+           <Form.Item
+           label={ t('warranty_end_dt') }
+           name="warranty_end_dt" 
+           style={{ padding:'5px'}} > 
+            <RangePicker 
+            format={DATETIMEFORMAT}
+            placeholder={t('warranty_end_dt')}
+            showTime={{ format: 'HH:mm' }} 
+            />
+           </Form.Item>
+           </Col>
+
+          
      </Row>
      <Row >
        <Col  xs={24} xl={8} >
@@ -363,7 +468,7 @@ const Cis:FC = () => {
       bordered
       pagination={pagination}
       onChange={handleTableChange}
-      title={() => <h3>{t('cis')}/{t('teams')}</h3> }
+      title={() => <h3>{t('cis')}</h3> }
       footer={() => t('total_count') + ' ' + cisCount}
       style={{width: '100%', padding: '5px'}}
       scroll={{ x: 1500, y: 350 }}

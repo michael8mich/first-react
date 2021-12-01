@@ -1,5 +1,5 @@
 import React, {FC, forwardRef, useEffect, useImperativeHandle, useState} from 'react';
-import { Menu, Avatar, Button, Tooltip, Popconfirm, Card, Spin } from 'antd';
+import { Menu, Avatar, Button, Tooltip, Popconfirm, Card, Spin, Badge } from 'antd';
 import { MenuFoldOutlined, UserOutlined, MenuUnfoldOutlined, DesktopOutlined,
   PieChartOutlined,
   FileOutlined,SettingOutlined,
@@ -25,6 +25,7 @@ import DeleteOutlined from '@ant-design/icons/lib/icons/DeleteOutlined';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import AsyncSelect from 'react-select/async';
 import { OptGroup } from 'rc-select';
+import BookOutlined from '@ant-design/icons/lib/icons/BookOutlined';
 
 const { SubMenu } = Menu;
 interface QueriesTreeProps {
@@ -106,25 +107,26 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
     }
     const goToQuery = (q:IQuery) => {
       if(props.edit || !props.sider) return
+      setQueriesCache({ [q.factory]: q.query })
       if(q.factory === 'ticket') {
-        setQueriesCache({ [q.factory]: q.query })
         router.push(RouteNames.TICKETS)
       } else if(q.factory === 'contact') {
-        setQueriesCache({ [q.factory]: q.query })
         router.push(RouteNames.USERS)
-      } 
+      } else if(q.factory === 'ci') {
+        router.push(RouteNames.CIS)
+      }
   
     }
     const {setQueriesCache} = useAction()
     const goTo = (factory:string, query:string) => {
-
+      setQueriesCache({ [factory]: query })
       if(factory === 'ticket') {
-        setQueriesCache({ [factory]: query })
         router.push(RouteNames.TICKETS)
       } else if(factory === 'contact') {
-        setQueriesCache({ [factory]: query })
         router.push( RouteNames.USERS )
-      } 
+      } else if(factory === 'ci') {
+        router.push(RouteNames.CIS)
+      }
   
     }
     const deleteQuery = async (id:string, folder=false) => {
@@ -380,6 +382,12 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
         }
       
     }  
+    const buildTooltip = (name:string,count:string) => {
+      return name.toString().length>25 || +count > 99 ?  name + (props.sider ? '-' + count : '') : undefined
+    }
+    const buildTooltipColor = (name:string,count:string) => {
+      return name.toString().length>25 || + count > 99 ? 'cyan' : 'transparent'
+    }
     return (
       <>
            {
@@ -511,7 +519,7 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
            </Card>
 
            </> :
-           <>
+
           <SubMenu key="queries" 
              icon={<FileOutlined />} title={t('queries')}
              >
@@ -520,8 +528,11 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
                  <Menu.Item key={q.id+'_noFolders'+'-' + q.count}
                    onClick={() => goToQuery(q)}
                    >
-                     <Tooltip title={q.name + (props.sider ? '-' + q.count : '')} placement="bottom" color={'cyan'} >
-                         {q.name.toString().substring(0,40)}{ props.sider ? '-' + q.count : ''}
+                     { props.sider && 
+                     <Badge  count={ q.count}  size="small" offset={[-1, -20]} style={{ backgroundColor: '#28a4ae' }}></Badge>
+                     }
+                     <Tooltip title={()  => buildTooltip(q.name, q.count) } placement="bottom" color={buildTooltipColor(q.name, q.count)} >
+                     &nbsp; {q.name.toString().substring(0,40)}
                      </Tooltip>
  
                    </Menu.Item>
@@ -540,8 +551,11 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
                            <Menu.Item key={q.id+'-' + q.count}
                            onClick={() => goToQuery(q)}
                            >
-                             <Tooltip title={q.name  + (props.sider ? '-' + q.count : '')} placement="bottom" color={'cyan'}>
-                                 {q.name.toString().substring(0,40)}{ props.sider ? '-' + q.count : ''}
+                              { props.sider && 
+                              <Badge  count={ q.count}  size="small" offset={[-1, -20]} style={{ backgroundColor: '#28a4ae' }}></Badge>
+                              }
+                              <Tooltip title={()  => buildTooltip(q.name, q.count)} placement="bottom" color={buildTooltipColor(q.name, q.count)} >
+                                 {q.name.toString().substring(0,40)}
                              </Tooltip> 
                            </Menu.Item>
                          ))
@@ -551,7 +565,7 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
                  ))
                }
           </SubMenu>
-           </>
+    
            } 
       </>      
     )

@@ -1,6 +1,6 @@
 import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover, Badge, Tooltip} from 'antd';
-import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined, MailOutlined, 
-  UnorderedListOutlined, LayoutOutlined, FilePdfOutlined } from '@ant-design/icons';
+import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined, MailOutlined, SelectOutlined,
+  UnorderedListOutlined, LayoutOutlined, FilePdfOutlined, QuestionCircleOutlined, ApiOutlined,CopyOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
@@ -35,6 +35,7 @@ import * as htmlToImage from 'html-to-image';
 import { toPng, toJpeg, toBlob, toPixelData, toSvg } from 'html-to-image';
 import { jsPDF } from "jspdf";
 import Title from 'antd/lib/skeleton/Title';
+import { ICi } from '../../models/ICi';
 
 // Generate dark color palettes by a given color
 const colors = generate('#1890ff', {
@@ -53,8 +54,10 @@ const { Option } = Select;
 
 const TicketAssignee:FC = () => {
   const { t } = useTranslation();
-  const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, fetchProperties, setProperties, fetchTicketNotifications} = useAction()
-  const {error, isLoading, tickets, selectedTicket, properties } = useTypedSelector(state => state.ticket)
+  const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, 
+    fetchProperties, setProperties, fetchTicketNotifications, setQueriesCache, setCopiedTicket,setSelectedProperty,
+    setSelectedTicket,setPathForEmpty} = useAction()
+  const {error, isLoading, tickets, selectedTicket, properties, copiedTicket } = useTypedSelector(state => state.ticket)
   const {notificationsAll } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {user } = useTypedSelector(state => state.auth)
@@ -77,13 +80,64 @@ const TicketAssignee:FC = () => {
      setTicketId(id)
       if(id==='0')  {
         setRo(false)
-        CleanSelectedTicket()
-        setInit(true)
+        if(!copiedTicket?.id) {
+          CleanSelectedTicket()
+          setInit(true)
+        } else {
+          let curTicket:any = copiedTicket
+          const currUserFields= Object.keys(curTicket)
+          const  formFields = Object.keys((form.getFieldsValue()))
+          const form_set_values = {} as any
+          formFields.map(ff => {
+            if(ff.indexOf(PRPID)!=-1)
+            {
+              let obj = ticketPrp.find(p=>PRPID+p.id === ff) 
+              if(obj) {
+                if(obj.factory.label.toString()=="Date")
+                {
+                  if(obj.value) 
+                    form_set_values[ff] = moment(+obj.value*1000)
+                } else
+                if(obj.factory.label.toString()=="Object")
+                form_set_values[ff] = { label: obj.value, value: obj.valueObj }
+                else
+                form_set_values[ff] = obj.value
+              }
+            }
+            else
+            form_set_values[ff] = curTicket[ff]
+          })
+          form.setFieldsValue(form_set_values)
+          fromCopy(curTicket)    
+          setCopiedTicket({} as ITicket)
+        }
+        
       } else {
         fetchTicket(id) 
         get_files()
       }
    }, [])
+
+  const fromCopy = async (curTicket:ITicket) => {
+    if(curTicket.category?.value) {
+      setTicketPrp([])
+      const response = await  axiosFn("get", '', '*', 'V_ticket_category', " id = '" + curTicket.category.value + "'" , ''  )  
+      let category_info =  translateObj(response?.data, ITicketCategoryObjects)
+      setCategoryCrs(category_info[0]?.crs)
+      if(category_info[0]?.team?.value) {
+        form.setFieldsValue({ team: category_info[0]?.team }) 
+        fetchProperties(category_info[0].id)
+      }
+    }
+    if(curTicket.customer?.value) {
+    getCustomerInfo({...selectedTicket, customer:curTicket.customer }, curTicket.customer?.value)
+    }
+    if(curTicket.ci?.value) {
+    const response = await  axiosFn("get", '', ' count(*) as cnt', 'ticket', " ci = '" + curTicket.ci?.value + "' and active = 1 " , ''  )  
+          setCiCrs(response.data[0].cnt)
+    }
+
+  } 
 
   function getTicket() {
       fetchTicket(ticketId) 
@@ -291,19 +345,28 @@ const TicketAssignee:FC = () => {
              setTeamArr(response.data)
            }
     }
-       
+     const [categoryCrs, setCategoryCrs]  = useState(0)
+     const [ciCrs, setCiCrs]  = useState(0) 
      const selectChanged = async (selectChange:any, name:string) =>
       {
        if(name==='customer') {
            if(selectChange?.value) {
             getCustomerInfo({...selectedTicket, customer:selectChange }, selectChange?.value)
+            form.setFieldsValue({ customer_phone: selectChange?.code } )
            }   
        }
+       if(name==='ci') {
+        if(selectChange?.value) {
+          const response = await  axiosFn("get", '', ' count(*) as cnt', 'ticket', " ci = '" + selectChange?.value + "' and active = 1 " , ''  )  
+          setCiCrs(response.data[0].cnt)
+        }
+      }
        if(name==='category') {
         if(selectChange?.value) {
           setTicketPrp([])
           const response = await  axiosFn("get", '', '*', 'V_ticket_category', " id = '" + selectChange?.value + "'" , ''  )  
           let category_info =  translateObj(response?.data, ITicketCategoryObjects)
+          setCategoryCrs(category_info[0]?.crs)
           if(category_info[0]?.team?.value) {
             form.setFieldsValue({ team: category_info[0]?.team }) 
             fetchProperties(category_info[0].id)
@@ -617,7 +680,7 @@ const TicketAssignee:FC = () => {
     setModalVisible(false)
 
   }
-  function  popover(event:any, record:ITicket) 
+  function  popover(event:any, record:ITicket ) 
   {
     //event.preventDefault()
     return (
@@ -670,6 +733,18 @@ const TicketAssignee:FC = () => {
             autoClose: 10 
           })
         });
+  }
+  const pathTrowEmpty = (path:string) => {
+    setPathForEmpty(path)
+    router.push(RouteNames.EMPTY)
+  }
+  const toCopy = () =>
+  {
+      setSelectedProperty({} as ITicketPrpTpl)
+      setProperties([] as ITicketPrpTpl[])
+      setCopiedTicket(selectedTicket)
+      setSelectedTicket({} as ITicket)
+      pathTrowEmpty(RouteNames.TICKETS + '/0')
   }
   return (
   <Layout style={{height:"100vh"}} id='screen'>
@@ -735,6 +810,14 @@ const TicketAssignee:FC = () => {
          >
          { t('refresh') }
          </Button>&nbsp;&nbsp;&nbsp;
+
+         <Button type="primary" htmlType="button" key="copyTicket"
+         onClick={() => toCopy() }
+         > <CopyOutlined />
+         { t('toCopy') }
+         </Button>&nbsp;&nbsp;&nbsp;
+        
+
          <Tooltip title={t('export_to_pdf')} >
          <FilePdfOutlined 
           style={{color:'gray',fontSize:'24px'}}
@@ -769,7 +852,7 @@ const TicketAssignee:FC = () => {
           </span>
         } key="detail" >
           <Row  >
-          <Col xs={24} xl={6}>
+          <Col xl={4}  lg={6} sm={12} xs={24}>
           
             <Form.Item 
             key="customer"
@@ -789,15 +872,51 @@ const TicketAssignee:FC = () => {
             placeholder={ t('customer') }
             cacheOptions 
             defaultOptions
-            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'customer',  ' top 20 name as label, id as value , id as code ', 'V_contacts', NOT_GROUP_LIST , true )} 
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'customer',  ' top 20 name as label, id as value , isnull(phone, mobile_phone) as code ', 'V_contacts', NOT_GROUP_LIST , true )} 
             onChange={(selectChange:any) => selectChanged(selectChange, 'customer')}
             />
             </Form.Item>
             </Col>
-          <Col xs={24} xl={15}>
+            <Col xl={4}  lg={6} sm={12} xs={24}  >
+           <Form.Item
+           label={ t('phone') }
+           name="customer_phone" 
+           style={{ padding:'5px'}} 
+           rules={[validators.isPhone()]}
+           > 
+           <Input 
+             disabled={ro}
+             style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('phone') }
+           />
+           </Form.Item>
+           </Col>
+          <Col xl={8}  lg={12} sm={12} xs={24}>
           <Form.Item 
             key="category"
-            label={ t('tcategory') }
+            label={
+             
+              <>
+              <span
+              style={{cursor:'pointer'}}
+               onClick={() => {
+                if(!form.getFieldValue('category')) return
+                setQueriesCache({ ticket: " category = '" + form.getFieldValue('category').value + "' and active = 1 " })
+                  router.push(RouteNames.TICKETS)
+              }}
+              >
+              &nbsp;&nbsp;{t('tcategory')}
+               </span>
+                &nbsp;&nbsp;
+                <Tooltip title={t('go_to_same_tickets')}> 
+               <Badge 
+               size="small"
+               count={categoryCrs}>
+               </Badge>
+               </Tooltip>
+               </>
+              
+               }
             name="category"
             style={{ padding:'5px', width: 'maxContent'}} 
             rules={[validators.required()]}
@@ -817,7 +936,52 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
           </Col>
-          <Col xs={24} xl={3}>
+          <Col xl={4}  lg={6} sm={12} xs={24}>
+          <Form.Item 
+            key="ci"
+            label={
+             
+              <>
+              <span
+              style={{cursor:'pointer'}}
+               onClick={() => {
+                if(!form.getFieldValue('ci')) return
+                setQueriesCache({ ticket: " ci = '" + form.getFieldValue('ci').value + "' and active = 1 " })
+                  router.push(RouteNames.TICKETS)
+              }}
+              >
+              &nbsp;&nbsp;{t('ci')}
+               </span>
+                &nbsp;&nbsp;
+                <Tooltip title={t('go_to_same_tickets')}> 
+               <Badge 
+               size="small"
+               count={ciCrs}>
+               </Badge>
+               </Tooltip>
+               </>
+              
+               }
+            name="ci"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            // rules={[validators.required()]}
+            > 
+            <AsyncSelect 
+            menuPosition="fixed"
+            className={classes.selectClass}
+            isDisabled={ro}
+            isMulti={false}
+            styles={SelectStyles}
+            isClearable={true}
+            placeholder={ t('ci') }
+            cacheOptions 
+            defaultOptions
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ci',  ' top 20 name as label, id as value , id as code ', 'ci', " active = '1' order by name asc", false )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'ci')}
+            />
+            </Form.Item>
+          </Col>
+          <Col xl={4}  lg={6} sm={12} xs={24}>
             <Form.Item 
             key="ticket_type"
             label={ t('ticket_type') }
@@ -840,6 +1004,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>
+            
           </Row> 
           <Row  >
           {
@@ -847,7 +1012,7 @@ const TicketAssignee:FC = () => {
               <>
               {
                 p.visible === 1 &&
-                <Col xs={24} xl={p.width} key={p.id} 
+                <Col xl={p.width}  lg={p.width+2} sm={12} xs={24}  key={p.id} 
                 >
           
         
@@ -944,7 +1109,7 @@ const TicketAssignee:FC = () => {
           }  
           </Row> 
           <Row  >
-          <Col xs={24} xl={6} onClick={
+          <Col xl={4}  lg={6} sm={12} xs={24} onClick={
             () => loadAssTeam('team')
           }>
             <Form.Item 
@@ -968,7 +1133,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>
-          <Col xs={24} xl={6} onClick={
+          <Col xl={4}  lg={6} sm={12} xs={24} onClick={
             () => loadAssTeam('assignee')
           }>
             <Form.Item 
@@ -993,7 +1158,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>
-          <Col xs={24} xl={6}>
+          <Col xl={4}  lg={6} sm={12} xs={24}>
             <Form.Item 
             key="ticket_status"
             label={ t('ticket_status') }
@@ -1016,7 +1181,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>        
-          <Col xs={24} xl={3}>
+          <Col xl={4}  lg={6} sm={12} xs={24}>
             <Form.Item 
             key="priority"
             label={ t('priority') }
@@ -1038,7 +1203,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>
-          <Col xs={24} xl={3}>
+          <Col xl={4}  lg={6} sm={12} xs={24}>
             <Form.Item 
             key="urgency"
             label={ t('urgency') }
@@ -1088,7 +1253,7 @@ const TicketAssignee:FC = () => {
           {
             ticketId && ticketId!=='0' &&
             <Row  >
-            <Col xs={24} xl={5} sm={5} lg={5}  >
+            <Col xl={4}  lg={6} sm={12} xs={24}  >
             <Form.Item
             label={ t('log_agent') }
             style={{ padding:'5px'}} 
@@ -1102,7 +1267,7 @@ const TicketAssignee:FC = () => {
             </Form.Item>
             </Col>
             
-            <Col xs={24} xl={5} sm={5} lg={5}  >
+            <Col xl={4}  lg={6} sm={12} xs={24}  >
             <Form.Item
             label={ t('last_mod_by') }
             style={{ padding:'5px'}} 
@@ -1115,7 +1280,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>
-            <Col xs={24} xl={5} sm={5} lg={5}  >
+            <Col xl={4}  lg={6} sm={12} xs={24}  >
             <Form.Item
             label={ t('last_mod_dt') }
             style={{ padding:'5px'}} 
@@ -1128,7 +1293,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>
-            <Col xs={24} xl={5} sm={5} lg={5}  >
+            <Col xl={4}  lg={6} sm={12} xs={24}  >
             <Form.Item
             label={ t('create_date') }
             style={{ padding:'5px'}} 
@@ -1141,7 +1306,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>
-            <Col xs={24} xl={4} sm={4} lg={4}  
+            <Col xl={4}  lg={6} sm={12} xs={24}
             hidden={!selectedTicket.close_date}>
             <Form.Item
             label={ t('close_date') }
@@ -1155,7 +1320,7 @@ const TicketAssignee:FC = () => {
             />
             </Form.Item>
             </Col>
-            <Col xs={24} xl={4}  >
+            <Col xl={4}  lg={6} sm={12} xs={24}  >
             <Form.Item
             label={ t('active') }
             name="active" 
@@ -1178,7 +1343,7 @@ const TicketAssignee:FC = () => {
           <UnorderedListOutlined /> 
           {t('log')} 
           </span>
-        }key="log" forceRender={true} >
+        } key="log" forceRender={true} >
       <Table<ITicketLog>
         scroll={{ x: 1200, y: 700 }}
         columns={ticketLogColumns} 
@@ -1235,15 +1400,15 @@ const TicketAssignee:FC = () => {
             <Descriptions.Item span={3} label={t('contact_number')}>{selectedTicket.customer_info.contact_number}</Descriptions.Item>
           }
           {
-            selectedTicket.customer_info.job_title.label &&
+            selectedTicket.customer_info?.job_title?.label &&
             <Descriptions.Item span={3} label={t('job_title')}>{selectedTicket.customer_info.job_title.label}</Descriptions.Item>
           }
           {
-            selectedTicket.customer_info.manager.label &&
+            selectedTicket.customer_info?.manager?.label &&
             <Descriptions.Item span={3} label={t('manager')}>{selectedTicket.customer_info.manager.label}</Descriptions.Item>
           }
           {
-            selectedTicket.customer_info.primary_group.label &&
+            selectedTicket.customer_info?.primary_group?.label &&
             <Descriptions.Item span={3} label={t('primary_group')}>{selectedTicket.customer_info.primary_group.label}</Descriptions.Item>
           }
 
@@ -1271,19 +1436,19 @@ const TicketAssignee:FC = () => {
     
 
           {
-            selectedTicket.customer_info.location.label &&
+            selectedTicket.customer_info?.location?.label &&
             <Descriptions.Item span={3} label={t('location')}>{selectedTicket.customer_info.location.label}</Descriptions.Item>
           }
           {
-            selectedTicket.customer_info.organization.label &&
+            selectedTicket.customer_info?.organization?.label &&
             <Descriptions.Item span={3} label={t('organization')}>{selectedTicket.customer_info.organization.label}</Descriptions.Item>
           }
           {
-            selectedTicket.customer_info.department.label &&
+            selectedTicket.customer_info?.department?.label &&
             <Descriptions.Item span={3} label={t('department')}>{selectedTicket.customer_info.department.label}</Descriptions.Item>
           }
           {
-            selectedTicket.customer_info.site.label &&
+            selectedTicket.customer_info?.site?.label &&
             <Descriptions.Item span={3} label={t('site')}>{selectedTicket.customer_info.site.label}</Descriptions.Item>
           }
 
@@ -1308,7 +1473,13 @@ const TicketAssignee:FC = () => {
           // defaultActiveKey={['1']}  
         > 
           { selectedTicket?.customer_info?.tickets?.length>0 &&
-            <Panel header={t('tickets')+' '+selectedTicket?.customer_info?.tickets?.length} key="1" 
+            <Panel header={
+              <>
+              <QuestionCircleOutlined /> &nbsp;&nbsp;
+              {t('tickets')+' '+selectedTicket?.customer_info?.tickets?.length}
+              </>
+            } 
+            key="1" 
             >
             <List
               itemLayout="horizontal"
@@ -1321,7 +1492,7 @@ const TicketAssignee:FC = () => {
                       <Popover 
                       content={(event:any)=>popover(event, item)} 
                       title={ t('ticket') + ' ' +  t('number') + ' ' + item.name }  trigger="hover">  
-                       <Avatar >{item.name}</Avatar>&nbsp;
+                       <Avatar style={{backgroundColor:'#49b6ba'}}>{item.name}</Avatar>&nbsp;
                       </Popover>
                     }
                     style={{cursor:'pointer',color:'gray'}}
@@ -1334,7 +1505,45 @@ const TicketAssignee:FC = () => {
                 />
             </Panel>
           }
-        
+        { selectedTicket?.customer_info?.cis?.length>0 &&
+              
+              <Panel header={
+                <>
+              <ApiOutlined /> &nbsp;&nbsp;
+              {t('cis')+' '+selectedTicket?.customer_info?.cis?.length}
+              </>
+            } 
+            
+            key="2" 
+            >
+            <List
+              itemLayout="horizontal"
+              dataSource={selectedTicket.customer_info.cis}
+              renderItem={item => (
+                <List.Item onClick={() => ro ? goTo(RouteNames.CIS , item.id) : form.setFieldsValue({ci: {value: item.id, label:item.name, code:item.id} })}>
+                  <List.Item.Meta
+                    key={item.id}
+                    avatar={
+                    <>
+                    <Badge.Ribbon text={item.name} color="cyan">
+                      <Card title={ <SelectOutlined title={ !ro ?  t('select_ci') : t('go_to_ci') } />} size="small">
+                      {item?.ci_class.label + ' ' + item?.ci_family } &nbsp;&nbsp;
+                      {t('create_date') +':' +  uTd(item?.create_date)  }
+                      </Card>
+                    </Badge.Ribbon>
+                       {/* <Avatar size={{ xs: 24, sm: 22, md: 30, lg: 54, xl: 70, xxl: 90 }} >{item.name}</Avatar>&nbsp; */}
+                    </>
+                    }
+                    style={{cursor:'pointer',color:'gray'}}
+                    // title={item?.ci_class?.label}
+                  //   description={t('ci_family') + ':' + item?.ci_family + ' ' + t('create_date')
+                  // +':' +  uTd(item?.create_date) 
+                  //}
+                  />
+                </List.Item> )}
+                />
+            </Panel>
+          }
           {/* <Panel header="This is panel header 2" key="2" >
             <div>2</div>
           </Panel> */}

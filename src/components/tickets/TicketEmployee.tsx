@@ -8,13 +8,13 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
-import { DATETIMEFORMAT, PRPID, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
+import { DATETIMEFORMAT, PRPID, removeNewRow, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
 import {  ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
 import { Link, NavLink, useHistory, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { getValidatorsToProp, validators } from '../../utils/validators';
 import classes from './TicketDtl.module.css'
-import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
+import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_PROBLEM, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
 import { ColumnsType } from 'antd/lib/table';
 import { TabsPosition } from 'antd/lib/tabs';
 import { RouteNames } from '../../router';
@@ -71,6 +71,7 @@ const TicketEmployee:FC = () => {
     if(router_location.toString().split('?search=').length>1)
     {
       let cat_label = router_location.toString().split('?search=')[1]
+      cat_label = removeNewRow(cat_label)
       let catObj = Object.keys(selectSmall).find( k=> k === 'category') 
       let arr:any = {...selectSmall}
       let arr_category = arr.category
@@ -130,6 +131,9 @@ const TicketEmployee:FC = () => {
   function setFormValues() {
     if(ticketId!=='0') {
       let curTicket:any = selectedTicket
+      if(curTicket?.customer?.value!==user.id)
+      router.push(RouteNames.TICKETS)
+
       const currUserFields= Object.keys(curTicket)
       const  formFields = Object.keys((form.getFieldsValue()))
       const form_set_values = {} as any
@@ -510,7 +514,8 @@ const TicketEmployee:FC = () => {
       urgency: URGENCY_LOW,
       customer: {label: user.name, value: user.id},
       team: {label: '', value: ''},
-      category: {label: '', value: ''}
+      category: {label: '', value: ''}, 
+      customer_phone: user.phone ? user.phone : user.mobile_phone
       }
   )
   
@@ -667,7 +672,7 @@ const TicketEmployee:FC = () => {
        autoComplete="off" 
        > 
         <Row >
-        <Col  xs={24} xl={18}>
+         <Col xl={16}  lg={16} sm={16} xs={24}>
         {ro 
         ?     
         <div className="flex-container">
@@ -701,17 +706,7 @@ const TicketEmployee:FC = () => {
          >
          { t('refresh') }
          </Button>&nbsp;&nbsp;&nbsp;
-            {
-              ticketId !== '0' &&
-              <>
-              <TeamOutlined style={{fontSize:'50px',color:'#c15939'}}/>&nbsp;
-              <label>{t('team')}:<br />
-              <span style={{fontSize:'20px',color:'#c15939'}}>{selectedTicket.team?.label}</span></label>
-              <ToolOutlined style={{fontSize:'50px',color:'#c15939'}}/>&nbsp;
-              <label>{t('ticket_status')}:<br />
-              <span style={{fontSize:'20px',color:'#c15939'}}>{selectedTicket.status?.label}</span></label>
-              </>
-            }
+            
          
         </div> 
          :
@@ -731,6 +726,19 @@ const TicketEmployee:FC = () => {
         </div>    
      }
         </Col>
+        <Col  xl={8}  lg={8} sm={8} xs={24}>
+        {
+              ticketId !== '0' &&
+              <div style={{display:'flex', justifyContent:'start'}} className="flex-container">
+              <TeamOutlined style={{fontSize:'50px',color:'#c15939'}}/>&nbsp;
+              <label>{t('team')}:<br />
+              <span style={{fontSize:'20px',color:'#c15939'}}>{selectedTicket.team?.label}</span></label>
+              <ToolOutlined style={{fontSize:'50px',color:'#c15939'}}/>&nbsp;
+              <label>{t('ticket_status')}:<br />
+              <span style={{fontSize:'20px',color:'#c15939'}}>{selectedTicket.status?.label}</span></label>
+              </div>
+            }
+        </Col>
         </Row>
         <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
         <TabPane 
@@ -742,7 +750,21 @@ const TicketEmployee:FC = () => {
         }
         key="detail" >
         <Row  >
-        <Col xs={24} xl={8} sm={12} lg={8}>
+        <Col xl={4}  lg={6} sm={12} xs={24}  >
+           <Form.Item
+           label={ t('phone') }
+           name="customer_phone" 
+           style={{ padding:'5px'}} 
+           rules={[validators.isPhone(),validators.required()]}
+           > 
+           <Input 
+             disabled={ro}
+             style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('phone') }
+           />
+           </Form.Item>
+        </Col>
+        <Col xl={12}  lg={12} sm={12} xs={24}>
         <Form.Item 
            key="category"
            label={ t('tcategory') }
@@ -766,7 +788,7 @@ const TicketEmployee:FC = () => {
            />
            </Form.Item>
         </Col>
-        <Col xs={24} xl={4} sm={12} lg={8}>
+        <Col xl={4}  lg={6} sm={12} xs={24}>
            <Form.Item 
            key="ticket_type"
            label={ t('ticket_type') }
@@ -784,12 +806,12 @@ const TicketEmployee:FC = () => {
            placeholder={ t('ticket_type') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_type',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_type'", false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_type',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_type' and id <> '" +TICKET_PROBLEM.value+ "'", false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_type')}
            />
            </Form.Item>
-           </Col>
-        <Col xs={24} xl={4} sm={12} lg={8}>
+        </Col>
+        <Col xl={4}  lg={6} sm={12} xs={24}>
            <Form.Item 
            key="urgency"
            label={ t('urgency') }
@@ -810,7 +832,7 @@ const TicketEmployee:FC = () => {
            onChange={(selectChange:any) => selectChanged(selectChange, 'urgency')}
            />
            </Form.Item>
-           </Col> 
+        </Col> 
         </Row> 
         <Row  >
         {
@@ -818,7 +840,7 @@ const TicketEmployee:FC = () => {
             <>
             {
               p.visible === 1 &&
-              <Col xs={24} xl={p.width} key={p.id} 
+              <Col xl={p.width}  lg={p.width+2} sm={12} xs={24}  key={p.id} 
               >
         
        
@@ -1035,7 +1057,7 @@ const TicketEmployee:FC = () => {
           {t('log')} 
           </span>
         }
-        forceRender={true} >
+        key="log" forceRender={true} >
     <Table<ITicketLog>
       scroll={{ x: 1200, y: 700 }}
       columns={ticketLogColumns} 

@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { ITicket, ITicketPrpTpl } from '../models/ITicket';
 import useWindowDimensions from '../hooks/useWindowDimensions';
 import { axiosFn } from '../axios/axios';
-import { IUser, NOT_GROUP_LIST } from '../models/IUser';
+import { DEFAULT_ROLE, IUser, NOT_GROUP_LIST } from '../models/IUser';
 import { setSourceMapRange } from 'typescript';
 import { SelectOption } from '../models/ISearch';
 import AdminBar from './Adminbar';
@@ -54,6 +54,11 @@ const Navbar: FC = () => {
           setDefaultRole(default_role)
           setUser({...user, defaultRole: default_role} )
         }
+      }
+      else
+      {
+        setDefaultRole(DEFAULT_ROLE)
+        setUser({...user, roles: [DEFAULT_ROLE],  defaultRole: DEFAULT_ROLE} )
       }
       
     }, [defaultRole,user.roles ])

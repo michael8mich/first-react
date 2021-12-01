@@ -7,6 +7,7 @@ export const translateObj = (objects_: any[], IObjects:string[]) => {
     objects_.map(e => {
       const keys = Object.keys(e)
       IObjects.map( i => {
+        if(e[i])
          e[i] = { value: e[i], label: e[i+"_name"] }
          delete e[i+"_name"]
       })

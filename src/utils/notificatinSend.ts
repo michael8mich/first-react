@@ -6,7 +6,6 @@ import { axiosFn, axiosFnEmail } from '../axios/axios'
 import { SELECT, FROM, WHERE } from './formManipulation';
 
 export const notify = async (init: boolean, ticket_notify: ITicket, selectedTicket:ITicket = {} as ITicket, notificationsAll:INotification[] = [] as INotification[]) => {
-  debugger
   let notifications = [...notificationsAll]
 
    if(notifications.length===0) return

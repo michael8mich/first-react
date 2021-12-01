@@ -183,8 +183,8 @@ const TCategories:FC = () => {
       console.log('Success:', values);
       let valuesMulti:string = ''
       let ticket_types_where = ''
-
       ITicketCategoryObjectsMulti.map(t => {
+        if(values[t])
         values[t].map( (a: { value: string; }, index: number) => {
           valuesMulti += "'" + a.value.replace("'", "''") + "'" + (values[t].length-1 !== index ? ' , ' : '')
         })
@@ -194,7 +194,11 @@ const TCategories:FC = () => {
        })
       
       let where_ = searchFormWhereBuild(values, fastSearchArray)
-      where_ = where_.length>0 ? where_ + ' AND ' + ticket_types_where : ''
+      if(where_.length>0 && ticket_types_where.length>0)
+      where_ = where_ + ' AND ' + ticket_types_where 
+      else
+      where_ = where_ + ' ' + ticket_types_where 
+
       fetchCategories({...searchP } , where_)
       setWhere(where_)
       

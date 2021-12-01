@@ -19,13 +19,20 @@ export const searchFormWhereBuild = (values: any, fastSearchArray: string[] = []
             else 
             if(Array.isArray(values[v]))
             {
-            let arr_w = ""
-            values[v].map( (a: { value: string; }, index: number) => {
-              arr_w += "'" + a.value.replace("'", "''") + "'" + (values[v].length-1 !== index ? ' , ' : '')
-            })
-            if(arr_w.length !== 0) {
-              where += (where.length !==0 ? " AND " : "" ) + " " + v + " IN (" + arr_w + ")"
-            }
+              let arr_w = ""
+              if(values[v][0] instanceof moment || values[v][1] instanceof moment ) {
+                arr_w = " " + v + " > " + values[v][0].unix()  + " AND " + v + " < " + values[v][1].unix()
+                where += (where.length !==0 ? " AND " : "" ) + " " + arr_w
+              } else
+              { 
+                values[v].map( (a: { value: string; }, index: number) => {
+                  arr_w += "'" + a.value.replace("'", "''") + "'" + (values[v].length-1 !== index ? ' , ' : '')
+                })
+                if(arr_w.length !== 0) {
+                  where += (where.length !==0 ? " AND " : "" ) + " " + v + " IN (" + arr_w + ")"
+                }
+              }
+           
             } else
             if(values[v] instanceof Object )
             where += (where.length !==0 ? " AND " : "" ) + " " + v + " = '" + values[v].value.replace("'", "''") + "'"
@@ -128,4 +135,9 @@ export const uTd = (value:any) => {
 }
 export const nowToUnix = () => {
    return moment().unix()
+}
+export const removeNewRow = ( val:string ) => {
+ val = val || ''
+ return val.replace(/(?:\\[rn]|[\r\n]+)+/g, "")
+
 }
