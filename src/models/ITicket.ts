@@ -62,6 +62,7 @@ export interface ITicketCategory {
     last_mod_by: SelectOption
     last_mod_dt: string
     create_date: string
+    ticket: SelectOption
 }
 
 export interface ITicketPrpTpl {
@@ -89,6 +90,28 @@ export interface ITicketPrpTpl {
     dependence: string
     visible: number 
 }
+
+export interface ITicketWfTpl {
+id: string
+description: string
+last_mod_dt: string
+last_mod_by: SelectOption
+tcategory: SelectOption
+task: SelectOption
+sequence: string
+assignee: SelectOption
+team: SelectOption
+deleteable: string
+ci: SelectOption
+creator: SelectOption
+created_dt: string
+done_by: SelectOption
+done_dt: string
+start_dt: string
+group_task: number
+active: number
+}
+
 export interface INameBoolValue {
     name: string
     value: boolean
@@ -107,8 +130,10 @@ export interface IIFrame {
 export const ITicketObjects:string[] = ['status','customer', 'ticket_type', 'priority','assignee','team', 'urgency', 'last_mod_by', 'log_agent', 'category', 'ci']
 export const ITicketRoFields:string[] = ['active']
 export const ITicketObjectsMulti:string[] = []
+export const ITicketTemplateFields:string[] = ['status','customer', 'ticket_type', 'priority','assignee','team', 'urgency', 'ci', 'customer_phone', 'description']
 
-export const ITicketCategoryObjects:string[] = [ 'priority','assignee','team', 'urgency', 'last_mod_by']
+
+export const ITicketCategoryObjects:string[] = [ 'priority','assignee','team', 'urgency', 'ticket', 'last_mod_by']
 export const ITicketCategoryRoFields:string[] = []
 export const ITicketCategoryObjectsMulti:string[] = ['ticket_types']
 

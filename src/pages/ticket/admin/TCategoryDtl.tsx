@@ -405,7 +405,7 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
        autoComplete="off" 
        > 
         <Row >
-        <Col  xs={24} xl={8}>
+        <Col  xs={24} xl={12}>
         {ro 
         ?     
         <div style={{display:'flex', justifyContent:'start'}}>
@@ -435,10 +435,10 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
          </Button>&nbsp;&nbsp;&nbsp;
         </div>    
      }
-         </Col>
+        </Col>
         </Row>
         <Row  >
-        <Col xs={24} xl={18}  >
+        <Col xl={8}  lg={12} sm={12} xs={24}  >
            <Form.Item
            label={ t('name') }
            name="name" 
@@ -451,8 +451,8 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
              placeholder={ t('name') }
            />
            </Form.Item>
-           </Col>
-        <Col xs={24} xl={6}>
+        </Col>
+        <Col xl={6}  lg={6} sm={12} xs={24}>
            <Form.Item 
            key="ticket_type"
            label={ t('ticket_type') }
@@ -474,10 +474,31 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
            onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_types')}
            />
            </Form.Item>
-           </Col>
+        </Col>
+        <Col xl={6}  lg={6} sm={12} xs={24} >
+           <Form.Item 
+           key="template"
+           label={ t('ticket') + ' ' + t('template') }
+           name="ticket"
+           style={{ padding:'5px', width: 'maxContent'}} 
+           > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isDisabled={ro}
+           isMulti={false}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('ticket') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket',  ' top 20 name as label, id as value , id as code ', 'V_tickets', "name<>'' order by create_date desc" , true )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'ticket')}
+           />
+           </Form.Item>
+        </Col>
         </Row>   
         <Row  >
-        <Col xs={24} xl={6} onClick={
+        <Col xl={4}  lg={8} sm={12} xs={24} onClick={
           () => loadAssTeam('team')
         }>
            <Form.Item 
@@ -501,7 +522,7 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
            />
            </Form.Item>
            </Col>
-        <Col xs={24} xl={6} onClick={
+        <Col xl={4}  lg={8} sm={12} xs={24} onClick={
           () => loadAssTeam('assignee')
         }>
            <Form.Item 
@@ -526,7 +547,7 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
            />
            </Form.Item>
            </Col>    
-        <Col xs={24} xl={6}>
+        <Col xl={4}  lg={8} sm={12} xs={24}>
            <Form.Item 
            key="priority"
            label={ t('priority') }
@@ -548,7 +569,7 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
            />
            </Form.Item>
            </Col>
-        <Col xs={24} xl={6}>
+        <Col xl={4}  lg={8} sm={12} xs={24}>
            <Form.Item 
            key="urgency"
            label={ t('urgency') }

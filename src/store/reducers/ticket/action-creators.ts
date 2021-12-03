@@ -148,7 +148,7 @@ export const TicketActionCreators = {
        }
  
      },    
-    createTicket: (ticket: ITicket,  multi:any, loginTicketId:string, prp: ITicketPrpTpl[] = [], values:any = {}, selectedTicket:ITicket = {} as ITicket, notificationsAll:INotification[] = [] as INotification[]) => async (dispatch: AppDispatch) => {
+    createTicket: (ticket: ITicket,  multi:any, loginTicketId:string, prp: ITicketPrpTpl[] = [], values:any = {}, selectedTicket:ITicket = {} as ITicket, notificationsAll:INotification[] = [] as INotification[], router:any = {}, setPathForEmpty:any = {}) => async (dispatch: AppDispatch) => {
       dispatch(TicketActionCreators.setIsError(''))
       try { 
         let hasError = false;

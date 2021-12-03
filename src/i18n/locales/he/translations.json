@@ -229,6 +229,7 @@
          "open_additionalFilter": "פתח מסנן נוסף",
          "close_additionalFilter": "סגור מסנן נוסף",
          "toCopy": "העתק",
+         "template": "תבנית",
          
         "TICKET_OPENED_BY_TEAM": "פניות פעילות לפי צוות",
         "TICKET_OPENED_BY_PRIORITY": "פניות פעילות לפי עדיפות",

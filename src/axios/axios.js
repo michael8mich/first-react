@@ -4,6 +4,8 @@ import FormData from 'form-data'
 //const SERVER = "https://localhost:44367"
 //----------iis
 export const SSO_PATH = "http://mx/user/user.asp"
+//export const SSO_PATH = "http://ServiceDesk/user/user.asp"
+//const SERVER = "http://ServiceDesk/uta50"
 const SERVER = "http://mx/uta50"
 const Base_URL = SERVER + "/v1/qtrm"
 const Base_URL_Email =  SERVER + "/api/Mail/send"

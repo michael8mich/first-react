@@ -582,7 +582,7 @@ const TicketsAssignee:FC = () => {
            placeholder={ t('customer') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'customer',  ' top 20 name as label, id as value , id as code ', 'V_contacts', NOT_GROUP_LIST , false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'customer',  ' top 20 name as label, id as value , isnull(phone, mobile_phone) as code ', 'V_contacts', NOT_GROUP_LIST , false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'customer')}
            />
            </Form.Item>

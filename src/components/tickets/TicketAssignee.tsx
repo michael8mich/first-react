@@ -14,7 +14,7 @@ import { Link, NavLink, useHistory, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { getValidatorsToProp, validators } from '../../utils/validators';
 import classes from './TicketDtl.module.css'
-import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
+import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, ITicketTemplateFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
 import { ColumnsType } from 'antd/lib/table';
 import { TabsPosition } from 'antd/lib/tabs';
 import { RouteNames } from '../../router';
@@ -118,7 +118,8 @@ const TicketAssignee:FC = () => {
       }
    }, [])
 
-  const fromCopy = async (curTicket:ITicket) => {
+  const fromCopy = async (curTicket:ITicket, category:boolean = true) => {
+    if(category)
     if(curTicket.category?.value) {
       setTicketPrp([])
       const response = await  axiosFn("get", '', '*', 'V_ticket_category', " id = '" + curTicket.category.value + "'" , ''  )  
@@ -365,11 +366,25 @@ const TicketAssignee:FC = () => {
         if(selectChange?.value) {
           setTicketPrp([])
           const response = await  axiosFn("get", '', '*', 'V_ticket_category', " id = '" + selectChange?.value + "'" , ''  )  
+          
           let category_info =  translateObj(response?.data, ITicketCategoryObjects)
+
           setCategoryCrs(category_info[0]?.crs)
           if(category_info[0]?.team?.value) {
             form.setFieldsValue({ team: category_info[0]?.team }) 
             fetchProperties(category_info[0].id)
+          }
+          if(category_info[0].ticket?.value) {
+ 
+            const _template_ticket = await  axiosFn("get", '', '*', 'V_tickets', " id = '" +category_info[0].ticket?.value + "'" , ''  )  
+            let template_ticket =  translateObj(_template_ticket?.data, ITicketObjects)[0]
+            const form_set_values = {} as any
+            ITicketTemplateFields.map(t=>{
+              if(template_ticket[t])
+              form_set_values[t] = template_ticket[t]
+            })
+            form.setFieldsValue(form_set_values)
+            fromCopy(template_ticket, false)  
           }
         }   
     }
@@ -426,7 +441,7 @@ const TicketAssignee:FC = () => {
     return new_prp
   }
 
-
+    
     const onFinish = async (values: any) => {
       values = form.getFieldsValue()
       const values_ = {...values}
@@ -440,8 +455,8 @@ const TicketAssignee:FC = () => {
       })
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedTicket});
       saveFormBuild(values_)
-      createTicket({...values_, id:ticketId, name:selectedTicket.name}, valuesMulti, user.id, [...prp], values, selectedTicket, notificationsAll)
-      if(!init)
+      createTicket({...values_, id:ticketId, name:selectedTicket.name}, valuesMulti, user.id, [...prp], values, selectedTicket, notificationsAll, router, setPathForEmpty)
+      //if(!init)
       afterUpdateCreate()
     }
     const onFinishFailed = (errorInfo: any) => {
@@ -529,7 +544,7 @@ const TicketAssignee:FC = () => {
   }  
   const localeteArr = [{'label': t('english') , 'value': 'enUS', 'code': 'enUS'},{'label': t('hebrew'), 'value': 'heIL', 'code': 'heIL'}]
   const defaultOnNew = {active: true,
-  description: "תאור",
+  description: "",
   status: STATUS_CREATED,
   ticket_type: TICKET_REQUEST,
   priority: PRIORITY_LOW,

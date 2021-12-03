@@ -230,6 +230,7 @@
         "open_additionalFilter": "Open Additional Filter",
         "close_additionalFilter": "Close Additional Filter",
         "toCopy": "Copy",
+        "template": "Template",
 
         "TICKET_OPENED_BY_TEAM": "Active Tickets by Team",
         "TICKET_OPENED_BY_PRIORITY": "Active Tickets by Priority",

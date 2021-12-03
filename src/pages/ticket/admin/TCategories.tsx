@@ -311,7 +311,7 @@ const TCategories:FC = () => {
            </Col>
       </Row>
         <Row >
-        <Col xs={24} xl={5} >
+           <Col xs={24} xl={5} >
            <Form.Item 
            // label={ t('type') }
            name="team"
@@ -347,17 +347,17 @@ const TCategories:FC = () => {
            />
            </Form.Item>
            </Col>
-        <Col  xs={24} xl={12} >
-        <Form.Item
-       //  label={ t('fast_search') }
-        name="fast_search" 
-        style={{display:'flex', width:'100%', padding:'5px'}} > 
-        <Input 
-         style={{ height:'38px', width: '400px'}}
-         placeholder={ t('fast_search') }
-        />
-        </Form.Item>
-        </Col>
+          <Col  xs={24} xl={12} >
+          <Form.Item
+        //  label={ t('fast_search') }
+          name="fast_search" 
+          style={{display:'flex', width:'100%', padding:'5px'}} > 
+          <Input 
+          style={{ height:'38px', width: '400px'}}
+          placeholder={ t('fast_search') }
+          />
+          </Form.Item>
+          </Col>
      </Row>
      </>
       }
