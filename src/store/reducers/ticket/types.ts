@@ -1,3 +1,4 @@
+import { ITicketWfTpl } from './../../../models/ITicket';
 import { ITicket, ITicketCategory, ITicketPrpTpl } from '../../../models/ITicket';
 
 export interface TicketState {
@@ -14,6 +15,10 @@ export interface TicketState {
     propertiesCount: number
     selectedProperty: ITicketPrpTpl
 
+    wfs: ITicketWfTpl[]
+    wfsCount: number
+    selectedWf: ITicketWfTpl
+
     isLoading: boolean
     error: string
 }
@@ -23,6 +28,7 @@ export enum TicketActionEnum {
     SET_SELECTED_TICKET = "SET_SELECTED_TICKET",
     SET_COPIED_TICKET = "SET_COPIED_TICKET",
     SET_SELECTED_TICKET_PROPERTIES = "SET_SELECTED_TICKET_PROPERTIES",
+    SET_SELECTED_TICKET_WFS = "SET_SELECTED_TICKET_WFS",
     SET_TICKETS_COUNT = "SET_TICKETS_COUNT",
     
     SET_CATEGORIES = "SET_CATEGORIES",
@@ -32,6 +38,11 @@ export enum TicketActionEnum {
     SET_PROPERTIES = "SET_PROPERTIES",
     SET_SELECTED_PROPERTY = "SET_SELECTED_PROPERTY",
     SET_PROPERTIES_COUNT = "SET_PROPERTIES_COUNT",
+
+    SET_WFS = "SET_WFS",
+    SET_SELECTED_WF = "SET_SELECTED_WF",
+    SET_WFS_COUNT = "SET_WFS_COUNT",
+
 
     SET_ERROR = "SET_ERROR",
     SET_IS_LOADING = "SET_IS_LOADING",
@@ -57,6 +68,11 @@ export interface SetCopiedTicketAction {
 export interface SetSelectedTicketPropertiesAction {
     type: TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES,
     payload: ITicketPrpTpl[]
+}
+
+export interface SetSelectedTicketWfsAction {
+    type: TicketActionEnum.SET_SELECTED_TICKET_WFS,
+    payload: ITicketWfTpl[]
 }
 export interface SetTicketsCountAction {
     type: TicketActionEnum.SET_TICKETS_COUNT,
@@ -90,6 +106,20 @@ export interface SetPropertiesCountAction {
     payload: number
 }
 
+//---------
+export interface SetWfsAction {
+    type: TicketActionEnum.SET_WFS,
+    payload: ITicketWfTpl[]
+}
+export interface SetSelectedWfAction {
+    type: TicketActionEnum.SET_SELECTED_WF,
+    payload: ITicketWfTpl
+}
+export interface SetWfsCountAction {
+    type: TicketActionEnum.SET_WFS_COUNT,
+    payload: number
+}
+
 //------------------
 export interface SetErrorAction {
     type: TicketActionEnum.SET_ERROR,
@@ -108,6 +138,7 @@ SetTicketsAction |
 SetSelectedTicketAction |
 SetCopiedTicketAction |
 SetSelectedTicketPropertiesAction |
+SetSelectedTicketWfsAction |
 SetTicketsCountAction |
 SetCategoriesAction |
 SetSelectedCategoryAction | 
@@ -116,7 +147,10 @@ SetErrorAction |
 SetIsLoadingAction |
 SetPropertiesAction | 
 SetSelectedPropertyAction | 
-SetPropertiesCountAction
+SetPropertiesCountAction |
+SetWfsAction | 
+SetSelectedWfAction | 
+SetWfsCountAction
 
 
 

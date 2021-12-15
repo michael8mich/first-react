@@ -1,10 +1,10 @@
 
-import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, ITicketPropertyObjects, ITicketPropertyObjectsMulti, ITicketPrpTpl } from './../../../models/ITicket';
+import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, ITicketPropertyObjects, ITicketPropertyObjectsMulti, ITicketPrpTpl, ITicketWfObjects, ITicketWfTpl, WF_STATUS_PEND, WF_STATUS_WAIT, WF_TASK_END_GROUP, WF_TASK_START_GROUP, WF_LOG_PEND, WF_STATUS_COMPLETE } from './../../../models/ITicket';
 
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
 import { ITicketObjects, ITicketObjectsMulti, ITicket, ITicketLog } from '../../../models/ITicket';
-import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction, SetTicketsCountAction, SetSelectedTicketAction, SetCategoriesAction, SetSelectedCategoryAction, SetCategoriesCountAction, SetPropertiesAction, SetSelectedPropertyAction, SetPropertiesCountAction, SetSelectedTicketPropertiesAction, SetCopiedTicketAction } from './types';
+import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction, SetTicketsCountAction, SetSelectedTicketAction, SetCategoriesAction, SetSelectedCategoryAction, SetCategoriesCountAction, SetPropertiesAction, SetSelectedPropertyAction, SetPropertiesCountAction, SetSelectedTicketPropertiesAction, SetCopiedTicketAction, SetSelectedTicketWfsAction, SetWfsAction, SetSelectedWfAction, SetWfsCountAction } from './types';
 import i18n from "i18next";
 import { translateObj } from '../../../utils/translateObj';
 import { SearchPagination } from '../../../models/ISearch';
@@ -15,6 +15,7 @@ import { AdminActionCreators } from '../admin/action-creators';
 import { notify } from '../../../utils/notificatinSend';
 import { INotification } from '../../../models/INotification';
 import { ICiObjects } from '../../../models/ICi';
+import { logWfManipulation } from '../../../utils/logCreateor';
 
 function onlyUnique(value: string, index:number, self:string[]) {
   return self.indexOf(value) === index;
@@ -27,7 +28,7 @@ export const TicketActionCreators = {
     setSelectedTicket: (payload:ITicket): SetSelectedTicketAction => ({type:TicketActionEnum.SET_SELECTED_TICKET, payload}),
     setCopiedTicket: (payload: ITicket): SetCopiedTicketAction => ({type:TicketActionEnum.SET_COPIED_TICKET, payload}),
     SetSelectedTicketProperties: (payload:ITicketPrpTpl[]): SetSelectedTicketPropertiesAction => ({type:TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES, payload}),
-    
+    SetSelectedTicketWfs: (payload:ITicketWfTpl[]): SetSelectedTicketWfsAction => ({type:TicketActionEnum.SET_SELECTED_TICKET_WFS, payload}),
     setTicketsCount: (payload:number): SetTicketsCountAction => ({type:TicketActionEnum.SET_TICKETS_COUNT, payload}),
     
     setCategories: (payload:ITicketCategory[]): SetCategoriesAction => ({type:TicketActionEnum.SET_CATEGORIES, payload}),
@@ -37,6 +38,10 @@ export const TicketActionCreators = {
     setProperties: (payload:ITicketPrpTpl[]): SetPropertiesAction => ({type:TicketActionEnum.SET_PROPERTIES, payload}),
     setSelectedProperty: (payload:ITicketPrpTpl): SetSelectedPropertyAction => ({type:TicketActionEnum.SET_SELECTED_PROPERTY, payload}),
     setPropertiesCount: (payload:number): SetPropertiesCountAction => ({type:TicketActionEnum.SET_PROPERTIES_COUNT, payload}),
+
+    setWfs: (payload:ITicketWfTpl[]): SetWfsAction => ({type:TicketActionEnum.SET_WFS, payload}),
+    setSelectedWf: (payload:ITicketWfTpl): SetSelectedWfAction => ({type:TicketActionEnum.SET_SELECTED_WF, payload}),
+    setWfsCount: (payload:number): SetWfsCountAction => ({type:TicketActionEnum.SET_WFS_COUNT, payload}),
 
     setIsError: (payload:string): SetErrorAction => ({type:TicketActionEnum.SET_ERROR, payload}),
     IsLoading: (payload:boolean): SetIsLoadingAction => ({type:TicketActionEnum.SET_IS_LOADING, payload}),
@@ -147,7 +152,45 @@ export const TicketActionCreators = {
          dispatch(TicketActionCreators.IsLoading(false))
        }
  
-     },    
+     },   
+     fetchTicketWfs: (selectedTicket:ITicket ) => async (dispatch: AppDispatch) => {
+      try {
+       dispatch(TicketActionCreators.setIsError(''))
+         dispatch(TicketActionCreators.IsLoading(true))
+         let ticketWfs: ITicketWfTpl[] = []
+         const response = await  axiosFn("get", '', '*', 'V_wfs', " ticket = '" + selectedTicket.id + "' order by sequence"  , ''  )  
+         let hasError = false;
+         if(response.data["error"]) hasError = true;
+             if(response.data&&!hasError)
+             {
+              ticketWfs = response.data
+              let _count =  response.headers['x-total-count'] || 0
+              ticketWfs = translateObj(ticketWfs, [...ITicketWfObjects, 'status', 'ticket'])
+            //  tickets_wfs = tickets_log.map(e=> {
+            //   return { ...e, name:i18n.t(e.name) }  
+            //    }
+            //   ) 
+              
+             
+             const new_selectedTicket = {...selectedTicket, ticketWfs: ticketWfs}
+             dispatch(TicketActionCreators.setSelectedTicket({...new_selectedTicket}))
+             } 
+             else
+             {
+              dispatch(TicketActionCreators.setTickets([]))   
+              dispatch(TicketActionCreators.setIsError(i18n.t('data_problem')))
+             }   
+       
+        } catch (e) {
+          dispatch(TicketActionCreators.setTickets([])) 
+          console.log('fetchticketWfs',e);
+              
+          dispatch(TicketActionCreators.setIsError(i18n.t('axios_error')))        
+       } finally {
+         dispatch(TicketActionCreators.IsLoading(false))
+       }
+ 
+     },   
     createTicket: (ticket: ITicket,  multi:any, loginTicketId:string, prp: ITicketPrpTpl[] = [], values:any = {}, selectedTicket:ITicket = {} as ITicket, notificationsAll:INotification[] = [] as INotification[], router:any = {}, setPathForEmpty:any = {}) => async (dispatch: AppDispatch) => {
       dispatch(TicketActionCreators.setIsError(''))
       try { 
@@ -163,6 +206,9 @@ export const TicketActionCreators = {
         delete ticket_.id
         ticket_.last_mod_by = loginTicketId
         ticket_.last_mod_dt =  nowToUnix().toString()
+
+        const categoryChanged = ticket_?.categoryChanged || false
+        delete ticket_.categoryChanged
 
         //update
         if(id!=='0') {
@@ -181,7 +227,7 @@ export const TicketActionCreators = {
             }))
            
             
-            notify(false, values, selectedTicket, notificationsAll )  
+          notify(false, values, selectedTicket, notificationsAll )  
           let ticket: ITicket[] = response.data
           if(prp.length>0) {
             let p_index = 1;
@@ -205,6 +251,46 @@ export const TicketActionCreators = {
               }
               p_index ++ 
             })
+            //--wfs
+            if(categoryChanged) {
+              const responseWfs = await  axiosFn("get", '',  'assignee,deleteable,description,name,sequence,task,tcategory,team,ci,team_name,assignee_name,task_name', 'V_wftpls', " tcategory ='" + ticket_.category + "' order by sequence " , ''  ) 
+              if(responseWfs?.data?.length!==0) {
+                
+                let wftpls_:any[] = responseWfs.data
+                let prev_wf = {} as any
+                let start_group = false
+                let end_group = false
+                wftpls_.map( async (w, index)  => {
+                   let team_name = w.team_name || ''
+                   let assignee_name = w.assignee_name || ''
+                   let task_name = w.task_name || ''
+                   delete  w.team_name
+                   delete w.assignee_name
+                   delete w.task_name
+                    prev_wf = w
+                    if(w.task===WF_TASK_START_GROUP)
+                    start_group = true
+                    if(w.task===WF_TASK_END_GROUP)
+                    start_group = false
+                    w.ticket = id
+                    if(index===0 || start_group){
+                      w.status = WF_STATUS_PEND.value
+                      w.start_dt = nowToUnix()
+                    }
+                    else
+                    w.status = WF_STATUS_WAIT.value
+                    const responseNewWf = await  axiosFn("post", w, '*', 'wf', "id" , ''  )  
+                    if(w.status === WF_STATUS_PEND.value) {
+                        //notify(true, values, {...selectedTicket, id:new_id }, notificationsAll ) 
+                        logWfManipulation({...w, team: {value:team_name,label:team_name}, assignee: {value:assignee_name,label:assignee_name}, 
+                           task: {value:task_name,label:task_name, sequence: w.sequence}}, 
+                          WF_LOG_PEND, id, loginTicketId) 
+                    }
+                    
+                })
+              }
+            }
+          
           } else
           dispatch(TicketActionCreators.SetSelectedTicketProperties(translateObj([], ITicketPropertyObjects)))
           
@@ -255,6 +341,46 @@ export const TicketActionCreators = {
               }
               p_index ++ 
             })
+            //--wfs
+            const responseWfs = await  axiosFn("get", '',  'assignee,deleteable,description,name,sequence,task,tcategory,team,ci,team_name,assignee_name,task_name', 'V_wftpls', " tcategory ='" + ticket_.category + "' order by sequence " , ''  ) 
+            if(responseWfs?.data?.length!==0) {
+              let wftpls_:any[] = responseWfs.data
+              let prev_wf = {} as any
+              let start_group = false
+              wftpls_.map( async (w, index)  => {
+                 let team_name = w.team_name || ''
+                 let assignee_name = w.assignee_name || ''
+                 let task_name = w.task_name || ''
+                 delete  w.team_name
+                 delete w.assignee_name
+                 delete w.task_name
+                  prev_wf = w
+                  if(w.task===WF_TASK_START_GROUP.value)
+                  start_group = true
+                  if(w.task===WF_TASK_END_GROUP.value)
+                  start_group = false
+                  w.ticket = new_id
+                  if(index===0 || start_group){
+                    if(w.task===WF_TASK_START_GROUP.value)
+                    w.status = WF_STATUS_COMPLETE.value
+                    else
+                    w.status = WF_STATUS_PEND.value
+                    w.start_dt = nowToUnix()
+                  }
+                  else
+                  w.status = WF_STATUS_WAIT.value
+                  const responseNewWf = await  axiosFn("post", w, '*', 'wf', "id" , ''  )  
+                  if(w.status === WF_STATUS_PEND.value) {
+                      //notify(true, values, {...selectedTicket, id:new_id }, notificationsAll ) 
+                      logWfManipulation({...w, team: {value:team_name,label:team_name}, assignee: {value:assignee_name,label:assignee_name}, 
+                         task: {value:task_name,label:task_name, sequence: w.sequence}}, 
+                        WF_LOG_PEND, new_id, loginTicketId) 
+                  }
+                  
+              })
+            }
+           
+
           } else
           {
             dispatch(AdminActionCreators.setAlert({
@@ -300,9 +426,25 @@ export const TicketActionCreators = {
              tickets_ = translateObj(tickets_, ITicketObjects)
              let ticket:ITicket = tickets_[0]
              dispatch(TicketActionCreators.setSelectedTicket(ticket))
+             let prp:any[] = []
+             let ticketWfs:any[] = [] 
              const responseProperties = await  axiosFn("get", '', '*', 'V_tprp', " ticket ='" + ticket.id + "' order by sequence " , ''  ) 
-             if(responseProperties.data) 
-               dispatch(TicketActionCreators.setSelectedTicket( {...ticket, ticketProperties: translateObj(responseProperties.data, ITicketPropertyObjects)}) )
+             if(responseProperties.data) {
+              prp = translateObj(responseProperties.data, ITicketPropertyObjects)
+              dispatch(TicketActionCreators.setSelectedTicket( {...ticket, ticketProperties: prp}) )
+             }
+             
+
+             const responseWfs = await  axiosFn("get", '', '*', 'V_wfs', " ticket = '" + ticket.id + "' order by sequence"  , ''  )
+             if(responseWfs.data) 
+             {
+              ticketWfs = responseWfs.data
+              let _count =  responseWfs.headers['x-total-count'] || 0
+              ticketWfs = translateObj(ticketWfs, [...ITicketWfObjects, 'status', 'ticket'])
+              dispatch(TicketActionCreators.setSelectedTicket( {...ticket, ticketWfs: ticketWfs}) )
+             }
+
+              
             
              } else
              {
@@ -749,7 +891,118 @@ export const TicketActionCreators = {
       } finally {
         dispatch(TicketActionCreators.IsLoading(false))
       }
-    },   
+    }, 
+    //------------------
+    fetchWfs: (categoryId: string ) => async (dispatch: AppDispatch) => {
+      try {
+      dispatch(TicketActionCreators.setIsError(''))
+        dispatch(TicketActionCreators.IsLoading(true))
+        const response = await  axiosFn("get", '', '*, 1 as visible ', 'V_wftpls', " tcategory = '" + categoryId + "' order by sequence" )  
+        let hasError = false;
+        if(response.data["error"]) hasError = true;
+            if(response.data&&!hasError)
+            {
+            let wf_: any[] = response.data
+            wf_ = translateObj(wf_, ITicketWfObjects)
+            let wf:ITicketWfTpl[] = wf_
+            // properties.map(o=>{
+            //   if(o.code)
+            // })
+            
+            dispatch(TicketActionCreators.setWfs(wf))
+            } else
+            {
+              dispatch(TicketActionCreators.setProperties([]))   
+              dispatch(TicketActionCreators.setIsError(i18n.t('data_problem')))
+            }   
+      
+        } catch (e) {
+          dispatch(TicketActionCreators.setProperties([])) 
+          console.log('fetchWfs',e);
+              
+          dispatch(TicketActionCreators.setIsError(i18n.t('axios_error')))        
+      } finally {
+        dispatch(TicketActionCreators.IsLoading(false))
+      }
+
+    },
+    createWf: (wf: ITicketWfTpl,  multi:any, loginTicketId:string ) => async (dispatch: AppDispatch) => {
+      dispatch(TicketActionCreators.setIsError(''))
+      try { 
+        let hasError = false;
+        let wf_ = JSON.parse(JSON.stringify(wf)) 
+        ITicketCategoryObjectsMulti.map(v => {
+          delete wf_[v]
+        })
+        const id = wf_.id
+        delete wf_.id
+        wf_.last_mod_by = loginTicketId
+        wf_.last_mod_dt =  nowToUnix().toString()
+        //update
+        if(id!=='0') {
+          dispatch(TicketActionCreators.IsLoading(true))
+          const response = await  axiosFn("put", wf_, '*', 'wftpl', "id" , id  )  
+          if(response.data["error"]) hasError = true;
+          if(response.data&&!hasError)
+          {
+          let wf: ITicketWfTpl[] = response.data
+          } else
+          {
+              dispatch(TicketActionCreators.setIsError(i18n.t('data_problem'))) 
+          } 
+        }
+        else //create
+        {
+          dispatch(TicketActionCreators.IsLoading(true))
+          const responseNew = await  axiosFn("post", wf_, '*', 'wftpl', "id" , ''  )  
+          if(responseNew.data["error"]) hasError = true;
+          if(responseNew.data&&!hasError)
+          {
+            let new_id: string = responseNew.data[0].id
+            let emptyWf = {} as ITicketWfTpl
+            dispatch(TicketActionCreators.setSelectedWf( {...emptyWf, id: new_id }))
+            
+          } else
+          {
+              dispatch(TicketActionCreators.setIsError(i18n.t('data_problem'))) 
+              console.log('Real Error', responseNew.data["error"]);
+          } 
+        }  
+      } catch (e) {
+      dispatch(TicketActionCreators.setIsError(i18n.t('axios_error')))    
+      console.log('createWf',e);    
+      } finally {
+        dispatch(TicketActionCreators.IsLoading(false))
+      }
+
+    }, 
+    fetchWf: (id: string) => async (dispatch: AppDispatch) => {
+      try {
+        if(id==='0') return
+        dispatch(TicketActionCreators.setIsError(''))
+        dispatch(TicketActionCreators.IsLoading(true))
+        const response = await  axiosFn("get", '', '*', 'V_wftpls', '' , id  )
+        let hasError = false;
+        if(response.data["error"]) hasError = true;
+        let multiObject = {}
+            if(response.data&&!hasError)
+            {
+            let wf_: any[] = response.data
+            wf_ = translateObj(wf_, ITicketPropertyObjects)
+            let property:ITicketPrpTpl = wf_[0]
+            dispatch(TicketActionCreators.setSelectedProperty(property))
+            } else
+            {
+                dispatch(TicketActionCreators.setIsError(i18n.t('data_problem')))
+            }   
+      
+        } catch (e) {
+        dispatch(TicketActionCreators.setIsError(i18n.t('axios_error')))     
+        console.log('fetchWf',e);    
+      } finally {
+        dispatch(TicketActionCreators.IsLoading(false))
+      }
+    },     
     
 }
 

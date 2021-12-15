@@ -110,5 +110,18 @@ export const validators = {
                 return Promise.reject(new Error(message))
             }
         }
+    ),
+    requiredTeamOrAssignee: (team:string, assignee:string, task:string='1', message: string = i18n.t('requiredTeamOrAssignee')) => () => (
+        {
+            validator(_:any,value:any) {       
+                assignee = assignee || ''
+                team = team || ''
+                if(assignee.length!==0||team.length!==0||task==='2'||task==='3') 
+                {
+                    return Promise.resolve()
+                }
+                return Promise.reject(new Error(message))
+            }
+        }
     )
 }

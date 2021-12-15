@@ -1,4 +1,4 @@
-import { ITicket, ITicketCategory, ITicketPrpTpl } from "../../../models/ITicket"
+import { ITicket, ITicketCategory, ITicketPrpTpl, ITicketWfTpl } from "../../../models/ITicket"
 import { TicketAction, TicketActionEnum, TicketState } from "./types"
 
 
@@ -16,6 +16,10 @@ const initialState: TicketState = {
     propertiesCount: 0,
     selectedProperty: {} as ITicketPrpTpl,
 
+    wfs: [] as ITicketWfTpl[],
+    wfsCount: 0,
+    selectedWf: {} as ITicketWfTpl,
+
     isLoading: false,
     error: ''
 
@@ -32,6 +36,10 @@ export default function TicketReducer(state = initialState, action:TicketAction 
 
         case  TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES:
                 return {...state,  selectedTicket:  { ...state.selectedTicket,  ticketProperties: action.payload }}  
+
+        case  TicketActionEnum.SET_SELECTED_TICKET_WFS:
+                    return {...state,  selectedTicket:  { ...state.selectedTicket,  ticketWfs: action.payload }}  
+
         case  TicketActionEnum.SET_TICKETS_COUNT:
             return {...state, ticketsCount: action.payload }   
         
@@ -47,7 +55,14 @@ export default function TicketReducer(state = initialState, action:TicketAction 
         case  TicketActionEnum.SET_SELECTED_PROPERTY:
                      return {...state, selectedProperty: action.payload }  
         case  TicketActionEnum.SET_PROPERTIES_COUNT:
-                     return {...state, propertiesCount: action.payload }          
+                     return {...state, propertiesCount: action.payload }         
+                     
+        case  TicketActionEnum.SET_WFS:
+                        return {...state, wfs: action.payload, isLoading: false }
+        case  TicketActionEnum.SET_SELECTED_WF:
+                         return {...state, selectedWf: action.payload }  
+        case  TicketActionEnum.SET_WFS_COUNT:
+                         return {...state, wfsCount: action.payload }                  
                  
        case  TicketActionEnum.SET_ERROR:
            return {...state, error: action.payload, isLoading: false  }           

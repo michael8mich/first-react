@@ -10,18 +10,19 @@ import { axiosFn } from '../../axios/axios';
 import { IQueriesCache, IQuery, SearchPagination, SelectOption } from '../../models/ISearch';
 import { DATETIMEFORMAT, searchFormWhereBuild, uTd } from '../../utils/formManipulation';
 import { FilterOutlined, ExclamationCircleOutlined, UsergroupAddOutlined, PaperClipOutlined, FileSearchOutlined,
-  FileExcelOutlined, PlusCircleOutlined, MinusCircleOutlined }  from '@ant-design/icons/lib/icons';
+  FileExcelOutlined, PlusCircleOutlined, MinusCircleOutlined, BranchesOutlined }  from '@ant-design/icons/lib/icons';
 import { useHistory, useParams } from 'react-router-dom';
 import { RouteNames } from '../../router';
-import { ITicketObjects, ITicket, PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM, URGENCY_LOW, STATUS_CLOSE, ITicketLog, ITicketPrpTpl } from '../../models/ITicket';
+import { ITicketObjects, ITicket, PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM, URGENCY_LOW, STATUS_CLOSE, ITicketLog, ITicketPrpTpl, WF_STATUS_COMPLETE, ITicketWfTpl, ITicketWfObjects, WF_STATUS_CANCEL } from '../../models/ITicket';
 import { ANALYST_DTP, ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
 import ActivityForm from '../../pages/ticket/ActivityForm';
 import QueryBuild from '../QueryBuild';
 import PopoverDtl from '../../pages/ticket/PopoverDtl';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import {CSVLink} from "react-csv"
+import { translateObj } from '../../utils/translateObj';
 const { RangePicker } = DatePicker;
-const SORT_DEFAULT = 'name asc'
+const SORT_DEFAULT = 'name desc'
 const LIMIT_DEFAULT = '25'
 const WHERE_DEFAULT = ' active = 1 '
 
@@ -80,18 +81,18 @@ const TicketsAssignee:FC = () => {
   }
   const priColors = (record:ITicket) => {
     let color = "green"
-    if(record.priority.value === PRIORITY_HIGH.value)
+    if(record.priority?.value === PRIORITY_HIGH.value)
     color = 'red'
-    if(record.priority.value === PRIORITY_MEDIUM.value)
+    if(record.priority?.value === PRIORITY_MEDIUM.value)
     color = 'orange'
     return {color: color}
   }
 
   const urgColors = (record:ITicket) => {
     let color = "green"
-    if(record.urgency.value === URGENCY_HIGH.value)
+    if(record.urgency?.value === URGENCY_HIGH.value)
     color = 'red'
-    if(record.urgency.value === URGENCY_MEDIUM.value)
+    if(record.urgency?.value === URGENCY_MEDIUM.value)
     color = 'orange'
     return {color: color}
   }
@@ -121,9 +122,39 @@ const TicketsAssignee:FC = () => {
       setSelectedTicket({} as ITicket)
       pathTrowEmpty(RouteNames.TICKETS + '/0')
   }
-  
-  const toClose = (record:ITicket, type: string) =>
+  const close_validation_fail = async (record:ITicket) => {
+    let ret = false
+    if(record?.ticketWfsCount) 
+      if(record?.ticketWfsCount>0)
+      {
+        const response = await  axiosFn("get", '', '*', 'V_wfs', " ticket = '" + record.id + "'" , ''  ) 
+        let wfs =  translateObj(response.data, ITicketWfObjects)
+        let errorMsg = t('not_completed_workflows') 
+        if(wfs)
+        if(wfs?.length>0) {
+          wfs.map(w=> {
+            if(w.status?.value !== WF_STATUS_COMPLETE.value || w.status?.value !== WF_STATUS_CANCEL.value) 
+            ret = true
+          })
+        }
+        if(ret)
+        {
+          setAlert({
+            type: 'warning' ,
+            message: errorMsg ,
+            closable: true ,
+            showIcon: true ,
+            visible: true,
+            autoClose: 10 
+          })
+          return true
+        }
+      }  
+      return false
+  }
+  const toClose = async (record:ITicket, type: string) =>
   {
+    if(await close_validation_fail(record)) return  
     setSelectedTicket(record)
     setActivityType(type)
     setModalVisible(true)
@@ -167,15 +198,22 @@ const TicketsAssignee:FC = () => {
   }
   const RightClickMenu = (record:ITicket) => (
     <Menu>
-      <Menu.Item key="1"
-       onClick={()=>toComment(record,'New Log Comment')}
-      >{t('toComment')}</Menu.Item>
-      <Menu.Item key="2"
-      onClick={()=>toMe(record)}
-      >{t('toMe')}</Menu.Item>
-      <Menu.Item key="3"
-       onClick={()=>toClose(record,'Close Comment')}
-      >{t('toClose')}</Menu.Item>
+      
+      {
+        record.status.value !== STATUS_CLOSE.value && 
+        <>
+        <Menu.Item key="1"
+        onClick={()=>toComment(record,'New Log Comment')}
+        >{t('toComment')}</Menu.Item>
+        <Menu.Item key="2"
+        onClick={()=>toMe(record)}
+        >{t('toMe')}</Menu.Item>
+          <Menu.Item key="3"
+        onClick={()=>toClose(record,'Close Comment')}
+        >{t('toClose')}</Menu.Item>
+        </>
+      }
+     
       <Menu.Item key="4"
        onClick={()=>toCopy(record)}
       >{t('toCopy') + ' ' + t('ticket')}</Menu.Item>
@@ -191,7 +229,6 @@ const TicketsAssignee:FC = () => {
     )
   }
   const { height, width } = useWindowDimensions();
-
   const columns: ColumnsType<ITicket> = [
     {
       key: 'name',
@@ -211,15 +248,15 @@ const TicketsAssignee:FC = () => {
              title={ t('ticket') + ' ' +  t('number') + ' ' + record.name }  trigger="hover">  
              <FileSearchOutlined />&nbsp;
              </Popover>
-             <Tooltip title={t('priority') + ' ' + record.priority.label}>
+             <Tooltip title={t('priority') + ' ' + record.priority?.label}>
              <ExclamationCircleOutlined 
-             title={t('urgency') + ' ' + record.priority.label}
+             title={t('urgency') + ' ' + record.priority?.label}
              style={priColors(record)}/>
               </Tooltip>
              &nbsp; {name} &nbsp;
-             <Tooltip title={record.urgency.label}>
+             <Tooltip title={record.urgency?.label}>
              <UsergroupAddOutlined 
-             hidden={record.urgency.value === URGENCY_LOW.value}
+             hidden={record.urgency?.value === URGENCY_LOW.value}
              style={urgColors(record)} />
              </Tooltip>
              {
@@ -239,6 +276,11 @@ const TicketsAssignee:FC = () => {
                 count={record?.customer_open_tickets}>
                 </Badge>
              }
+             {
+               record?.ticketWfsCount !== 0 &&
+               <BranchesOutlined />
+             }
+             
           </div>
           </Dropdown>
         );}
@@ -265,7 +307,7 @@ const TicketsAssignee:FC = () => {
       render: ( customer, record) => {
         return (
             <div>        
-            {record.customer && record.customer.label} 
+            {record.customer && record.customer?.label} 
             </div>
         );}
     },
@@ -277,7 +319,7 @@ const TicketsAssignee:FC = () => {
       render: ( status, record) => {
         return (
             <div>        
-            {record.status && record.status.label} 
+            {record.status && record.status?.label} 
             </div>
         );}
     }
@@ -303,7 +345,7 @@ const TicketsAssignee:FC = () => {
       render: (team, record) => {
         return (
             <div>        
-            {record.team && record.team.label} 
+            {record.team && record.team?.label} 
             </div>
         );}
     }
@@ -316,7 +358,7 @@ const TicketsAssignee:FC = () => {
       render: ( assignee, record) => {
         return (
             <div>        
-            {record.assignee && record.assignee.label} 
+            {record.assignee && record.assignee?.label} 
             </div>
         );}
     }
@@ -330,7 +372,7 @@ const TicketsAssignee:FC = () => {
       render: (category, record ) => {
         return (
             <div>        
-            {record.category && record.category.label} 
+            {record.category && record.category?.label} 
             </div>
         );}
     }
@@ -356,13 +398,13 @@ const TicketsAssignee:FC = () => {
             {
               ticket_name: t.name,
               create_date: uTd(t.create_date),
-              customer: t.customer.label,
-              ticket_status: t.status.label,
-              team: t.team.label,
-              assignee: t.assignee.label,
-              category: t.category.label,
-              priority: t.priority.label,
-              urgency: t.urgency.label,
+              customer: t.customer?.label,
+              ticket_status: t.status?.label,
+              team: t.team?.label,
+              assignee: t.assignee?.label,
+              category: t.category?.label,
+              priority: t.priority?.label,
+              urgency: t.urgency?.label,
               description: t.description,
               close_date:uTd(t.close_date)
             }

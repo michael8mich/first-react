@@ -421,7 +421,6 @@ const TicketEmployee:FC = () => {
         values_.team = defaultOnNew.team.value
       }
       createTicket({...values_, id:ticketId, name:selectedTicket.name}, valuesMulti, user.id, [...prp])
-      if(!init)
       afterUpdateCreate()
     }
     const onFinishFailed = (errorInfo: any) => {

@@ -1,6 +1,7 @@
-import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover, Badge, Tooltip} from 'antd';
+import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin,  Tabs, DatePicker, Popover, Badge, Tooltip, Drawer, DrawerProps, Popconfirm} from 'antd';
 import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined, MailOutlined, SelectOutlined,
-  UnorderedListOutlined, LayoutOutlined, FilePdfOutlined, QuestionCircleOutlined, ApiOutlined,CopyOutlined } from '@ant-design/icons';
+  UnorderedListOutlined, LayoutOutlined, FilePdfOutlined, QuestionCircleOutlined, CloseCircleOutlined,
+  ApiOutlined,CopyOutlined,BranchesOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
@@ -8,34 +9,32 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
-import { DATETIMEFORMAT, PRPID, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
+import { DATETIMEFORMAT, nowToUnix, PRPID, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
 import {  ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
-import { Link, NavLink, useHistory, useParams } from 'react-router-dom';
+import {  useHistory, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { getValidatorsToProp, validators } from '../../utils/validators';
 import classes from './TicketDtl.module.css'
-import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, ITicketTemplateFields, PRIORITY_LOW, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW } from '../../models/ITicket';
-import { ColumnsType } from 'antd/lib/table';
+import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketObjects,  ITicketPrpTpl, ITicketRoFields, ITicketTemplateFields, ITicketWfObjects, PRIORITY_LOW, STATUS_CANCELED, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW, WF_STATUS_CANCEL, WF_STATUS_COMPLETE, WF_STATUS_REJECT, WF_TASK_ACTION } from '../../models/ITicket';
 import { TabsPosition } from 'antd/lib/tabs';
 import { RouteNames } from '../../router';
 import UserAddOutlined from '@ant-design/icons/lib/icons/UserAddOutlined';
 import Avatar from 'antd/lib/avatar/avatar';
-import { getScrollTop } from 'react-select/dist/declarations/src/utils';
 import { translateObj } from '../../utils/translateObj';
 import ActivityForm from '../../pages/ticket/ActivityForm';
 import UploadFiles from '../admin/UploadFiles';
 import moment from 'moment';
 import PopoverDtl from '../../pages/ticket/PopoverDtl';
-import { P } from '@antv/g2plot';
-import { red, volcano, gold, yellow, lime, green, cyan, blue, geekblue, purple, magenta, grey } from '@ant-design/colors';
-import { generate, presetDarkPalettes } from '@ant-design/colors';
-import { fromPairs, size } from 'lodash';
-import { INotification } from '../../models/INotification';
+import {  blue, } from '@ant-design/colors';
+import { generate,  } from '@ant-design/colors';
 import * as htmlToImage from 'html-to-image';
-import { toPng, toJpeg, toBlob, toPixelData, toSvg } from 'html-to-image';
 import { jsPDF } from "jspdf";
-import Title from 'antd/lib/skeleton/Title';
 import { ICi } from '../../models/ICi';
+import { useDebounce } from '../../hooks/useDebounce';
+import TicketWfs from './TicketWfs';
+import TicketLog from './TicketLog';
+import TicketNotifications from './TicketNotifications';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 // Generate dark color palettes by a given color
 const colors = generate('#1890ff', {
@@ -53,10 +52,11 @@ const { Panel } = Collapse;
 const { Option } = Select;
 
 const TicketAssignee:FC = () => {
+  const { height, width } = useWindowDimensions();
   const { t } = useTranslation();
   const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, 
     fetchProperties, setProperties, fetchTicketNotifications, setQueriesCache, setCopiedTicket,setSelectedProperty,
-    setSelectedTicket,setPathForEmpty} = useAction()
+    setSelectedTicket,setPathForEmpty, fetchTicketWfs} = useAction()
   const {error, isLoading, tickets, selectedTicket, properties, copiedTicket } = useTypedSelector(state => state.ticket)
   const {notificationsAll } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
@@ -261,6 +261,7 @@ const TicketAssignee:FC = () => {
   const [customerInfo, setCustomerInfo] = useState(false) 
   const [category_info, setcategory_info] = useState({} as ITicketCategory)
   const getCustomerInfoFn = () => {
+    if(!selectedTicket?.customer?.value) return
     setCustomerInfo(!customerInfo)
     {
       if(!selectedTicket.customer_info && selectedTicket?.customer?.value)
@@ -278,8 +279,8 @@ const TicketAssignee:FC = () => {
   const initSelectValues:any = {
   }
   const [selectValues , setSelectValues] = useState(initSelectValues) 
-  const promiseOptions = async (inputValue: string, name: string, what:string, tname:string, where:string, big: boolean = false) => {
-
+  const promiseOptions =  async (inputValue: string, name: string, what:string, tname:string, where:string, big: boolean = false) => {
+    
     if(Object.keys(selectSmall).find( k=> k === name) && inputValue.length === 0 ) {
         let arr:any = {...selectSmall}
   
@@ -309,7 +310,7 @@ const TicketAssignee:FC = () => {
         {
           return selectOptions[name].filter((i:SelectOption) => i.label.toLowerCase().includes(inputValue.toLowerCase()))
         }
-    }  
+    } 
     const loadAssTeam = async (name:string) => {
          if(ro) return
          let what = 'top 200 name as label, id as value , id as code '
@@ -348,6 +349,8 @@ const TicketAssignee:FC = () => {
     }
      const [categoryCrs, setCategoryCrs]  = useState(0)
      const [ciCrs, setCiCrs]  = useState(0) 
+     const [categoryChanged, setCategoryChanged]  = useState(false) 
+
      const selectChanged = async (selectChange:any, name:string) =>
       {
        if(name==='customer') {
@@ -364,6 +367,7 @@ const TicketAssignee:FC = () => {
       }
        if(name==='category') {
         if(selectChange?.value) {
+          if(id) setCategoryChanged(true)
           setTicketPrp([])
           const response = await  axiosFn("get", '', '*', 'V_ticket_category', " id = '" + selectChange?.value + "'" , ''  )  
           
@@ -441,13 +445,53 @@ const TicketAssignee:FC = () => {
     return new_prp
   }
 
-    
+  const close_validation_fail = async () => {
+    if(selectedTicket?.ticketWfs)
+    if(selectedTicket?.ticketWfs?.length>0) {
+    let ret = false
+    const response = await  axiosFn("get", '', '*', 'V_wfs', " ticket = '" + selectedTicket.id + "'" , ''  ) 
+    let wfs =  translateObj(response.data, ITicketWfObjects)
+    let errorMsg = t('not_completed_workflows') 
+    if(wfs)
+    if(wfs?.length>0) {
+      wfs.map(w=> {
+        if(w)
+        if(w.status !== WF_STATUS_COMPLETE.value && w.status !== WF_STATUS_CANCEL.value) 
+        {
+          ret = true
+        }
+        
+      })
+    }
+    if(ret)
+    {
+      setAlert({
+        type: 'warning' ,
+        message: errorMsg ,
+        closable: true ,
+        showIcon: true ,
+        visible: true,
+        autoClose: 10 
+      })
+      return true
+    }
+  }
+  return false
+  }
     const onFinish = async (values: any) => {
       values = form.getFieldsValue()
       const values_ = {...values}
       ITicketRoFields.map(r => {
         delete values_[r]
       })
+
+      if(values_?.status?.value === STATUS_CLOSE.value)
+      {
+        if(await close_validation_fail()) return  
+      }
+      
+
+
       let prp = propertyBuild({...values_}, ticketPrp)
       Object.keys(values_).map(v=> {
         if(v.indexOf(PRPID)!= -1)
@@ -455,8 +499,7 @@ const TicketAssignee:FC = () => {
       })
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedTicket});
       saveFormBuild(values_)
-      createTicket({...values_, id:ticketId, name:selectedTicket.name}, valuesMulti, user.id, [...prp], values, selectedTicket, notificationsAll, router, setPathForEmpty)
-      //if(!init)
+      createTicket({...values_, id:ticketId, name:selectedTicket.name, categoryChanged: categoryChanged}, valuesMulti, user.id, [...prp], values, selectedTicket, notificationsAll, router, setPathForEmpty)
       afterUpdateCreate()
     }
     const onFinishFailed = (errorInfo: any) => {
@@ -473,12 +516,20 @@ const TicketAssignee:FC = () => {
 
     }
 
+  
+      const buildSpinner = () =>
+      {
+          return (
+            isLoading && 
+            <Spin style={{position:'fixed'}} />
+          )
+      }
     const buildTitle = () =>
     {
         return (
           ticketId === '0'? 
-          <h1 style={{padding:'10px'}}>{ !ro && t('create_new') } { t('ticket')} { selectedTicket?.name &&  t('number') + selectedTicket?.name} </h1>:
-          <h1 style={{padding:'10px'}}>{ ! ro && t('update') } { t('ticket')}   { t('number')} { selectedTicket?.name }</h1>
+          <h1 style={{padding:'10px'}}>{ !ro && t('create_new') } { t('ticket')} { selectedTicket?.name &&  t('number') + selectedTicket?.name} &nbsp;&nbsp;&nbsp; {buildSpinner()}</h1>:
+          <h1 style={{padding:'10px'}}>{ ! ro && t('update') } { t('ticket')}   { t('number')} { selectedTicket?.name } &nbsp;&nbsp;&nbsp; {buildSpinner()}</h1>
         )
     }
 
@@ -524,7 +575,8 @@ const TicketAssignee:FC = () => {
       </Space>
       )
       
-    } 
+    }
+     
     const tabChangeFunction = (key:any) => {
       if(key==='log')
       {
@@ -533,6 +585,10 @@ const TicketAssignee:FC = () => {
       if(key==='notifications')
       {
         fetchTicketNotifications(selectedTicket)
+      }
+      if(key==='wfs')
+      {
+       fetchTicketWfs(selectedTicket)
       }
       console.log(key);
     }
@@ -551,86 +607,8 @@ const TicketAssignee:FC = () => {
   urgency: URGENCY_LOW
   }
   
-  const ticketLogColumns: ColumnsType<ITicketLog> = [
-    {
-      key: 'name',
-      title: t('action'),
-      dataIndex: 'name',
-      sorter: (a:any, b:any) =>  a.name.localeCompare(b.name),
-      width: '10%',
-    },
-    {
-      key: 'old_value',
-      title: t('old_value'),
-      dataIndex: 'old_value',
-      sorter: (a:any, b:any) =>  a.old_value.localeCompare(b.old_value),
-      width: '35%',
-    },
-    {
-      key: 'new_value',
-      title: t('new_value'),
-      dataIndex: 'new_value',
-      sorter: (a:any, b:any) =>  a.new_value.localeCompare(b.new_value),
-      width: '35%',
-    },
-    {
-      key: 'last_mod_dt',
-      title: t('last_mod_dt'),
-      sorter: (a:any, b:any) =>  a.last_mod_dt - b.last_mod_dt,
-      render: ( record) => {
-        return (
-            <>        
-            {uTd(record.last_mod_dt)} 
-            </>
-        );}
-    },
-    {
-      key: 'last_mod_by',
-      title: t('last_mod_by'),
-      sorter: (a:any, b:any) =>  a.last_mod_by_name.localeCompare(b.last_mod_by_name),
-      width: '10%',
-      render: ( record) => {
-        return (
-            <>        
-            {record.last_mod_by_name && record.last_mod_by_name} 
-            </>
-        );}
-    }
-  ]
-  const ticketNotificationColumns: ColumnsType<INotification> = [
-   { 
-    key: 'name',
-    title: t('action'),
-    dataIndex: 'name',
-    sorter: (a:any, b:any) =>  a.name.localeCompare(b.name),
-    width: '10%',
-  },
-  {
-    key: 'send_to',
-    title: t('send_to'),
-    dataIndex: 'sended_to',
-    sorter: (a:any, b:any) =>  a.sended_to.localeCompare(b.sended_to),
-    width: '35%',
-  },
-  {
-    key: 'subject',
-    title: t('subject'),
-    dataIndex: 'sended_subject',
-    sorter: (a:any, b:any) =>  a.sended_subject.localeCompare(b.sended_subject),
-    width: '35%',
-  },
-  {
-    key: 'create_date',
-    title: t('create_date'),
-    sorter: (a:any, b:any) =>  a.create_date - b.create_date,
-    render: ( record) => {
-      return (
-          <>        
-          {uTd(record.create_date)} 
-          </>
-      );}
-  },
-  ]
+
+
 
   const  buildCustomer_info_title = () => {
     return (
@@ -657,12 +635,27 @@ const TicketAssignee:FC = () => {
     createTicket({...obj, id:ticketId}, {}, user.id, [])
     fetchTicket(ticketId)
   }
-
-  const toClose = (type: string) =>
+  
+  const cancel_wfs = () => {
+    let cancelObj = {
+      status: WF_STATUS_CANCEL.value,
+      done_by:  user.id,
+      done_dt:  nowToUnix(),
+      start_dt:  nowToUnix()
+    } 
+    if(selectedTicket?.ticketWfs)
+    if(selectedTicket?.ticketWfs?.length>0) {
+      selectedTicket?.ticketWfs.filter(fw=>fw.status?.value!==WF_STATUS_COMPLETE.value).map( async w=> {
+        
+        const responseCompleteStartWf = await  axiosFn("put", cancelObj, '*', 'wf', "id" , w.id  )
+      })
+    }  
+  }
+  const toClose = async (type: string) =>
   {
+    if(await close_validation_fail()) return  
     setActivityType(type)
     setModalVisible(true)
-
     let obj:any =  { status:STATUS_CLOSE.value } 
     createTicket({...obj, id:ticketId}, {}, user.id, [])
     fetchTicket(id)
@@ -674,26 +667,21 @@ const TicketAssignee:FC = () => {
     setModalVisible(true)
   }
 
+  const toCancel = (type: string) =>
+  {
+    cancel_wfs()
+    setActivityType(type)
+    setModalVisible(true)
+    let obj:any =  { status:STATUS_CANCELED.value } 
+    createTicket({...obj, id:ticketId}, {}, user.id, [])
+    fetchTicket(id)
+  }
 
   async function  SubmitActivity(values:any) {
-    if(activityType === 'New Log Comment')
-    {
       values = {...values, name: activityType, ticket: selectedTicket.id, old_value: '' }
        createTicketActivity(values, user.id)
        fetchTicketLog(selectedTicket)
-    }
-    if(activityType === 'Close Comment')
-    {
-      if(values.new_value) 
-      {
-        values = {...values, name: activityType, ticket: selectedTicket.id, old_value: '' }
-        createTicketActivity(values, user.id)
-        fetchTicketLog(selectedTicket)
-      }
-     
-    }
-    setModalVisible(false)
-
+       setModalVisible(false)
   }
   function  popover(event:any, record:ITicket ) 
   {
@@ -761,13 +749,24 @@ const TicketAssignee:FC = () => {
       setSelectedTicket({} as ITicket)
       pathTrowEmpty(RouteNames.TICKETS + '/0')
   }
+
   return (
   <Layout style={{height:"100vh"}} id='screen'>
       {error &&  <h1>{error}</h1> }
-      {isLoading && <Spin style={{padding:'20px'}} size="large" />}
-      <Row> 
-      <Col xs={24} xl={selectedTicket?.customer_info && customerInfo ? 18 : 24 } sm={selectedTicket?.customer_info && customerInfo ? 18 : 24} >
+     
+
+     
        <Card  >
+       <div className="flex-container">
+         {buildTitle()}
+       </div>
+   <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
+      <TabPane tab={
+          <span> 
+          <LayoutOutlined />
+          {t('detail')} 
+          </span>
+        } key="detail" >
        <Form
        layout="vertical"
        form={form}
@@ -779,12 +778,13 @@ const TicketAssignee:FC = () => {
        onFinishFailed={onFinishFailed}
        autoComplete="off" 
        > 
-        <Row >
+          
+          <Row >
         <Col  xs={24} xl={14}>
         {ro 
         ?     
         <div className="flex-container">
-         {buildTitle()}
+     
          <Button type="primary" htmlType="button" key="edit"
           onClick={(event) => edit(event)  }
          >
@@ -818,6 +818,20 @@ const TicketAssignee:FC = () => {
               </>
 
         }
+
+{
+             form.getFieldValue('status')?.value !== STATUS_CANCELED.value && form.getFieldValue('status')?.value !== STATUS_CLOSE.value &&
+             <>
+             <Popconfirm title={t('are_you_sure_cancel')} okText={t('yes')} cancelText={t('no')}  onConfirm={() =>  toCancel('Cancel Comment')}>
+              <Button type="primary" htmlType="button" key="toCancel"
+              >
+              { t('toCancel') }
+              </Button>&nbsp;&nbsp;&nbsp;
+              </Popconfirm>
+              </>
+
+        }
+
          
 
          <Button type="primary" htmlType="button" key="getTicket"
@@ -842,7 +856,7 @@ const TicketAssignee:FC = () => {
         </div> 
          :
          <div style={{display:'flex', justifyContent:'start'}} className="flex-container">
-         {buildTitle()}
+
          <Button type="primary" htmlType="submit" key="getTicket"
          disabled={isLoading}
          loading={isLoading}
@@ -859,13 +873,6 @@ const TicketAssignee:FC = () => {
      
         </Col>
         </Row>
-   <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
-      <TabPane tab={
-          <span> 
-          <LayoutOutlined />
-          {t('detail')} 
-          </span>
-        } key="detail" >
           <Row  >
           <Col xl={4}  lg={6} sm={12} xs={24}>
           
@@ -1352,6 +1359,7 @@ const TicketAssignee:FC = () => {
             </Row> 
       
           }
+          </Form>
       </TabPane>
       <TabPane tab={
           <span> 
@@ -1359,14 +1367,42 @@ const TicketAssignee:FC = () => {
           {t('log')} 
           </span>
         } key="log" forceRender={true} >
-      <Table<ITicketLog>
-        scroll={{ x: 1200, y: 700 }}
-        columns={ticketLogColumns} 
-        dataSource={selectedTicket.tickets_log} 
-        rowKey={record => record.id}
-        >
-        </Table>    
-      </TabPane> 
+        <TicketLog/>   
+      </TabPane>
+      {
+        (selectedTicket.ticketWfsCount !== 0 || selectedTicket?.ticketWfs?.length !== 0 ) && 
+        <TabPane tab={
+          <Badge key="rejected_wfs"
+          size="small"
+          count={selectedTicket?.ticketWfs?.filter(w=>w.status?.value===WF_STATUS_REJECT.value).length !== 0  ? selectedTicket?.ticketWfs?.filter(w=>w.status?.value===WF_STATUS_REJECT.value).length : 0 }
+          offset={[30,-2]}
+          color={'red'}
+          title={t('rejected')}
+          > 
+          <Badge key="completed_wfs"
+          size="small"
+          count={selectedTicket?.ticketWfs?.filter(w=>w.status?.value===WF_STATUS_COMPLETE.value).length !== 0  ? selectedTicket?.ticketWfs?.filter(w=>w.status?.value===WF_STATUS_COMPLETE.value).length : 0 }
+          offset={[10,-2]}
+          color={'green'}
+          title={t('completed')}
+          > 
+          <Badge key="all_wfs"
+          size="small"
+          count={selectedTicket.ticketWfsCount !== 0  ? selectedTicket.ticketWfsCount : selectedTicket?.ticketWfs?.length }
+          offset={[-10,-5]}
+          > 
+          <span> 
+          <BranchesOutlined />
+          {t('wfs')} 
+          </span>
+          </Badge>
+          </Badge>
+          </Badge>
+        } key="wfs" forceRender={true} >
+        <TicketWfs />  
+        </TabPane>  
+      }
+    
       <TabPane 
       tab={
         <span> 
@@ -1375,23 +1411,24 @@ const TicketAssignee:FC = () => {
         </span>
       }
        key="notifications" forceRender={true} >
-      <Table<INotification>
-        scroll={{ x: 1200, y: 700 }}
-        columns={ticketNotificationColumns} 
-        dataSource={selectedTicket.tickets_notifications} 
-        rowKey={record => record.id}
-        expandable={{
-          expandedRowRender: record => <div dangerouslySetInnerHTML={{__html: record.sended_body?.toString() ? record.sended_body?.toString() : ''}} />,
-          rowExpandable: record => record.sended_body !== '' && ro,
-        }}
-        >
-        </Table>    
+      <TicketNotifications />
       </TabPane>  
-    </Tabs>  
-   </Form>
+  </Tabs>  
        </Card>
-      </Col>
-       <Col xs={24} xl={selectedTicket?.customer_info && customerInfo ? 6 : 0 } sm={selectedTicket?.customer_info && customerInfo ? 6 : 0}>
+   
+       
+       
+
+     <Drawer
+          title=""
+          placement={ user.locale === 'heIL' ? 'left' : 'right'}
+          closable={false}
+          onClose={() => setCustomerInfo(false)}
+          visible={customerInfo}
+          key={'customerInfo'}
+          width={ width>1000 ? 640 : 340 }
+        >
+          <CloseCircleOutlined  style={{fontSize:28,color:'gray'}} onClick={() => setCustomerInfo(false)} />
        {
          selectedTicket?.customer_info && customerInfo &&
          <Card
@@ -1566,10 +1603,9 @@ const TicketAssignee:FC = () => {
          </Card>
          
        }
-      </Col>
-       
-     </Row>  
-  <Modal
+      </Drawer>
+
+       <Modal
        title={t(activityType) + ' ' +  t('ticket') + ' ' + t('number') + ' '  + selectedTicket?.name }
        footer={null}
        onCancel={() => setModalVisible(false)}

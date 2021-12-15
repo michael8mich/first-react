@@ -43,7 +43,6 @@ export const EventActionCreators = {
  
          const where = ` name like '%${search}%'  `
          const response = await  axiosFn("get", '', '*', 'V_contacts', where , ''  )  
-      debugger
          let hasError = false;
          if(response.data["error"]) hasError = true;
              if(response.data&&!hasError)

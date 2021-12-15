@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, Tooltip, Popconfirm} from 'antd';
+import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, Tooltip, Popconfirm, Badge} from 'antd';
 import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, FolderViewOutlined, DeleteOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useState} from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +13,7 @@ import { Link, NavLink, useHistory, useParams } from 'react-router-dom';
 import { Params } from '../../../models/IParams';
 import { validators } from '../../../utils/validators';
 import classes from './TCategoryDtl.module.css'
-import { ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, PRIORITY_LOW, STATUS_CREATED, TICKET_INCIDENT, TICKET_REQUEST, URGENCY_LOW } from '../../../models/ITicket';
+import { ITicketLog, ITicketObjects, ITicketObjectsMulti, ITicketPrpTpl, ITicketRoFields, ITicketWfTpl, PRIORITY_LOW, STATUS_CREATED, TICKET_INCIDENT, TICKET_REQUEST, URGENCY_LOW } from '../../../models/ITicket';
 import { ColumnsType } from 'antd/lib/table';
 import { TabsPosition } from 'antd/lib/tabs';
 import { RouteNames } from '../../../router';
@@ -22,13 +22,14 @@ import Avatar from 'antd/lib/avatar/avatar';
 import { getScrollTop } from 'react-select/dist/declarations/src/utils';
 import PropertyDtl from './PropertyDtl';
 import EditOutlined from '@ant-design/icons/lib/icons/EditOutlined';
+import WfDtl from './WfDtl';
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
 const { Option } = Select;
 const TCategoryDtl:FC = () => {
   const { t } = useTranslation();
-  const {fetchCategory, createCategory, fetchProperties, createProperty, setSelectedProperty} = useAction()
-  const {error, isLoading, tickets, selectedCategory, properties, selectedProperty } = useTypedSelector(state => state.ticket)
+  const {fetchCategory, createCategory, fetchProperties, createProperty, setSelectedProperty, setSelectedWf ,fetchWfs} = useAction()
+  const {error, isLoading, tickets, selectedCategory, properties, selectedProperty, wfs } = useTypedSelector(state => state.ticket)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {user } = useTypedSelector(state => state.auth)
   const { Option } = Select;
@@ -239,6 +240,10 @@ const TCategoryDtl:FC = () => {
       {
         fetchProperties(selectedCategory.id)
       }
+      if(key==='wfs')
+      {
+        fetchWfs(selectedCategory.id)
+      }
       console.log(key);
     }
   const edit = (event:any) => {
@@ -367,17 +372,115 @@ const TCategoryDtl:FC = () => {
     setViewProperty(true)
     setSelectedProperty({} as ITicketPrpTpl)
     setRoProperty(false)
-}
-const deleteProperty = async (id:string) => {
-  let result_query = await axiosFn("delete", '', '*', 'tprptpl', "id" , id )
-  fetchProperties(selectedCategory.id)
-}
-const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
-  setSelectedProperty(record)
-  setViewProperty(true)
-  setRoProperty(ro)
+  }
+  const deleteProperty = async (id:string) => {
+    let result_query = await axiosFn("delete", '', '*', 'tprptpl', "id" , id )
+    fetchProperties(selectedCategory.id)
+  }
+  const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
+    setSelectedProperty(record)
+    setViewProperty(true)
+    setRoProperty(ro)
 
-}
+  }
+  //------- wfs
+  const wfColumns: ColumnsType<ITicketWfTpl> = [
+    {
+      key: 'name',
+      title: t('action'),
+      dataIndex: 'name',
+      sorter: (a:any, b:any) =>  a.name.localeCompare(b.name),
+      width: '10%',
+    },
+    {
+      key: 'task',
+      title: t('task'),
+
+      sorter: (a:any, b:any) =>  a.task.localeCompare(b.task),
+      width: '10%',
+      render: ( record) => {
+            return (
+                <>        
+                {record.task?.label} 
+                </>
+            );}
+    },
+    {
+      key: 'sequence',
+      title: t('sequence'),
+      dataIndex: 'sequence',
+      sorter: (a:any, b:any) =>  a.sequence - b.sequence,
+      width: '10%',
+    },
+
+    {
+      key: 'team',
+      title: t('team'),
+      sorter: (a:any, b:any) =>  a.team?.label.localeCompare(b.team?.label),
+      width: '10%',
+      render: ( record) => {
+        return (
+            <>        
+            {record.team?.label && record.team?.label} 
+            </>
+        );}
+    },
+    {
+      key: 'assignee',
+      title: t('assignee'),
+      sorter: (a:any, b:any) =>  a.assignee?.label.localeCompare(b.assignee?.label),
+      width: '10%',
+      render: ( record) => {
+        return (
+            <>        
+            {record.assignee?.label && record.assignee?.label} 
+            </>
+        );}
+    },
+  
+    {
+      key: 'action',
+      title: t('actions'),
+      width: '10%',
+      render: (record, index) => {
+        return (
+          <>
+         <FolderViewOutlined key="view" 
+          onClick={() => selectWf(record, true)}
+         />&nbsp;&nbsp;
+         <EditOutlined key="edit"
+         onClick={() => selectWf(record, false)}
+         />&nbsp;&nbsp;
+         <Tooltip title={t('delete')} key="delete">
+            <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteWf(record.id)}>
+                          <DeleteOutlined 
+                          ></DeleteOutlined>
+            </Popconfirm>              
+         </Tooltip>
+         </>
+        )}
+    }
+  ]
+  const [viewWf, setViewWf] = useState(false)
+  const [roWf, setRoWf] = useState(false)
+  
+  const addNewWfs = () => { 
+    setViewWf(true)
+    setSelectedWf({} as ITicketWfTpl)
+    setRoWf(false)
+  }
+  const deleteWf = async (id:string) => {
+    let result_query = await axiosFn("delete", '', '*', 'wftpl', "id" , id )
+    fetchWfs(selectedCategory.id)
+  }
+  const selectWf = (record:ITicketWfTpl, ro:boolean) => {
+    setSelectedWf(record)
+    setViewWf(true)
+    setRoWf(ro)
+
+  }
+
+
   return (
   <Layout style={{height:"100vh"}}>
       {error && 
@@ -672,26 +775,75 @@ const selectProperty = (record:ITicketPrpTpl, ro:boolean) => {
         </Form>
         </div>
         </TabPane>
-       <TabPane tab={t('properties')} key="properties" forceRender={true} >
+        
+            <TabPane 
+            tab={<Badge 
+            size="small"
+            count={properties?.length}
+            offset={[-10,-5]}
+            > 
+            {t('properties')}
+            </Badge>} 
+            
+            key="properties" forceRender={true} 
+           
+            >
+            
+              {
+                !viewProperty &&
+                <Button
+                  onClick={addNewProperties}
+                  > {t('add_new')}
+                </Button>
+              }
+              {
+                viewProperty &&
+                <PropertyDtl 
+                save={() => setViewProperty(false) }
+                cancel={() => setViewProperty(false) }
+                ro={roProperty}
+                lastSequence={(+properties[properties?.length-1]?.sequence+10).toString()}
+                />
+              }
+              <Table<ITicketPrpTpl>
+                scroll={{ x: 1200, y: 700 }}
+                columns={propertyColumns} 
+                dataSource={properties} 
+                rowKey={record => record.id}
+                >
+                </Table>    
+            </TabPane>
+       
+       <TabPane 
+       tab={<Badge 
+        size="small"
+        count={wfs?.length}
+        offset={[-10,-5]}
+        > 
+        {t('wfs')}
+        </Badge>} 
+       
+       key="wfs" forceRender={true} >
          {
-           !viewProperty &&
+           !viewWf &&
            <Button
-             onClick={addNewProperties}
+             onClick={addNewWfs}
              > {t('add_new')}
            </Button>
         }
         {
-           viewProperty &&
-           <PropertyDtl 
-           save={() => setViewProperty(false) }
-           cancel={() => setViewProperty(false) }
-           ro={roProperty}
+           viewWf &&
+           <WfDtl 
+           save={() => setViewWf(false) }
+           cancel={() => setViewWf(false) }
+           ro={roWf}
+           lastSequence={(+wfs[wfs?.length-1]?.sequence+10).toString()}
            />
          }
-        <Table<ITicketPrpTpl>
+        <Table<ITicketWfTpl>
           scroll={{ x: 1200, y: 700 }}
-          columns={propertyColumns} 
-          dataSource={properties} 
+          columns={wfColumns} 
+          dataSource={wfs} 
           rowKey={record => record.id}
           >
           </Table>    

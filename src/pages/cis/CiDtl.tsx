@@ -140,7 +140,7 @@ const CisDtl:FC = () => {
     };
     const router = useHistory()
     const onFinish = async (values: any) => { 
-debugger
+
       values = form.getFieldsValue()
       const values_ = {...values}
       ICiRoFields.map(r => {

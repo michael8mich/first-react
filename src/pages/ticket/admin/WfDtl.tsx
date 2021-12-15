@@ -1,7 +1,7 @@
 import {Form, Input, Button, Select, DatePicker,TimePicker, Row, Col, Card, Checkbox}  from 'antd';
 import  {FC, useEffect, useState} from 'react';
 import { useTranslation } from 'react-i18next';
-import { ITicket, ITicketCategory, ITicketLog, ITicketPrpTpl, PRP_FACTORY_LIST, PRP_FACTORY_OBJECT } from '../../../models/ITicket';
+import { ITicket, ITicketCategory, ITicketLog, ITicketWfTpl, PRP_FACTORY_LIST, PRP_FACTORY_OBJECT } from '../../../models/ITicket';
 import { axiosFn } from '../../../axios/axios';
 import { saveFormBuild, uTd } from '../../../utils/formManipulation';
 import { useTypedSelector } from '../../../hooks/useTypedSelector';
@@ -9,22 +9,23 @@ import { useAction } from '../../../hooks/useAction';
 import { validators } from '../../../utils/validators';
 import AsyncSelect from 'react-select/async';
 import { SelectOption } from '../../../models/ISearch';
+import { ASSIGNEE_LIST, GROUP_LIST } from '../../../models/IUser';
 
 
 const { TextArea } = Input;
 
-interface PropertyDtlProps {
+interface WfDtlProps {
   save: () => void,
   cancel: () => void
   ro: boolean,
   lastSequence: string
 }
 
-const PropertyDtl: FC<PropertyDtlProps> =  (props)  => {
+const WfDtl: FC<WfDtlProps> =  (props)  => {
   const { t } = useTranslation();
-  const [formPrp] = Form.useForm()
-  const {error, isLoading, selectedCategory, selectedProperty, properties } = useTypedSelector(state => state.ticket)
-  const {createProperty, fetchProperty, fetchProperties, setAlert} = useAction()
+  const [formWf] = Form.useForm()
+  const {error, isLoading, selectedCategory, selectedWf, wfs } = useTypedSelector(state => state.ticket)
+  const {createWf, fetchWf, fetchWfs, setAlert} = useAction()
   const {user } = useTypedSelector(state => state.auth)
   const [ro, setRo] = useState(true)
 
@@ -32,40 +33,39 @@ const PropertyDtl: FC<PropertyDtlProps> =  (props)  => {
     setFormValues()
     setRo(props.ro)
 
-  }, [selectedProperty, props.ro])
+  }, [selectedWf, props.ro])
 
   useEffect( () => {
-     if(Object.keys(selectedProperty).find( k=> k === 'id'))
+     if(Object.keys(selectedWf).find( k=> k === 'id'))
      {
-       if(!Object.keys(selectedProperty).find( k=> k === 'name'))
+       if(!Object.keys(selectedWf).find( k=> k === 'name'))
        {
-        fetchProperty(selectedProperty.id)
+        fetchWf(selectedWf.id)
        }
      }
-  }, [selectedProperty?.id])
+  }, [selectedWf?.id])
 
 
   function setFormValues() {
-
-      let curProperty:any = selectedProperty
-      const currPropertyFields= Object.keys(curProperty)
-      const  formFields = Object.keys((formPrp.getFieldsValue()))
+      let curWf:any = selectedWf
+      const currWfFields= Object.keys(curWf)
+      const  formFields = Object.keys((formWf.getFieldsValue()))
       const form_set_values = {} as any
       formFields.map(ff => {
-        form_set_values[ff] = curProperty[ff]
+        form_set_values[ff] = curWf[ff]
       })
-      if(!curProperty?.sequence )
+      if(!curWf?.sequence )
       form_set_values.sequence =  Number(props.lastSequence) ? props.lastSequence : 10
-      formPrp.setFieldsValue(form_set_values);
+      formWf.setFieldsValue(form_set_values);
   }
 
 const onFinish = (values: any) => {
     console.log('Success:', values)
 
-      if(!selectedProperty?.id)
+      if(!selectedWf?.id)
       {
         values = {...values, id:'0'} 
-        if(properties.find(p=> p.sequence == values.sequence))
+        if(wfs.find(p=> p.sequence == values.sequence))
         {
           setAlert({
             type: 'warning' ,
@@ -79,12 +79,12 @@ const onFinish = (values: any) => {
         }
       }
       else
-      values = {...values, id:selectedProperty.id} 
-      values = {...values, category:selectedCategory.id} 
+      values = {...values, id:selectedWf.id} 
+      values = {...values, tcategory:selectedCategory.id} 
       const values_ = {...values}
       saveFormBuild(values_)
-      createProperty({...values_}, {}, user.id)
-      fetchProperties(selectedCategory.id)
+      createWf({...values_}, {}, user.id)
+      fetchWfs(selectedCategory.id)
       setRo(true)
       props.save()
   };
@@ -151,7 +151,7 @@ const onFinish = (values: any) => {
       {
         if(name==='tcode_select') {
           if(selectChange?.value) {
-            formPrp.setFieldsValue({ code: selectChange?.code }) 
+            formWf.setFieldsValue({ code: selectChange?.code }) 
           }   
         }
         if(name==='factory') {
@@ -178,7 +178,7 @@ const onFinish = (values: any) => {
         setSelectValues({...selectOptions, [name]: selectChange })
       }
     function  isNeedCode() {
-      let v = formPrp.getFieldsValue()
+      let v = formWf.getFieldsValue()
       if(v?.factory?.value)
       return v.factory.value === PRP_FACTORY_OBJECT || v.factory.value === PRP_FACTORY_LIST 
       else
@@ -188,8 +188,8 @@ const onFinish = (values: any) => {
     <Card >
       <Form
        layout="vertical"
-      form={formPrp}
-      name="formPrp"
+      form={formWf}
+      name="formWf"
       initialValues={{active: 1}}
       // labelCol={{ span: 6 }}
       wrapperCol={{ span: 22 }}
@@ -203,7 +203,7 @@ const onFinish = (values: any) => {
         </div>
       } */}
       <Row>
-      <Col  xs={24} xl={6} sm={12}> 
+      <Col   xl={4}  lg={8} sm={12} xs={24}> 
         <Form.Item label={t('sequence')}
           name="sequence"
           rules={[validators.required(), validators.isNumber()]}
@@ -214,7 +214,7 @@ const onFinish = (values: any) => {
           />
         </Form.Item>      
       </Col>
-      <Col  xs={24} xl={6}  sm={12}> 
+      <Col   xl={4}  lg={8} sm={12} xs={24}> 
         <Form.Item  label={t('name')}
           name="name"
           rules={[validators.required()]}
@@ -225,9 +225,9 @@ const onFinish = (values: any) => {
           />
         </Form.Item>
       </Col>
-      <Col  xs={24} xl={6}  sm={12}> 
-        <Form.Item label={t('factory')}
-          name="factory"
+      <Col   xl={4}  lg={8} sm={12} xs={24}> 
+        <Form.Item label={t('task')}
+          name="task"
           rules={[validators.required()]}
         >
           <AsyncSelect 
@@ -236,109 +236,99 @@ const onFinish = (values: any) => {
            isMulti={false}
            styles={SelectStyles}
            isClearable={true}
-           placeholder={ t('factory') }
+           placeholder={ t('task') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'factory', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'tproperty_type'", false )} 
-           onChange={(selectChange:any) => selectChanged(selectChange, 'factory')}
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'task', ' top 20 name as label, id as value , code as code ', 'utils', " type = 'wf_task'", false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'task')}
            />
         </Form.Item>      
       </Col>
-      <Col  xs={24} xl={6}  sm={12}> 
-        <Form.Item label={t('default')}
-          name="defaultValue"
-        >
-          <Input 
-          disabled={ro}
-          value="defaultValue"
-          />
-        </Form.Item>      
+      <Col   xl={4}  lg={8} sm={12} xs={24} >
+           <Form.Item 
+           key="team"
+           label={ t('team') }
+           name="team"
+           style={{ padding:'5px', width: 'maxContent'}} 
+           rules={[validators.requiredTeamOrAssignee(formWf.getFieldValue('team')?.value,formWf.getFieldValue('assignee')?.value,formWf.getFieldValue('task')?.code)]}
+           > 
+           <AsyncSelect 
+           menuPosition="fixed"
+           isDisabled={ro}
+           isMulti={false}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('team') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'team',  ' top 20 name as label, id as value , id as code ', 'V_contacts', GROUP_LIST , true )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'team')}
+           />
+           </Form.Item>
       </Col>
+      <Col   xl={4}  lg={8} sm={12} xs={24} >
+           <Form.Item 
+           key="assignee"
+           label={ t('assignee') }
+           name="assignee"
+           style={{ padding:'5px', width: 'maxContent'}} 
+           rules={[validators.requiredTeamOrAssignee(formWf.getFieldValue('team')?.value,formWf.getFieldValue('assignee')?.value,formWf.getFieldValue('task')?.code)]}
+           > 
+           <AsyncSelect
+           name="select_assignee" 
+           menuPosition="fixed"
+           isDisabled={ro}
+           isMulti={false}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('assignee') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'assignee',  ' top 200 name as label, id as value , id as code ', 'V_contacts', ASSIGNEE_LIST , false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'assignee')}
+           />
+           </Form.Item>
+      </Col>      
+
       </Row>
-      <Row>
-      <Col  xs={24} xl={2}  sm={12}> 
-        <Form.Item label={t('width')}
-          name="width"
-          rules={[validators.isNumber(), validators.required()]}
-        >
-          <Input
-          disabled={ro} 
-          value="width"
-          />
-        </Form.Item>      
-      </Col>
-      <Col  xs={24} xl={4}  sm={12}> 
-        <Form.Item  label={t('placeholder')}
-          name="placeholder"
-        >
-          <Input 
-           disabled={ro}
-          value="placeholder"
-          />
-        </Form.Item>
-      </Col>
-      <Col  xs={24} xl={8}  sm={12}> 
-        <Form.Item label={t('pattern')}
-          name="pattern"
-        >
-          <Input 
-          disabled={ro}
-          value="pattern"
-          />
-        </Form.Item>      
-      </Col>
-      <Col  xs={24} xl={8}  sm={12}> 
-        <Form.Item label={t('dependence')}
-          name="dependence"
-        >
-          <Input 
-          disabled={ro}
-          value="dependence"
-          style={{height:'38px'}}
-          />
-        </Form.Item>      
-      </Col>
-      
-      </Row>
+      <Row  >
+        <Col xs={24} xl={12}  >
+         <Form.Item
+           label={ t('description') }
+           name="description" 
+           style={{ padding:'5px'}} > 
+           <TextArea 
+           rows={5}
+            disabled={ro}
+            showCount maxLength={3999}
+            //  style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('description') }
+           />
+           </Form.Item>
+         </Col>
+        <Col xs={24} xl={4}  >
+           <Form.Item
+           label={ t('deleteable') }
+           name="deleteable" 
+           style={{ padding:'5px'}} 
+           valuePropName="checked"
+           > 
+           <Checkbox 
+             disabled={ro}
+             style={{ height:'38px', width: 'maxContent'}}
+             defaultChecked={true}
+           />
+           </Form.Item>
+           </Col>
+        </Row>   
+
       {
         // isNeedCode()  && 
         //  
          <Row  >
-         <Col  xs={24} xl={6}  sm={12}> 
-           <Form.Item 
-             label={t('select') + ' ' + t('tcode')}
-             name="tcode_select"
-           >
-             <AsyncSelect 
-              menuPosition="fixed"
-              isDisabled={ro}
-              isMulti={false}
-              styles={SelectStyles}
-              isClearable={true}
-              placeholder={t('select') + ' ' + t('tcode')}
-              cacheOptions 
-              defaultOptions
-              loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'tcode_select', ' top 20 name as label, id as value , code ', 'utils', " type = 'property_object_type'", false )} 
-              onChange={(selectChange:any) => selectChanged(selectChange, 'tcode_select')}
-              />
-           </Form.Item>      
-         </Col>
-           <Col xs={24} xl={12} sm={12} >
-            <Form.Item
-              label={ t('tcode') }
-              name="code" 
-              style={{ padding:'5px'}} 
-              rules={setValidators('tcode')}
-              > 
-              <TextArea 
-              rows={3}
-               disabled={ro}
-                placeholder={ t('code') }
-              />
-              </Form.Item>
-            </Col>
+         
             {
-        selectedProperty?.id && 
+        selectedWf?.id && 
         <Col  xs={24} xl={6}  sm={12}> 
       <Form.Item
            label={ t('active') }
@@ -387,5 +377,5 @@ const onFinish = (values: any) => {
 
 
   
-  export default PropertyDtl;
+  export default WfDtl;
 
