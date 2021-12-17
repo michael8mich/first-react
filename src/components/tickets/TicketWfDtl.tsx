@@ -1,20 +1,21 @@
 import {Form, Input, Button, Select, DatePicker,TimePicker, Row, Col, Card, Checkbox, Tooltip}  from 'antd';
 import  {FC, useEffect, useState} from 'react';
 import { useTranslation } from 'react-i18next';
-import { ITicket, ITicketCategory, ITicketLog, ITicketWfTpl, PRP_FACTORY_LIST, PRP_FACTORY_OBJECT, WF_LOG_COMPLETE, WF_LOG_PEND, WF_LOG_REJECT, WF_STATUS_COMPLETE, WF_STATUS_PEND, WF_STATUS_REJECT, WF_STATUS_WAIT, WF_TASK_APPROVE, WF_TASK_END_GROUP, WF_TASK_START_GROUP } from '../../../models/ITicket';
-import { axiosFn } from '../../../axios/axios';
-import { nowToUnix, saveFormBuild, uTd } from '../../../utils/formManipulation';
-import { useTypedSelector } from '../../../hooks/useTypedSelector';
-import { useAction } from '../../../hooks/useAction';
-import { validators } from '../../../utils/validators';
+import { ITicket, ITicketCategory, ITicketLog, ITicketWfTpl, PRP_FACTORY_LIST, PRP_FACTORY_OBJECT, WF_LOG_COMPLETE, WF_LOG_PEND, WF_LOG_REJECT,
+   WF_STATUS_COMPLETE, WF_STATUS_PEND, WF_STATUS_REJECT, WF_STATUS_WAIT, WF_TASK_APPROVE, WF_TASK_END_GROUP, WF_TASK_START_GROUP } from '../../models/ITicket';
+import { axiosFn } from '../../axios/axios';
+import { getDurationTime, getWaitingTime, nowToUnix, saveFormBuild, secondsToDhms, uTd } from '../../utils/formManipulation';
+import { useTypedSelector } from '../../hooks/useTypedSelector';
+import { useAction } from '../../hooks/useAction';
+import { validators } from '../../utils/validators';
 import AsyncSelect from 'react-select/async';
-import { SelectOption } from '../../../models/ISearch';
-import { ASSIGNEE_LIST, GROUP_LIST } from '../../../models/IUser';
+import { SelectOption } from '../../models/ISearch';
+import { ASSIGNEE_LIST, GROUP_LIST } from '../../models/IUser';
 import { LikeOutlined, DislikeOutlined, UserAddOutlined, DeleteOutlined } from '@ant-design/icons';
 import { stringify } from 'querystring';
-import { logWfManipulation } from '../../../utils/logCreateor';
-import { notifyWf } from '../../../utils/notificatinSend';
-import { WF_PEND, WF_REJECT } from '../../../models/INotification';
+import { logWfManipulation } from '../../utils/logCreateor';
+import { notifyWf } from '../../utils/notificatinSend';
+import { WF_PEND, WF_REJECT } from '../../models/INotification';
 
 const { TextArea } = Input;
 
@@ -40,7 +41,6 @@ const TicketWfDtl: FC<TicketWfDtlProps> =  (props)  => {
   useEffect(() => {
     setFormValues()
     setRo(props.ro)
-
   }, [props.selectedWf, props.ro, props.wfs])
 
   useEffect( () => {
@@ -78,10 +78,6 @@ const onFinish =async (values: any) => {
       const responseNewWf = await  axiosFn("put",values_, '*', 'wf', "id" , props.selectedWf.id  )  
       fetchTicketWfs(selectedTicket) 
       props.setRoWf(true)
-      props.cancel()
-      // setTimeout(() => {
-      //   props.resetSelectedWf(props.selectedWf.id)  
-      // }, 1000);
       
   };
   const cancel = (event:any) => {
@@ -104,7 +100,7 @@ const onFinish =async (values: any) => {
             }
     fetchTicketWfs(selectedTicket) 
     props.setRoWf(true)
-    props.cancel()
+    //props.cancel()
   }
   const approve_wf = async () => {
     let approve = {
@@ -198,7 +194,7 @@ const onFinish =async (values: any) => {
         if(pendArray.length === index+1)   {
           fetchTicketWfs(selectedTicket) 
           props.setRoWf(true)
-          props.cancel() 
+          //props.cancel() 
         }
       } )
     
@@ -207,7 +203,7 @@ const onFinish =async (values: any) => {
     {
       fetchTicketWfs(selectedTicket) 
       props.setRoWf(true)
-      props.cancel()
+     //props.cancel()
     }  
   }
   const toMe = async () =>
@@ -216,7 +212,7 @@ const onFinish =async (values: any) => {
     const responseNewWf = await  axiosFn("put",values_, '*', 'wf', "id" , props.selectedWf.id  )  
       fetchTicketWfs(selectedTicket) 
       props.setRoWf(true)
-      props.cancel()  
+      //props.cancel()  
   }
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
@@ -315,8 +311,58 @@ const onFinish =async (values: any) => {
       ret = true
       return ret
    }
+   const borderStyle = (obj:string) => {
+     if(props.selectedWf?.status?.value)
+     {
+      if(obj==='card') {
+        if(props.selectedWf?.status?.value=== WF_STATUS_REJECT.value)
+        return {border:'2px solid red'}
+        if(props.selectedWf?.status?.value=== WF_STATUS_PEND.value)
+        return {border:'2px solid #28a4ae'}
+        if(props.selectedWf?.status?.value=== WF_STATUS_COMPLETE.value)
+        return {border:'2px solid green'}
+      }
+      if(obj==='row') {
+        if(props.selectedWf?.status?.value=== WF_STATUS_REJECT.value)
+        return {border:'1px solid red',background:'#f5f5f5', padding:10}
+        if(props.selectedWf?.status?.value=== WF_STATUS_PEND.value)
+        return {border:'1px solid #28a4ae',background:'#f5f5f5', padding:10}
+        if(props.selectedWf?.status?.value=== WF_STATUS_COMPLETE.value)
+        return {border:'1px solid green',background:'#f5f5f5', padding:10}
+      }
+      
+     }
+     return {}
+   }
+    const WaitingTime = () => {
+    let classCss = 'fa fa-circle'
+
+    let start_dt = +props.selectedWf?.start_dt || 0
+
+    if(getWaitingTime(start_dt) > 64 * 60 * 60)
+    classCss += ' Waiting5'
+    else
+    if(getWaitingTime(start_dt) > 32 * 60 * 60)
+    classCss += ' Waiting4'
+    else
+    if(getWaitingTime(start_dt) > 16 * 60 * 60)
+    classCss += ' Waiting3'
+    else
+    if(getWaitingTime(start_dt) > 8 * 60 * 60)
+    classCss += ' Waiting2'
+    else
+    if(getWaitingTime(start_dt) > 2 * 60 * 60)
+    classCss += ' Waiting1'
+    else
+    classCss += ' Waiting0'
+     
+    return classCss
+    
+    }
     return (
-    <Card >
+    <Card 
+    style={borderStyle('card')}
+    >
       <Form
        layout="vertical"
       form={formWf}
@@ -330,10 +376,37 @@ const onFinish =async (values: any) => {
     >
       {
         ro &&  props.selectedWf.task.value !== WF_TASK_START_GROUP.value && props.selectedWf.task.value !== WF_TASK_END_GROUP.value &&
-         <Row  style={{background:'#f5f5f5', padding:10}}>
-          <Col  xl={24}  lg={24} sm={24} xs={24}> 
+         <Row  
+         style={borderStyle('row')}
+         >
+          <Col  xl={24}  lg={24} sm={24} xs={24}
+         
+          > 
           <div style={{display:'flex', justifyContent:'space-between'}}>
           {
+              props.selectedWf.start_dt && props.selectedWf.done_dt &&
+              <> 
+                { 
+                  secondsToDhms(getDurationTime(+props.selectedWf.done_dt , +props.selectedWf.start_dt))
+                }
+              </> 
+            }
+            {
+               props.selectedWf && props.selectedWf?.status && props.selectedWf?.status?.value === WF_STATUS_PEND.value &&
+               <>
+                 <i
+                 style={{fontSize: 24}}
+                  className={WaitingTime()}
+                  aria-hidden="true"
+                  
+                ></i>&nbsp; 
+                {secondsToDhms(getWaitingTime(+props.selectedWf.start_dt))}
+              </>
+
+            }
+          {
+            
+             
              ( props.selectedWf.status?.value === WF_STATUS_PEND.value || props.selectedWf.status?.value === WF_STATUS_REJECT.value) && ifMyWf(props.selectedWf) &&
               <>
             <Tooltip title={props.selectedWf.task.value === WF_TASK_APPROVE.value ? t('approve_wf') : t('action_wf')} >
@@ -424,6 +497,18 @@ const onFinish =async (values: any) => {
       {
         props.selectedWf.status?.value === WF_STATUS_COMPLETE.value &&
         <Row>
+      <Col   xl={8}  lg={12} sm={12} xs={24}> 
+        
+        
+        <Form.Item label={t('start_dt')}
+        >
+           
+          <Input 
+          disabled={true}
+          value={uTd(props.selectedWf.start_dt)}
+          />
+        </Form.Item>      
+      </Col>
       <Col   xl={8}  lg={12} sm={12} xs={24}> 
         <Form.Item label={t('done_dt')}
         >

@@ -17,6 +17,7 @@ import NotificationDtl from '../pages/admin/NotificationDtl';
 import Notifications from '../pages/admin/Notifications';
 import CisDtl from '../pages/cis/CiDtl';
 import Cis from '../pages/cis/Cis';
+import TicketsAllWfs from '../components/tickets/TicketsAllWfs';
 
 
 export interface IRoute {
@@ -42,6 +43,7 @@ export enum RouteNames {
     TICKET_DTL= '/tickets/:id',
     TCATEGORIES = '/tcategories',
     TCATEGORY_DTL= '/tcategories/:id',
+    WFS='/wfs',
     DASHBOARD= '/dashboard',
     EMPTY='/empty'
 }
@@ -62,6 +64,7 @@ export const privateRoutes:IRoute[] = [
     {path: RouteNames.TICKETS, component: Tickets,  exact: true},
     {path: RouteNames.TCATEGORY_DTL, component: TCategoryDtl, exact: false}, 
     {path: RouteNames.TCATEGORIES, component: TCategories,  exact: true},
+    {path: RouteNames.WFS, component: TicketsAllWfs,  exact: true},
     {path: RouteNames.DASHBOARD, component: Dashboard, exact: true},
     {path: RouteNames.EMPTY, component: Empty, exact: true},
     

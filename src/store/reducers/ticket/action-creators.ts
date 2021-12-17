@@ -1,10 +1,10 @@
 
-import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, ITicketPropertyObjects, ITicketPropertyObjectsMulti, ITicketPrpTpl, ITicketWfObjects, ITicketWfTpl, WF_STATUS_PEND, WF_STATUS_WAIT, WF_TASK_END_GROUP, WF_TASK_START_GROUP, WF_LOG_PEND, WF_STATUS_COMPLETE } from './../../../models/ITicket';
+import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, ITicketPropertyObjects, ITicketPropertyObjectsMulti, ITicketPrpTpl, ITicketWfObjects, ITicketWfTpl, WF_STATUS_PEND, WF_STATUS_WAIT, WF_TASK_END_GROUP, WF_TASK_START_GROUP, WF_LOG_PEND, WF_STATUS_COMPLETE, ITicketAllWfsObjects, ITicketsAllWfs } from './../../../models/ITicket';
 
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
 import { ITicketObjects, ITicketObjectsMulti, ITicket, ITicketLog } from '../../../models/ITicket';
-import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction, SetTicketsCountAction, SetSelectedTicketAction, SetCategoriesAction, SetSelectedCategoryAction, SetCategoriesCountAction, SetPropertiesAction, SetSelectedPropertyAction, SetPropertiesCountAction, SetSelectedTicketPropertiesAction, SetCopiedTicketAction, SetSelectedTicketWfsAction, SetWfsAction, SetSelectedWfAction, SetWfsCountAction } from './types';
+import { TicketActionEnum, SetTicketsAction, SetErrorAction, SetIsLoadingAction, SetTicketsCountAction, SetSelectedTicketAction, SetCategoriesAction, SetSelectedCategoryAction, SetCategoriesCountAction, SetPropertiesAction, SetSelectedPropertyAction, SetPropertiesCountAction, SetSelectedTicketPropertiesAction, SetCopiedTicketAction, SetSelectedTicketWfsAction, SetWfsAction, SetSelectedWfAction, SetWfsCountAction, SetTicketsAllWfsAction, SetTicketsAllWfsCountAction, SetSelectedWfIdAction } from './types';
 import i18n from "i18next";
 import { translateObj } from '../../../utils/translateObj';
 import { SearchPagination } from '../../../models/ISearch';
@@ -27,9 +27,15 @@ export const TicketActionCreators = {
     setTickets: (payload:ITicket[]): SetTicketsAction => ({type:TicketActionEnum.SET_TICKETS, payload}),
     setSelectedTicket: (payload:ITicket): SetSelectedTicketAction => ({type:TicketActionEnum.SET_SELECTED_TICKET, payload}),
     setCopiedTicket: (payload: ITicket): SetCopiedTicketAction => ({type:TicketActionEnum.SET_COPIED_TICKET, payload}),
+    setTicketsCount: (payload:number): SetTicketsCountAction => ({type:TicketActionEnum.SET_TICKETS_COUNT, payload}),
+
+    setTicketsAllWfs: (payload:ITicketsAllWfs[]): SetTicketsAllWfsAction => ({type:TicketActionEnum.SET_TICKETS_ALL_WFS, payload}),
+    setTicketsAllWfsCount: (payload:number): SetTicketsAllWfsCountAction => ({type:TicketActionEnum.SET_TICKETS_ALL_WFS_COUNT, payload}),
+    setSelectedWfsId: (payload:string): SetSelectedWfIdAction => ({type:TicketActionEnum.SET_SELECTED_WF_ID, payload}),
+
     SetSelectedTicketProperties: (payload:ITicketPrpTpl[]): SetSelectedTicketPropertiesAction => ({type:TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES, payload}),
     SetSelectedTicketWfs: (payload:ITicketWfTpl[]): SetSelectedTicketWfsAction => ({type:TicketActionEnum.SET_SELECTED_TICKET_WFS, payload}),
-    setTicketsCount: (payload:number): SetTicketsCountAction => ({type:TicketActionEnum.SET_TICKETS_COUNT, payload}),
+    
     
     setCategories: (payload:ITicketCategory[]): SetCategoriesAction => ({type:TicketActionEnum.SET_CATEGORIES, payload}),
     setSelectedCategory: (payload:ITicketCategory): SetSelectedCategoryAction => ({type:TicketActionEnum.SET_SELECTED_CATEGORY, payload}),
@@ -564,6 +570,37 @@ export const TicketActionCreators = {
       }
 
      },
+    fetchTicketsAllWfs: (searchP: SearchPagination, where: string ) => async (dispatch: AppDispatch) => {
+      try {
+       dispatch(TicketActionCreators.setIsError(''))
+         dispatch(TicketActionCreators.IsLoading(true))
+         const response = await  axiosFn("get", '', '*', 'V_allWfs', where , '', searchP._limit, searchP._page,  searchP._offset  )  
+         let hasError = false;
+         if(response.data["error"]) hasError = true;
+             if(response.data&&!hasError)
+             {
+             let ticketsAllWfs_: any[] = response.data
+             let _count =  response.headers['x-total-count'] || 0
+             dispatch(TicketActionCreators.setTicketsAllWfsCount(_count))
+             ticketsAllWfs_ = translateObj(ticketsAllWfs_, ITicketAllWfsObjects)
+             let ticketsAllWfs:ITicketsAllWfs[] = ticketsAllWfs_
+             dispatch(TicketActionCreators.setTicketsAllWfs(ticketsAllWfs))
+             } else
+             {
+              dispatch(TicketActionCreators.setTicketsAllWfs([]))   
+              dispatch(TicketActionCreators.setIsError(i18n.t('data_problem')))
+             }   
+       
+        } catch (e) {
+          dispatch(TicketActionCreators.setTickets([])) 
+          console.log('fetchTickets',e);
+              
+          dispatch(TicketActionCreators.setIsError(i18n.t('axios_error')))        
+       } finally {
+         dispatch(TicketActionCreators.IsLoading(false))
+       }
+ 
+     }, 
    //------------------
     fetchCategories: (searchP: SearchPagination, where: string ) => async (dispatch: AppDispatch) => {
       try {

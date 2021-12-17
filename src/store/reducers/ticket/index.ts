@@ -1,4 +1,4 @@
-import { ITicket, ITicketCategory, ITicketPrpTpl, ITicketWfTpl } from "../../../models/ITicket"
+import { ITicket, ITicketCategory, ITicketPrpTpl, ITicketsAllWfs, ITicketWfTpl } from "../../../models/ITicket"
 import { TicketAction, TicketActionEnum, TicketState } from "./types"
 
 
@@ -6,8 +6,11 @@ const initialState: TicketState = {
     tickets: [] as ITicket[],
     selectedTicket: {} as ITicket,
     copiedTicket: {} as ITicket,
-
     ticketsCount: 0,
+    ticketsAllWfs: [] as ITicketsAllWfs[],
+    ticketsAllWfsCount: 0,
+    selectedWfsId: "",
+
     categories: [] as ITicketCategory[],
     categoriesCount: 0,
     selectedCategory: {} as ITicketCategory,
@@ -33,6 +36,15 @@ export default function TicketReducer(state = initialState, action:TicketAction 
             return {...state, selectedTicket: action.payload } 
         case  TicketActionEnum.SET_COPIED_TICKET:
                 return {...state, copiedTicket: action.payload }     
+        case  TicketActionEnum.SET_TICKETS_COUNT:
+                    return {...state, ticketsCount: action.payload }           
+        
+        case TicketActionEnum.SET_TICKETS_ALL_WFS:
+           return {...state, ticketsAllWfs: action.payload, isLoading: false }
+        case  TicketActionEnum.SET_TICKETS_ALL_WFS_COUNT:
+            return {...state, ticketsAllWfsCount: action.payload }  
+        case  TicketActionEnum.SET_SELECTED_WF_ID:
+                return {...state, selectedWfsId: action.payload }          
 
         case  TicketActionEnum.SET_SELECTED_TICKET_PROPERTIES:
                 return {...state,  selectedTicket:  { ...state.selectedTicket,  ticketProperties: action.payload }}  
@@ -40,8 +52,7 @@ export default function TicketReducer(state = initialState, action:TicketAction 
         case  TicketActionEnum.SET_SELECTED_TICKET_WFS:
                     return {...state,  selectedTicket:  { ...state.selectedTicket,  ticketWfs: action.payload }}  
 
-        case  TicketActionEnum.SET_TICKETS_COUNT:
-            return {...state, ticketsCount: action.payload }   
+      
         
         case TicketActionEnum.SET_CATEGORIES:
                 return {...state, categories: action.payload, isLoading: false }

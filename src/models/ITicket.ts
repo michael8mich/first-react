@@ -118,6 +118,35 @@ ticket?: SelectOption,
 status?: SelectOption
 }
 
+export interface ITicketsAllWfs {
+    id: string
+    name: string
+    description: string
+    last_mod_dt: string
+    last_mod_by: SelectOption
+    tcategory: SelectOption
+    task: SelectOption
+    sequence: string
+    assignee: SelectOption
+    team: SelectOption
+    deleteable: string
+    ci: SelectOption
+    creator: SelectOption
+    created_dt: string
+    done_by: SelectOption
+    done_dt: string
+    start_dt: string
+    group_task: number
+    active: number,
+    ticket: SelectOption,
+    status: SelectOption,
+    requestor: SelectOption
+    customer: SelectOption
+    ticket_assignee: SelectOption
+    ticket_team: SelectOption
+    ticket_status_team: SelectOption
+    }
+
 export interface INameBoolValue {
     name: string
     value: boolean
@@ -147,6 +176,11 @@ export const ITicketPropertyObjectsMulti:string[] = []
 export const ITicketWfObjects:string[] = [ 'assignee','team','last_mod_by','tcategory','task','done_by']
 export const ITicketWfRoFields:string[] = []
 export const ITicketWfObjectsMulti:string[] = []
+
+
+export const ITicketAllWfsObjects:string[] = [ 'assignee','team','last_mod_by','tcategory','task','done_by', 'ticket','status','requestor','customer','ticket_status','ticket_team','ticket_assignee']
+export const ITicketAllWfsRoFields:string[] = []
+export const ITicketAllWfsObjectsMulti:string[] = []
 
 
 export const TICKET_REQUEST  = { value: 'FB470C07301C0205D428E9514812797B' , label: 'בקשה', code: '' }

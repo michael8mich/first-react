@@ -1,4 +1,5 @@
 import moment from "moment";
+import i18n from "i18next";
 export const SELECT = "__s__"
 export const FROM = "__f__"
 export const WHERE = "__w__"
@@ -135,6 +136,32 @@ export const uTd = (value:any) => {
 }
 export const nowToUnix = () => {
    return moment().unix()
+}
+export function getWaitingTime(dt:number) {
+  var today = new Date().getTime() / 1000
+  var ret = +today - +dt
+  return ret
+}
+
+export function getDurationTime(dt_from:number, dt_to:number) {
+ 
+  var ret = +dt_from - +dt_to
+  return ret
+}
+
+export function secondsToDhms(seconds:number) {
+  seconds = Number(seconds);
+  var d = Math.floor(seconds / (3600 * 24));
+  var h = Math.floor(seconds % (3600 * 24) / 3600);
+  var m = Math.floor(seconds % 3600 / 60);
+  //var s = Math.floor(seconds % 60);
+
+  var dDisplay = d > 0 ? d + (d == 1 ? i18n.t('_day') : i18n.t('_days') ) : "";
+  var hDisplay = h > 0 ? h + (h == 1 ? i18n.t('_hr')  : i18n.t('_hrs') ) : "";
+  var mDisplay = m > 0 ? m + (m == 1 ? i18n.t('_minute')  : i18n.t('_minutes')) : "";
+  //var sDisplay = s > 0 ? s + (s == 1 ? i18n.t('_second') : i18n.t('_seconds')) : "";
+  //return dDisplay + hDisplay + mDisplay + sDisplay;
+  return dDisplay + ' ' + hDisplay + ' ' + mDisplay
 }
 export const removeNewRow = ( val:string ) => {
  val = val || ''

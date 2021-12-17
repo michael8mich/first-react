@@ -57,7 +57,7 @@ const TicketAssignee:FC = () => {
   const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, 
     fetchProperties, setProperties, fetchTicketNotifications, setQueriesCache, setCopiedTicket,setSelectedProperty,
     setSelectedTicket,setPathForEmpty, fetchTicketWfs} = useAction()
-  const {error, isLoading, tickets, selectedTicket, properties, copiedTicket } = useTypedSelector(state => state.ticket)
+  const {error, isLoading, tickets, selectedTicket, properties, copiedTicket, selectedWfsId } = useTypedSelector(state => state.ticket)
   const {notificationsAll } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {user } = useTypedSelector(state => state.auth)
@@ -188,7 +188,14 @@ const TicketAssignee:FC = () => {
     if(id!=='0')
     setFormValues()
    }, [selectedTicket])
+   const [activeTabKey, setActiveTabKey] = useState('detail');
+   useEffect(() => {
+    if(selectedWfsId!=='')
+    setActiveTabKey('wfs')
 
+   }, [selectedWfsId])
+
+   
   useEffect(() => {
    console.log('error', error);
   }, [error])
@@ -578,17 +585,24 @@ const TicketAssignee:FC = () => {
     }
      
     const tabChangeFunction = (key:any) => {
+      if(key==='detail')
+      {
+        setActiveTabKey('detail')
+      }
       if(key==='log')
       {
         fetchTicketLog(selectedTicket)
+        setActiveTabKey('log')
       }
       if(key==='notifications')
       {
         fetchTicketNotifications(selectedTicket)
+        setActiveTabKey('notifications')
       }
       if(key==='wfs')
       {
        fetchTicketWfs(selectedTicket)
+       setActiveTabKey('wfs')
       }
       console.log(key);
     }
@@ -760,7 +774,13 @@ const TicketAssignee:FC = () => {
        <div className="flex-container">
          {buildTitle()}
        </div>
-   <Tabs onChange={tabChangeFunction} type="card" tabPosition={tabPosition }>
+   <Tabs 
+   onChange={tabChangeFunction} 
+   type="card" 
+   tabPosition={tabPosition }
+   defaultActiveKey="detail"
+   activeKey={activeTabKey}
+   >
       <TabPane tab={
           <span> 
           <LayoutOutlined />

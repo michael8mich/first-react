@@ -1,19 +1,25 @@
 import { Button, Col, Popconfirm, Progress, Row, Steps, Switch, Table, Tabs, Tooltip } from "antd";
 import { ColumnsType } from "antd/lib/table";
 import { useTranslation } from "react-i18next";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useTypedSelector } from "../../hooks/useTypedSelector";
 import { ITicketWfTpl, WF_STATUS_COMPLETE, WF_STATUS_PEND, WF_STATUS_REJECT, WF_TASK_END_GROUP, WF_TASK_START_GROUP } from "../../models/ITicket";
 import { uTd } from "../../utils/formManipulation";
 import {FolderViewOutlined, EditOutlined,DeleteOutlined, VerticalAlignBottomOutlined} from '@ant-design/icons';
 import { axiosFn } from "../../axios/axios";
-import TicketWfDtl from "../../pages/ticket/admin/TicketWfDtl";
+import TicketWfDtl from "./TicketWfDtl";
 import { userInfo } from "os";
+import { useAction } from "../../hooks/useAction";
 const { Step } = Steps;
 const TicketWfs:FC = () => {
     const { t } = useTranslation();
-    const { selectedTicket } = useTypedSelector(state => state.ticket)
+    const { selectedTicket, selectedWfsId } = useTypedSelector(state => state.ticket)
     const {user, defaultRole } = useTypedSelector(state => state.auth)
+    const {setSelectedWfsId} = useAction()
+    // useEffect(() => {
+     
+  
+    //  }, [selectedWfsId])
     const ticketWfsColumns: ColumnsType<ITicketWfTpl> = [
         {
             key: 'action',   
@@ -112,7 +118,7 @@ const TicketWfs:FC = () => {
         {
           key: 'team',
           title: t('team'),
-          sorter: (a:any, b:any) =>  a.team?.label.localeCompare(b.team?.label),
+          sorter: (a:any, b:any) => a.team?.label && a.team?.label.localeCompare(b.team?.label),
           width: '10%',
           render: ( record) => {
             return (
@@ -124,7 +130,7 @@ const TicketWfs:FC = () => {
         {
           key: 'assignee',
           title: t('assignee'),
-          sorter: (a:any, b:any) =>  a.assignee?.label.localeCompare(b.assignee?.label),
+          sorter: (a:any, b:any) =>  a.assignee?.label && a.assignee?.label.localeCompare(b.assignee?.label),
           width: '10%',
           render: ( record) => {
             return (
@@ -136,7 +142,7 @@ const TicketWfs:FC = () => {
         {
             key: 'done_by',
             title: t('done_by'),
-            sorter: (a:any, b:any) =>  a.done_by?.label.localeCompare(b.done_by?.label),
+            sorter: (a:any, b:any) =>  a.done_by - b.done_by,
             width: '10%',
             render: ( record) => {
               return (
@@ -161,6 +167,25 @@ const TicketWfs:FC = () => {
   const [viewWf, setViewWf] = useState(false)
   const [roWf, setRoWf] = useState(false)
   
+  useEffect(() => {
+    if(selectedWfsId!=='')
+    {
+      let obj = selectedTicket.ticketWfs?.find(w=>w.id===selectedWfsId)
+      if(obj) {
+        setSelectedWf(obj)
+        setViewWf(true)
+        setRoWf(true)
+        setSelectedWfsId('')
+      }
+    } else
+    if(selectedWf?.id)
+    {
+      let obj = selectedTicket.ticketWfs?.find(w=>w.id===selectedWf?.id)
+      if(obj)
+      setSelectedWf(obj)
+    } 
+  }, [selectedTicket.ticketWfs])
+
   const addNewWfs = () => { 
     setViewWf(true)
     //setSelectedWf({} as ITicketWfTpl)
@@ -257,7 +282,8 @@ const TicketWfs:FC = () => {
            >
            </Table> 
            </Col>
-           <Col   xl={viewWf ? 12 : 0 }  lg={viewWf ? 12 : 0} sm={viewWf ? 12 : 0} xs={24} >
+           <Col   xl={viewWf ? 12 : 0 }  lg={viewWf ? 12 : 0} sm={viewWf ? 12 : 0} xs={24} 
+           >
            {
             viewWf &&
             <TicketWfDtl 
@@ -266,6 +292,7 @@ const TicketWfs:FC = () => {
             setRoWf={(value:boolean) => setRoWf(value) }
             resetSelectedWf={(value:string) => resetSelectedWf(value) }
             ro={roWf}
+           
             // lastSequence={(+selectedTicket.ticketWfs[selectedTicket.ticketWfs?.length-1]?.sequence+10).toString()}
             lastSequence={'10'}
             selectedWf={selectedWf}

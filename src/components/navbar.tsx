@@ -124,6 +124,7 @@ const Navbar: FC = () => {
                       >
                         <Menu.Item key="ticket" onClick={() => createNewTicket() } >{ t('ticket') + ' ' + t('new') }</Menu.Item>
                         <Menu.Item key="tickets" onClick={() => router.push(RouteNames.TICKETS) } >{ t('tickets') }</Menu.Item>
+                        <Menu.Item key="wfs" onClick={() => router.push(RouteNames.WFS) } >{ t('wfs') }</Menu.Item>
                       </SubMenu>
                       {
                         defaultRole?.label !== 'Employee' &&

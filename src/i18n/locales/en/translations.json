@@ -261,6 +261,15 @@
         "TICKET_OPENED_PERCENT_HIGH_PRIORITY": "% Tickets by High Priority",
         "TICKET_OPENED_PERCENT_HIGH_URGENCY": "% Tickets by High Urgency",
         "TICKET_OPENED_CLOSED_TODAY": "% Tickets Opened And Closed Today",
-        "TICKET_BY_WEEKDAY": "Tickets Opened By Weekday"
+        "TICKET_BY_WEEKDAY": "Tickets Opened By Weekday",
+
+        "_day":"Day",
+        "_days":"Days",
+        "_hr":"Hour",
+        "_hrs":"Hour_",
+        "_minute":"Minute",
+        "_minutes":"Minutes",
+        "_second":"Second",
+        "_seconds":"Seconds"
         
   }

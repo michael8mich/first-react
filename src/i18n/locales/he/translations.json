@@ -261,6 +261,14 @@
         "TICKET_OPENED_PERCENT_HIGH_PRIORITY": "% פניות לפי עדיפות גבעוה",
         "TICKET_OPENED_PERCENT_HIGH_URGENCY": "% פניות לפי דחיפות גבעוה",
         "TICKET_OPENED_CLOSED_TODAY": "% פניות נפתחות מול נסגרות היום",
-        "TICKET_BY_WEEKDAY": "פניות שנפתחו לפי יום בשבוע"
-        
+        "TICKET_BY_WEEKDAY": "פניות שנפתחו לפי יום בשבוע",
+
+        "_day":"יום",
+        "_days": "ימים",
+        "_hr":"שעה",
+        "_hrs":"שעות",
+        "_minute": "דקה",
+        "_minutes": "דקות",
+        "_second": "שני",
+        "_seconds": "שניות"
   }

@@ -1,4 +1,4 @@
-import { ITicketWfTpl } from './../../../models/ITicket';
+import { ITicketsAllWfs, ITicketWfTpl } from './../../../models/ITicket';
 import { ITicket, ITicketCategory, ITicketPrpTpl } from '../../../models/ITicket';
 
 export interface TicketState {
@@ -6,6 +6,9 @@ export interface TicketState {
     ticketsCount: number
     selectedTicket: ITicket
     copiedTicket: ITicket
+    ticketsAllWfs: ITicketsAllWfs[]
+    ticketsAllWfsCount: number
+    selectedWfsId: string
 
     categories: ITicketCategory[]
     categoriesCount: number
@@ -30,6 +33,9 @@ export enum TicketActionEnum {
     SET_SELECTED_TICKET_PROPERTIES = "SET_SELECTED_TICKET_PROPERTIES",
     SET_SELECTED_TICKET_WFS = "SET_SELECTED_TICKET_WFS",
     SET_TICKETS_COUNT = "SET_TICKETS_COUNT",
+    SET_TICKETS_ALL_WFS = "SET_TICKETS_ALL_WFS",
+    SET_TICKETS_ALL_WFS_COUNT = "SET_TICKETS_ALL_WFS_COUNT",
+    SET_SELECTED_WF_ID = "SET_SELECTED_WF_ID",
     
     SET_CATEGORIES = "SET_CATEGORIES",
     SET_SELECTED_CATEGORY = "SET_SELECTED_CATEGORY",
@@ -78,6 +84,23 @@ export interface SetTicketsCountAction {
     type: TicketActionEnum.SET_TICKETS_COUNT,
     payload: number
 }
+
+export interface SetTicketsAllWfsAction {  
+    type: TicketActionEnum.SET_TICKETS_ALL_WFS,
+    payload: ITicketsAllWfs[]
+}
+
+export interface SetTicketsAllWfsCountAction {
+    type: TicketActionEnum.SET_TICKETS_ALL_WFS_COUNT,
+    payload: number
+}
+
+export interface SetSelectedWfIdAction {
+    type: TicketActionEnum.SET_SELECTED_WF_ID,
+    payload: string
+}
+
+
 //---------
 export interface SetCategoriesAction {
     type: TicketActionEnum.SET_CATEGORIES,
@@ -139,6 +162,7 @@ SetSelectedTicketAction |
 SetCopiedTicketAction |
 SetSelectedTicketPropertiesAction |
 SetSelectedTicketWfsAction |
+SetSelectedWfIdAction |
 SetTicketsCountAction |
 SetCategoriesAction |
 SetSelectedCategoryAction | 
@@ -150,7 +174,9 @@ SetSelectedPropertyAction |
 SetPropertiesCountAction |
 SetWfsAction | 
 SetSelectedWfAction | 
-SetWfsCountAction
+SetWfsCountAction | 
+SetTicketsAllWfsAction | 
+SetTicketsAllWfsCountAction
 
 
 
