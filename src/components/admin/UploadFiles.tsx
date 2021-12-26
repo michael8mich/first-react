@@ -4,7 +4,7 @@ import React,  {FC, forwardRef, Ref, useEffect, useImperativeHandle, useState} f
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { RcFile } from 'antd/lib/upload';
-import { axiosFn, axiosFnUpload } from '../../axios/axios';
+import { axiosFn, axiosFnUpload, Base_URL, TOKEN } from '../../axios/axios';
 import moment from 'moment';
 import CloudUploadOutlined from '@ant-design/icons/lib/icons/CloudUploadOutlined';
 import { IAttachment } from '../../models/IObject';
@@ -54,23 +54,26 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
   const getAttachments = async () => { 
       setLoading(false)
       let resArray:any[] = []
-      const result = await axiosFn('get', '', '*', 'attachment', " object = '"+ props.id +"' AND factory = '"+props.factory+"'")
-       result.data.map((r: { id: any; name: any; file_name: string; create_date: number; }) => {
-        let at = {
-          uid: r.id,
-          name: r.name,
-          status: 'done', //error
-          url: PATH_TO_FOLDER + r.file_name,
-          thumbUrl: PATH_TO_FOLDER + r.file_name,
-          lastModifiedDate: moment.unix(r.create_date)
-        }
-        resArray.push(at)
-       })
-       setFileList([...resArray])
+      try {
+        const result = await axiosFn('get', '', '*', 'attachment', " object = '"+ props.id +"' AND factory = '"+props.factory+"'")
+        result.data.map((r: { id: any; name: any; file_name: string; create_date: number; }) => {
+          let at = {
+            uid: r.id,
+            name: r.name,
+            status: 'done', //error
+            url: PATH_TO_FOLDER + r.file_name ,
+            thumbUrl: PATH_TO_FOLDER + r.file_name ,
+            lastModifiedDate: moment.unix(r.create_date)
+          }
+          resArray.push(at)
+         })
+         setFileList([...resArray])
+      } catch (e){}
   }  
   
   const FILE_COUNT=10
-  const PATH_TO_FOLDER =  'http://mx/f/'
+  const PATH_TO_FOLDER =  Base_URL + '/download/'
+  //const PATH_TO_FOLDER =  'http://mx/f/'
 
   const handleUpload =  async (info: any) => {
     if(info.file.status === "removed") 
@@ -134,11 +137,18 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
            setToSaveFileList([])
            setFileList([...fileList_done])
   }
-
+  const prp = {
+    headers: {
+      Authorization: `Bearer ${TOKEN.token}`,
+    },
+    action: PATH_TO_FOLDER,
+    name: 'file',
+  };
     return (
       <>
     <Space direction="vertical" style={{ width: '100%' }} size="small">
       <Upload
+           {...prp}
           listType="picture"
           maxCount={FILE_COUNT}
           multiple={true}

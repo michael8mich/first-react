@@ -1,6 +1,6 @@
 import { TFunction } from 'i18next';
 import { AppDispatch } from '../..';
-import { axiosFn } from '../../../axios/axios';
+import { axiosFn, axiosFnLogin, TOKEN } from '../../../axios/axios';
 import { IUserObjects, IUserObjectsMulti, IUser } from './../../../models/IUser';
 import { AuthActionEnum, SetAuthAction, SetDefaultRoleAction, SetErrorAction, SetFromLocationAction, SetIsLoadingAction, SetSiderQueriesAction, SetUserAction } from './types';
 import i18n from "i18next";
@@ -9,7 +9,10 @@ import { translateObj } from '../../../utils/translateObj';
 import { IQuery, SelectOption } from '../../../models/ISearch';
 
 
-
+interface JVTToken {
+  expiration: Date
+  token: string
+}
   
 
 export const AuthActionCreators =  {
@@ -25,21 +28,28 @@ export const AuthActionCreators =  {
 
         try {
         dispatch(AuthActionCreators.IsLoading(true))
-        const where = ` login = '${username}' and password = '${password}' `
-        const response = await  axiosFn("get", '', '*', 'V_contacts', where , ''  )  
-   
+        //const where = ` login = '${username}' and password = '${password}' `
+        //const response = await  axiosFn("get", '', '*', 'V_contacts', where , ''  ) 
+        
+        const response:any = await  axiosFnLogin(username, password )  
+
         let hasError = false;
-        if(response.data["error"]) hasError = true;
+        
+        if(!response?.data || response?.data["error"]) hasError = true;
         if(!hasError) {
-        if(response.data.length !== 0)  
-         {
-            let user: IUser = response.data[0]
-            let hasError = false;
-            if(response.data["error"]) hasError = true;
-            let multiObject = {}
-             if(response.data&&!hasError)
-             {
-             let users_: any[] = response.data
+            let token:JVTToken = response.data
+            if(!token.token) 
+            {
+              dispatch(AuthActionCreators.setIsError(i18n.t('login_incorrect'))) 
+              return
+            }
+            localStorage.setItem('token', token.token)
+            if(token.token)
+            TOKEN.token = token.token
+            const where = ` login = '${username}'  `
+            const response_ = await  axiosFn("get", '', '*', 'V_contacts', where , ''  ) 
+             let multiObject = {}
+             let users_: any[] = response_.data
              users_ = translateObj(users_, IUserObjects)
              let user:IUser = users_[0]
              dispatch(AuthActionCreators.setUser(user))
@@ -71,20 +81,13 @@ export const AuthActionCreators =  {
                 dispatch(AuthActionCreators.setUser({...user, ...multiObject}))
                 if(remember)
                 localStorage.setItem('isAuth', JSON.stringify({...user, ...multiObject}) )    
+                
             })
-            
-        }
         }
         else
         {
             dispatch(AuthActionCreators.setIsError(i18n.t('login_incorrect'))) 
         }   
-       }
-       else
-       {
-        dispatch(AuthActionCreators.setIsError(i18n.t('login_problem')))  
-        console.log('error:',response.data["error"] )
-       }
        } catch (e) {
        dispatch(AuthActionCreators.setIsError(i18n.t('axios_error')))        
       } finally {
@@ -233,6 +236,7 @@ export const AuthActionCreators =  {
         let user = {} as IUser
         dispatch(AuthActionCreators.setUser(user))
         localStorage.removeItem('isAuth')
+        localStorage.removeItem('token')
         dispatch(AuthActionCreators.setIsAuth(false))
         dispatch(AuthActionCreators.setIsError("")) 
     },

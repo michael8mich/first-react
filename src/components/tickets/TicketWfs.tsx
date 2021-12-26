@@ -21,56 +21,71 @@ const TicketWfs:FC = () => {
   
     //  }, [selectedWfsId])
     const ticketWfsColumns: ColumnsType<ITicketWfTpl> = [
-        {
-            key: 'action',   
-            title: t('actions'),
-            width: '7%',
-            fixed: 'left',
-            render: (record, index) => {
-              return (
-                <>
-                {
-                    record.task.value !== WF_TASK_START_GROUP.value && record.task.value !== WF_TASK_END_GROUP.value && 
-                    <>
-                    <FolderViewOutlined key="view" 
-                        onClick={() => selectWf(record, true)}
-                    />&nbsp;&nbsp;
-                    {
-                        record.status.value !== WF_STATUS_COMPLETE.value &&
-                        <EditOutlined key="edit"
-                        onClick={() => selectWf(record, false)}
-                        />
-                    }
-                    &nbsp;&nbsp;
-                    {
-                        record.deleteable !== 0 &&
-                        <Tooltip title={t('delete')} key="delete">
-                        <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteWf(record.id)}>
-                                        <DeleteOutlined 
-                                        ></DeleteOutlined>
-                        </Popconfirm>              
-                        </Tooltip>
-                    }
-                </>
-                }
-                {
-                    record.task.value === WF_TASK_START_GROUP.value &&  
-                    <VerticalAlignBottomOutlined  style={{fontSize:30,color:'#49b6ba'} }   />
+        // {
+        //     key: 'action',   
+        //     title: t('actions'),
+        //     width: '7%',
+        //     fixed: 'left',
+        //     render: (record, index) => {
+        //       return (
+        //         <>
+        //         {/* {
+        //             record.task.value !== WF_TASK_START_GROUP.value && record.task.value !== WF_TASK_END_GROUP.value && 
+        //             <>
+        //             <FolderViewOutlined key="view" 
+        //                 onClick={() => selectWf(record, true)}
+        //             />&nbsp;&nbsp;
+        //             {
+        //                 record.status.value !== WF_STATUS_COMPLETE.value &&
+        //                 <EditOutlined key="edit"
+        //                 onClick={() => selectWf(record, false)}
+        //                 />
+        //             }
+        //             &nbsp;&nbsp;
+        //             {
+        //                 record.deleteable !== 0 &&
+        //                 <Tooltip title={t('delete')} key="delete">
+        //                 <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteWf(record.id)}>
+        //                                 <DeleteOutlined 
+        //                                 ></DeleteOutlined>
+        //                 </Popconfirm>              
+        //                 </Tooltip>
+        //             }
+        //         </>
+        //         } */}
+        //         {
+        //             record.task.value === WF_TASK_START_GROUP.value &&  
+        //             <VerticalAlignBottomOutlined  style={{fontSize:30,color:'#49b6ba'} }   />
                
-                }
-                {
-                    record.task.value === WF_TASK_END_GROUP.value &&  
-                    <VerticalAlignBottomOutlined  style={{fontSize:30,color:'#49b6ba'} } rotate={180}   />
-                }
-               </>
-              )}
-        },
+        //         }
+        //         {
+        //             record.task.value === WF_TASK_END_GROUP.value &&  
+        //             <VerticalAlignBottomOutlined  style={{fontSize:30,color:'#49b6ba'} } rotate={180}   />
+        //         }
+        //        </>
+        //       )}
+        // },
         {
           key: 'sequence',
           title: t('sequence'),
-          dataIndex: 'sequence',
+          // dataIndex: 'sequence',
           sorter: (a:any, b:any) =>  a.sequence - b.sequence,
           width: '5%',
+          render: ( record) => {
+            return (
+                <>   
+                {
+                record.task?.value && record.task?.value === WF_TASK_START_GROUP.value ?  
+                <VerticalAlignBottomOutlined  style={{fontSize:30,color:'#49b6ba'} }    /> 
+                : 
+                record.task?.value && record.task?.value === WF_TASK_END_GROUP.value ?  
+                <VerticalAlignBottomOutlined  style={{fontSize:30,color:'#49b6ba'} } rotate={180}   /> 
+                :   
+                record.sequence  
+                }
+                </>
+                
+            );}
         },
         {
           key: 'name',
@@ -197,6 +212,9 @@ const TicketWfs:FC = () => {
   }
   const [selectedWf, setSelectedWf] = useState({} as ITicketWfTpl)
   const selectWf = (record:ITicketWfTpl, ro:boolean) => {
+    if( record.task?.value === WF_TASK_START_GROUP.value || record.task?.value === WF_TASK_END_GROUP.value)
+    return
+    if(record.status?.value === WF_STATUS_COMPLETE.value && !ro) return
     setSelectedWf(record)
     setViewWf(true)
     setRoWf(ro)
@@ -273,6 +291,16 @@ const TicketWfs:FC = () => {
            <Row>
            <Col  xl={viewWf ? 12 : 24 }  lg={viewWf ? 12 : 24} sm={viewWf ? 12 : 24} xs={24} >
            <Table<ITicketWfTpl>
+             onRow={(record, rowIndex) => {
+              return {
+                onClick: event => {selectWf(record, true)}, // click row
+                onDoubleClick: event => {selectWf(record, false)}, // double click row
+                onContextMenu: event => {}, // right button click row
+                onMouseEnter: event => {}, // mouse enter row
+                onMouseLeave: event => {}, // mouse leave row
+              };
+            }}
+          
            rowClassName={(record) => row_color_class(record) }
            scroll={{ x: 1200, y: 700 }}
            columns={ticketWfsColumns} 

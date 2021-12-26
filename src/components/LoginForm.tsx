@@ -1,5 +1,5 @@
 import {Form, Input, Checkbox, Button}  from 'antd';
-import  {FC} from 'react';
+import  {FC, useEffect} from 'react';
 import { useAction } from '../hooks/useAction';
 import { useTypedSelector } from '../hooks/useTypedSelector';
 import { UnlockOutlined, UserOutlined } from "@ant-design/icons";
@@ -8,12 +8,14 @@ import { useTranslation } from 'react-i18next';
 const LoginForm: FC = () => {
   const { t, i18n } = useTranslation();      
   const {error, isLoading, user } = useTypedSelector(state => state.auth)
-  const {login} = useAction()
+  const {login,logout} = useAction()
   const [form] = Form.useForm()
   const onFinish =  (values: any) => {
     console.log('Success:', values);
     login(values.username, values.password, values.remember )
   };
+  
+
 
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
@@ -69,3 +71,5 @@ const LoginForm: FC = () => {
   
   
   export default LoginForm;
+
+

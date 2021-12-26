@@ -88,19 +88,7 @@ const SiderAssignee: FC<SiderComponentProps> = (props) => {
     const [siderFolders, setSiderFolders] = useState([] as IQuery[])
     const [siderFoldersQueries, setSiderFoldersQueries] = useState([] as IQuery[])
 
-    const goToQuery = (q:IQuery) => {
-      if(edit) return
-      setQueriesCache({ [q.factory]: q.query })
-      if(q.factory === 'ticket') { 
-        router.push(RouteNames.TICKETS)
-      } else if(q.factory === 'contact') {
-        router.push(RouteNames.USERS)
-      } 
-      else if(q.factory === 'ci') {
-        router.push(RouteNames.CIS)
-      }
-  
-    }
+
     const {setQueriesCache} = useAction()
     const goTo = (factory:string, query:string) => {
       setQueriesCache({ [factory]: query })
@@ -112,6 +100,9 @@ const SiderAssignee: FC<SiderComponentProps> = (props) => {
       } 
       else if(factory === 'ci') {
         router.push(RouteNames.CIS)
+      }
+      else if(factory === 'allWf') {
+        router.push(RouteNames.WFS)
       }
   
     }

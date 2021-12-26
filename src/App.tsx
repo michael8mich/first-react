@@ -21,7 +21,7 @@ import { RouteNames } from './router';
 import Login from './pages/Login';
 import FooterComponent from './components/FooterComponent';
 import axios from 'axios'
-import { SSO_PATH } from './axios/axios';
+import { SSO_PATH, TOKEN } from './axios/axios';
 
 
 const { Header, Sider, Content } = Layout;
@@ -36,6 +36,10 @@ const App:FC = () => {
   const router = useHistory()
 
   useEffect(() => {
+    if(TOKEN.token_error) {
+      goToLogin()
+      TOKEN.token_error = false
+    }
     
     if(localStorage.getItem('isAuth')) {
       let user = JSON.parse(localStorage.getItem('isAuth')?.toString() || "") as IUser
@@ -43,6 +47,8 @@ const App:FC = () => {
       fetchLoginUser(user.id)
       i18n.changeLanguage(user.locale.substring(0,2));
       setIsAuth(true)  
+      let token = localStorage.getItem('token') || ''
+      TOKEN.token = token
     }
     else
     {

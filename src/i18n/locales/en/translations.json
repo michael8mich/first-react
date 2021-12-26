@@ -253,6 +253,10 @@
         "not_completed_workflows": "Not Completed Workflows",
         "my_wfs_only":"My Workflows Only",
         "all_wfs": "All Workflows",
+        "query": "Query",
+        "import": "Import Data",
+        "export": "export Data",
+        "spreadsheet":"Spreadsheet",
 
         "TICKET_OPENED_BY_TEAM": "Active Tickets by Team",
         "TICKET_OPENED_BY_PRIORITY": "Active Tickets by Priority",
@@ -266,10 +270,11 @@
         "_day":"Day",
         "_days":"Days",
         "_hr":"Hour",
-        "_hrs":"Hour_",
+        "_hrs":"Hour",
         "_minute":"Minute",
         "_minutes":"Minutes",
         "_second":"Second",
         "_seconds":"Seconds"
+
         
   }

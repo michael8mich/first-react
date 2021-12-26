@@ -53,15 +53,16 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
           getSiderQueries()
         }
       }))
-    
+    const [heb, setHeb] = useState(true)
     useEffect(() => {
       if(props.user?.id) {
+        setHeb(user.locale === 'heIL' ? true : false)
         if(userId !== props.user?.id) {
           setUserId(props.user?.id)
         }
         
       }
-    }, [props.user.id])
+    }, [props.user.id,user.locale])
 
     useEffect(() => {
       if(userId!=='') {
@@ -107,28 +108,19 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
     }
     const goToQuery = (q:IQuery) => {
       if(props.edit || !props.sider) return
-      setQueriesCache({ [q.factory]: q.query })
+      setQueriesCache({ [q.factory]: q.query, [q.factory+'_label']: q.name })
       if(q.factory === 'ticket') {
         router.push(RouteNames.TICKETS)
       } else if(q.factory === 'contact') {
         router.push(RouteNames.USERS)
       } else if(q.factory === 'ci') {
         router.push(RouteNames.CIS)
-      }
+      } else if(q.factory === 'allWf') {
+      router.push(RouteNames.WFS)
+    }
   
     }
     const {setQueriesCache} = useAction()
-    const goTo = (factory:string, query:string) => {
-      setQueriesCache({ [factory]: query })
-      if(factory === 'ticket') {
-        router.push(RouteNames.TICKETS)
-      } else if(factory === 'contact') {
-        router.push( RouteNames.USERS )
-      } else if(factory === 'ci') {
-        router.push(RouteNames.CIS)
-      }
-  
-    }
     const deleteQuery = async (id:string, folder=false) => {
     
        if(folder) {
@@ -388,6 +380,8 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
     const buildTooltipColor = (name:string,count:string) => {
       return name.toString().length>25 || + count > 99 ? 'cyan' : 'transparent'
     }
+    
+
     return (
       <>
            {
@@ -529,7 +523,7 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
                    onClick={() => goToQuery(q)}
                    >
                      { props.sider && 
-                     <Badge  count={ q.count}  size="small" offset={[-1, -20]} style={{ backgroundColor: '#28a4ae' }}></Badge>
+                     <Badge  count={ q.count}  size="small" offset={[heb ? -1:1, -20]} style={{ backgroundColor: '#28a4ae' }}></Badge>
                      }
                      <Tooltip title={()  => buildTooltip(q.name, q.count) } placement="bottom" color={buildTooltipColor(q.name, q.count)} >
                      &nbsp; {q.name.toString().substring(0,40)}
@@ -552,7 +546,7 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
                            onClick={() => goToQuery(q)}
                            >
                               { props.sider && 
-                              <Badge  count={ q.count}  size="small" offset={[-1, -20]} style={{ backgroundColor: '#28a4ae' }}></Badge>
+                              <Badge  count={ q.count}  size="small" offset={[heb ? -1 : 1, -20]} style={{ backgroundColor: '#28a4ae' }}></Badge>
                               }
                               <Tooltip title={()  => buildTooltip(q.name, q.count)} placement="bottom" color={buildTooltipColor(q.name, q.count)} >
                                  {q.name.toString().substring(0,40)}

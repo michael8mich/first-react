@@ -654,7 +654,7 @@ const TicketEmployee:FC = () => {
   }
   return (
   <Layout style={{height:"100vh"}}>
-      {error &&  <h1>{error}</h1> }
+      {error && <h1 className='ErrorH1'>{error}</h1> }
       {isLoading && <Spin style={{padding:'20px'}} size="large" />}
       <Row> 
       <Col xs={24} xl={selectedTicket?.customer_info && customerInfo ? 18 : 24 } sm={selectedTicket?.customer_info && customerInfo ? 18 : 24} >

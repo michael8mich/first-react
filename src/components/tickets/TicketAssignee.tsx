@@ -766,7 +766,7 @@ const TicketAssignee:FC = () => {
 
   return (
   <Layout style={{height:"100vh"}} id='screen'>
-      {error &&  <h1>{error}</h1> }
+      {error && <h1 className='ErrorH1'>{error}</h1> }
      
 
      
@@ -1143,7 +1143,7 @@ const TicketAssignee:FC = () => {
                     />
                     </Form.Item>
                 }
-            </Col>
+                </Col>
                 }
                 </>
             )

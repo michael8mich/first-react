@@ -41,6 +41,7 @@ export interface IUser {
     last_mod_by: SelectOption
     last_mod_dt: string
     create_date: string
+    token?: string
 }
 
 export const IUserObjects:string[] = ['contact_type', 'job_title','primary_group','manager', 'organization','location','department','site','last_mod_by']

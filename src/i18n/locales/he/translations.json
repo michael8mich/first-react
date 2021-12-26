@@ -252,6 +252,10 @@
          "not_completed_workflows": "משימות לא הושלמו",
          "my_wfs_only": "המשימות שלי בלבד",
          "all_wfs": "כל המשימות",
+         "query": "שאילתה",
+         "import": "ייבוא נתונים",
+         "export": "יצוא נתונים",
+         "spreadsheet": "גיליון אלקטרוני",
  
          
         "TICKET_OPENED_BY_TEAM": "פניות פעילות לפי צוות",

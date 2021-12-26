@@ -364,7 +364,7 @@ export const notifyWf = async ( type: string, ticket:ITicket,  wf:ITicketWfTpl, 
     }
 
     let emails_grp = ''
-
+debugger
     let emails_obj = n.send_to.split(',')
     if(emails_obj.length===0) return
     let emails_where = ''

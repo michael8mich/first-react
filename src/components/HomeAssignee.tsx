@@ -80,16 +80,19 @@ const HomeAssignee: FC = () => {
 
 
 const getQueries = async () => {
-  let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" + HOME_FOLDER + "' order by seq " , '' )  
-  let result_query_Arr:IQuery[] =  result_query?.data 
-  
-  if(result_query_Arr)
-  result_query_Arr.map(async ( q, index) =>  {
-    let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.factory === 'ticket' ? dataPartition(q.query) : q.query , '' )  
-    q.count = q_result.data[0].cnt
-    q.index = index
-  })
-  setQueries(result_query_Arr)
+  try {
+    let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" + HOME_FOLDER + "' order by seq " , '' )  
+    let result_query_Arr:IQuery[] =  result_query?.data 
+    
+    if(result_query_Arr)
+    result_query_Arr.map(async ( q, index) =>  {
+      let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.factory === 'ticket' ? dataPartition(q.query) : q.query , '' )  
+      q.count = q_result.data[0].cnt
+      q.index = index
+    })
+    setQueries(result_query_Arr)
+  } catch(e){}
+ 
 }  
  const getData = async () => {
     const TICKET_OPENED_BY_TEAM:IChatQuery = {
@@ -399,18 +402,18 @@ const getQueries = async () => {
   }
   const goTo = (q:IQuery) => {
     if(edit) return
+    setQueriesCache({ [q.factory]: q.query, [q.factory+'_label']: q.name })
     if(q.factory === 'ticket') {
-      setQueriesCache({ [q.factory]: q.query })
       router.push(RouteNames.TICKETS)
-    } else if(q.factory === 'contact') {
-      setQueriesCache({ [q.factory]: q.query })
+    } else if(q.factory === 'contact') { 
       router.push(RouteNames.USERS)
     } 
     else if(q.factory === 'ci') {
-      setQueriesCache({ [q.factory]: q.query })
       router.push(RouteNames.CIS)
     } 
-
+    else if(q.factory === 'allWf') {
+      router.push(RouteNames.WFS)
+    } 
   }
   const deleteQuery = async (id:string) => {
     

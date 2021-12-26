@@ -270,7 +270,7 @@ const CisDtl:FC = () => {
   return (
     <Layout style={{height:"100vh"}}>
       {error && 
-      <h1>{error}</h1>
+     <h1 className='ErrorH1'>{error}</h1>
       }
       {isLoading && 
        <Spin style={{padding:'20px'}} size="large" />

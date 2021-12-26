@@ -35,7 +35,7 @@ const TicketsAllWfs:FC = () => {
   } as SearchPagination
   const {error, isLoading, ticketsAllWfs, ticketsAllWfsCount } = useTypedSelector(state => state.ticket)
   const {selectSmall } = useTypedSelector(state => state.cache)
-  const {fetchTicketsAllWfs, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties,setAlert, setPathForEmpty, setSelectedWfsId} = useAction()
+  const {fetchTicketsAllWfs, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties,setAlert, setPathForEmpty, setSelectedWfsId, setQueriesCache} = useAction()
   const {user, defaultRole } = useTypedSelector(state => state.auth)
   const [typeSelect, setTypeSelect] = useState('')
   const queryParams = new URLSearchParams(window.location.hash);
@@ -43,17 +43,19 @@ const TicketsAllWfs:FC = () => {
 
   const dataPartition = (where: string) => {
 
-   where = "(" + where + ") AND ( task not in ('"+ WF_TASK_START_GROUP.value +"','"+ WF_TASK_END_GROUP.value +"') )" 
+   where = "(" + where ? where : '1=1' + ") AND ( task not in ('"+ WF_TASK_START_GROUP.value +"','"+ WF_TASK_END_GROUP.value +"') )" 
    if(defaultRole)
    if(defaultRole.label !== 'Admin') {
     return ANALYST_DTP.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
    }
    return where
   }
+  const [qName, setQName] = useState('')  
   useEffect(() => {
-    if(Object.keys(queriesCache).find( k=> k === 'ticketAllWfs')) {
+    if(Object.keys(queriesCache).find( k=> k === 'allWf')) {
       let arr:any = {...queriesCache}
-      fetchTicketsAllWfs(searchP, dataPartition(arr['ticketAllWfs']))
+      fetchTicketsAllWfs(searchP, dataPartition(arr['allWf']))
+      setQName(arr['allWf_label'])
     }
     else
     fetchTicketsAllWfs(searchP, dataPartition(where))  
@@ -422,6 +424,8 @@ const TicketsAllWfs:FC = () => {
 
     const fastSearchArray = ['name', 'task_name', 'ticket_name', 'customer_name', 'description', 'team_name', 'assignee_name']
     const onFinish = async (values: any) => { 
+      setQName('')
+      setQueriesCache({ allWf: '', allWf_label: '' })
       console.log('Success:', values);
       let where_ = searchFormWhereBuild(values, fastSearchArray)
       fetchTicketsAllWfs({...searchP } , dataPartition(where_))
@@ -448,7 +452,7 @@ const TicketsAllWfs:FC = () => {
     <Layout style={{height:"100vh"}}>
       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
-      <h1>{error}</h1>
+     <h1 className='ErrorH1'>{error}</h1>
       }
        <Form
        // layout="vertical"
@@ -477,9 +481,9 @@ const TicketsAllWfs:FC = () => {
          >
          { t('clear') }
          </Button>&nbsp;&nbsp;&nbsp;
-         <Button  style={{ background: "#01a77c", borderColor: "white" }} key="add_new"
+         {/* <Button  style={{ background: "#01a77c", borderColor: "white" }} key="add_new"
           onClick={() => createNew()  }
-          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
+          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp; */}
           {viewForm ? 
          <FilterOutlined style={{color:'gray', fontSize: '24px'}}
          onClick={() => setViewForm(false)}
@@ -717,7 +721,7 @@ const TicketsAllWfs:FC = () => {
         {
           <QueryBuild 
           where={where}
-          factory={'ticket'}
+          factory={'allWf'}
           />
         }
         </Col>
@@ -745,7 +749,7 @@ const TicketsAllWfs:FC = () => {
       bordered
       pagination={pagination}
       onChange={handleTableChange}
-      title={() => <h3>{t('wfs') + ' ' + t('total_count') + ' ' + ticketsAllWfsCount }</h3> }
+      title={() => <h3>{t('wfs') + ' ' + t('total_count') + ' ' + ticketsAllWfsCount }  { qName ? (t('query') +  ': ' + qName) : '' } </h3> }
       footer={() => t('total_count') + ' ' + ticketsAllWfsCount}
       style={{width: '100%', padding: '5px'}}
       scroll={{ x: 1500, y: 550 }}

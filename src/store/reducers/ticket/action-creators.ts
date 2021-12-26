@@ -285,6 +285,7 @@ export const TicketActionCreators = {
                     }
                     else
                     w.status = WF_STATUS_WAIT.value
+                    w.created_dt =  nowToUnix().toString()
                     const responseNewWf = await  axiosFn("post", w, '*', 'wf', "id" , ''  )  
                     if(w.status === WF_STATUS_PEND.value) {
                         //notify(true, values, {...selectedTicket, id:new_id }, notificationsAll ) 
@@ -375,6 +376,7 @@ export const TicketActionCreators = {
                   }
                   else
                   w.status = WF_STATUS_WAIT.value
+                  w.created_dt =  nowToUnix().toString()
                   const responseNewWf = await  axiosFn("post", w, '*', 'wf', "id" , ''  )  
                   if(w.status === WF_STATUS_PEND.value) {
                       //notify(true, values, {...selectedTicket, id:new_id }, notificationsAll ) 

@@ -28,13 +28,14 @@ const Users:FC = () => {
   } as SearchPagination
   const {error, isLoading, users, usersCount } = useTypedSelector(state => state.admin)
   const {selectSmall, queriesCache } = useTypedSelector(state => state.cache)
-  const {fetchUsers, setSelectSmall} = useAction()
+  const {fetchUsers, setSelectSmall, setQueriesCache} = useAction()
   const [typeSelect, setTypeSelect] = useState('')
-
+  const [qName, setQName] = useState('')  
   useEffect(() => {
     if(Object.keys(queriesCache).find( k=> k === 'contact')) {
       let arr:any = {...queriesCache}
       fetchUsers(searchP, arr['contact'], IUserObjects)
+      setQName(arr['contact_label'])
     }
     else
     fetchUsers(searchP, where, IUserObjects)
@@ -184,6 +185,8 @@ const Users:FC = () => {
 
     const fastSearchArray = ['login', 'name', 'email']
     const onFinish = async (values: any) => { 
+      setQName('')
+      setQueriesCache({ contact: '', contact_label: '' })
       console.log('Success:', values);
       let usersTeams = values.usersTeams
       delete values.usersTeams 
@@ -210,7 +213,7 @@ const Users:FC = () => {
     <Layout style={{height:"100vh"}}>
       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
-      <h1>{error}</h1>
+     <h1 className='ErrorH1'>{error}</h1>
       }
        <Form
        // layout="vertical"
@@ -349,7 +352,7 @@ const Users:FC = () => {
       bordered
       pagination={pagination}
       onChange={handleTableChange}
-      title={() => <h3>{t('users')}/{t('teams')}</h3> }
+      title={() => <h3>{t('users')}/{t('teams') + ' ' + t('total_count') + ' ' + usersCount }  { qName ? (t('query') +  ': ' + qName) : '' }</h3> }
       footer={() => t('total_count') + ' ' + usersCount}
       style={{width: '100%', padding: '5px'}}
       // scroll={{ x: 1500, y: 700 }}

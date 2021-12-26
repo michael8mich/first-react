@@ -219,7 +219,7 @@ const TCategories:FC = () => {
     <Layout style={{height:"100vh"}}>
       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
-      <h1>{error}</h1>
+     <h1 className='ErrorH1'>{error}</h1>
       }
        <Form
        // layout="vertical"

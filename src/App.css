@@ -191,10 +191,32 @@ body {
 
 .table-row-selected {
   text-decoration: underline;
-  color:black;
+  color:white;
+  background-color: black;
   text-shadow: 2px 2px 5px black;
   font-weight:500;
+  border: black 2px solid!important;
+  padding:5px;
 }
+.table-row-selected:hover {
+  text-decoration: underline;
+  color:black;
+  background-color: white;
+  text-shadow: 2px 2px 5px white;
+  font-weight:500;
+  border: black 2px solid!important;
+  padding:5px;
+}
+.table-row-selected:-moz-focusring {
+  text-decoration: underline;
+  color:white;
+  background-color: black;
+  text-shadow: 2px 2px 5px black;
+  font-weight:500;
+  border: black 2px solid!important;
+  padding:5px;
+}
+
 .table-row-reject {
   text-decoration:wavy;
   color:red;
@@ -240,4 +262,10 @@ body {
   color: #ff2400;
   text-shadow: -1px 1px 1px #800000, -1px 1px #800000;
   font-size: 25px;
+}
+.ErrorH1 {
+  color: red;
+  font-weight: 700;
+  background-color:black;
+  padding:5px;
 }

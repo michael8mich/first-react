@@ -28,13 +28,14 @@ const Cis:FC = () => {
   } as SearchPagination
   const {error, isLoading, cis, cisCount } = useTypedSelector(state => state.ci)
   const {selectSmall, queriesCache } = useTypedSelector(state => state.cache)
-  const {fetchCis, setSelectSmall} = useAction()
+  const {fetchCis, setSelectSmall, setQueriesCache} = useAction()
   const [typeSelect, setTypeSelect] = useState('')
-
+  const [qName, setQName] = useState('')  
   useEffect(() => {
     if(Object.keys(queriesCache).find( k=> k === 'contact')) {
       let arr:any = {...queriesCache}
       fetchCis(searchP, arr['ci'], ICiObjects)
+      setQName(arr['ci_label'])
     }
     else
     fetchCis(searchP, where, ICiObjects)
@@ -211,6 +212,8 @@ const Cis:FC = () => {
 
     const fastSearchArray = ['ci_class_name', 'name', 'ci_family','serial','ip','ci_user_name']
     const onFinish = async (values: any) => { 
+      setQName('')
+      setQueriesCache({ ci: '', ci_label: '' })
       console.log('Success:', values);
       let where_ = searchFormWhereBuild(values, fastSearchArray)
      
@@ -235,7 +238,7 @@ const Cis:FC = () => {
     <Layout style={{height:"100vh"}}>
       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
-      <h1>{error}</h1>
+     <h1 className='ErrorH1'>{error}</h1>
       }
        <Form
        // layout="vertical"
@@ -468,7 +471,7 @@ const Cis:FC = () => {
       bordered
       pagination={pagination}
       onChange={handleTableChange}
-      title={() => <h3>{t('cis')}</h3> }
+      title={() => <h3>{t('cis') + ' ' + t('total_count') + ' ' + cisCount }  { qName ? (t('query') +  ': ' + qName) : '' }</h3> }
       footer={() => t('total_count') + ' ' + cisCount}
       style={{width: '100%', padding: '5px'}}
       scroll={{ x: 1500, y: 350 }}

@@ -1,7 +1,8 @@
-import {Form, Input, Button, Select, DatePicker,TimePicker, Row, Col, Card, Checkbox, Tooltip}  from 'antd';
+import {Form, Input, Button, Select, DatePicker,TimePicker, Row, Col, Card, Checkbox, Tooltip, Badge}  from 'antd';
 import  {FC, useEffect, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { ITicket, ITicketCategory, ITicketLog, ITicketWfTpl, PRP_FACTORY_LIST, PRP_FACTORY_OBJECT, WF_LOG_COMPLETE, WF_LOG_PEND, WF_LOG_REJECT,
+   WF_STATUS_CANCEL,
    WF_STATUS_COMPLETE, WF_STATUS_PEND, WF_STATUS_REJECT, WF_STATUS_WAIT, WF_TASK_APPROVE, WF_TASK_END_GROUP, WF_TASK_START_GROUP } from '../../models/ITicket';
 import { axiosFn } from '../../axios/axios';
 import { getDurationTime, getWaitingTime, nowToUnix, saveFormBuild, secondsToDhms, uTd } from '../../utils/formManipulation';
@@ -334,29 +335,51 @@ const onFinish =async (values: any) => {
      }
      return {}
    }
-    const WaitingTime = () => {
+    const WaitingTime = (className:boolean = false) => {
     let classCss = 'fa fa-circle'
-
+    let color = "#88d969"
     let start_dt = +props.selectedWf?.start_dt || 0
 
     if(getWaitingTime(start_dt) > 64 * 60 * 60)
-    classCss += ' Waiting5'
+    {
+      classCss += ' Waiting5'
+      color = "#ff2400"
+    }
     else
     if(getWaitingTime(start_dt) > 32 * 60 * 60)
-    classCss += ' Waiting4'
+    {
+      classCss += ' Waiting4'
+      color = "##ef7215"
+    }
     else
     if(getWaitingTime(start_dt) > 16 * 60 * 60)
-    classCss += ' Waiting3'
+    {
+      classCss += ' Waiting3'
+      color = "#e8a317"
+    }
     else
     if(getWaitingTime(start_dt) > 8 * 60 * 60)
-    classCss += ' Waiting2'
+    {
+      classCss += ' Waiting2'
+      color = "#ffd858"
+    }
     else
     if(getWaitingTime(start_dt) > 2 * 60 * 60)
-    classCss += ' Waiting1'
+    {
+      classCss += ' Waiting1'
+      color = "#46cb18"
+    }
     else
-    classCss += ' Waiting0'
-     
+    {
+      classCss += ' Waiting0'
+      color = "#88d969"
+
+    }
+  
+    if(className) 
     return classCss
+    else
+    return color
     
     }
     return (
@@ -375,7 +398,7 @@ const onFinish =async (values: any) => {
       autoComplete="off"
     >
       {
-        ro &&  props.selectedWf.task.value !== WF_TASK_START_GROUP.value && props.selectedWf.task.value !== WF_TASK_END_GROUP.value &&
+        ro &&  props.selectedWf.task.value !== WF_TASK_START_GROUP.value && props.selectedWf.task.value !== WF_TASK_END_GROUP.value &&  props.selectedWf?.status?.value !== WF_STATUS_CANCEL.value &&
          <Row  
          style={borderStyle('row')}
          >
@@ -383,24 +406,35 @@ const onFinish =async (values: any) => {
          
           > 
           <div style={{display:'flex', justifyContent:'space-between'}}>
-          {
+          {/* {
               props.selectedWf.start_dt && props.selectedWf.done_dt &&
               <> 
-                { 
-                  secondsToDhms(getDurationTime(+props.selectedWf.done_dt , +props.selectedWf.start_dt))
-                }
+              <i
+                 style={{fontSize: 24}}
+                  className={WaitingTime(true)}
+                  aria-hidden="true"
+                  
+                ></i>&nbsp;
+                <Badge.Ribbon 
+                 color={WaitingTime()}
+                 text={secondsToDhms(getDurationTime(+props.selectedWf.done_dt , +props.selectedWf.start_dt))}> 
+                 
+                 </Badge.Ribbon>
               </> 
-            }
+            } */}
             {
                props.selectedWf && props.selectedWf?.status && props.selectedWf?.status?.value === WF_STATUS_PEND.value &&
                <>
                  <i
                  style={{fontSize: 24}}
-                  className={WaitingTime()}
+                  className={WaitingTime(true)}
                   aria-hidden="true"
                   
                 ></i>&nbsp; 
-                {secondsToDhms(getWaitingTime(+props.selectedWf.start_dt))}
+                 <Badge.Ribbon 
+                 color={WaitingTime()}
+                 text={secondsToDhms(getWaitingTime(+props.selectedWf.start_dt))}> 
+                 </Badge.Ribbon>
               </>
 
             }
@@ -494,9 +528,7 @@ const onFinish =async (values: any) => {
         </Form.Item>      
       </Col>
       </Row>
-      {
-        props.selectedWf.status?.value === WF_STATUS_COMPLETE.value &&
-        <Row>
+      <Row>
       <Col   xl={8}  lg={12} sm={12} xs={24}> 
         
         
@@ -528,7 +560,6 @@ const onFinish =async (values: any) => {
         </Form.Item>      
       </Col>
       </Row>
-      }
       <Row>
       <Col   xl={8}  lg={12} sm={12} xs={24} >
            <Form.Item 

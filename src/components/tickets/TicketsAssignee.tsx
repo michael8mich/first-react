@@ -35,7 +35,7 @@ const TicketsAssignee:FC = () => {
   } as SearchPagination
   const {error, isLoading, tickets, ticketsCount } = useTypedSelector(state => state.ticket)
   const {selectSmall } = useTypedSelector(state => state.cache)
-  const {fetchTickets, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties,setAlert, setPathForEmpty, setCopiedTicket} = useAction()
+  const {fetchTickets, setSelectSmall, createTicket, createTicketActivity, setSelectedProperty, setProperties,setAlert, setPathForEmpty, setCopiedTicket, setQueriesCache} = useAction()
   const {user, defaultRole } = useTypedSelector(state => state.auth)
   const [typeSelect, setTypeSelect] = useState('')
   const queryParams = new URLSearchParams(window.location.hash);
@@ -48,10 +48,12 @@ const TicketsAssignee:FC = () => {
    }
    return where
   }
+  const [qName, setQName] = useState('')  
   useEffect(() => {
     if(Object.keys(queriesCache).find( k=> k === 'ticket')) {
       let arr:any = {...queriesCache}
       fetchTickets(searchP, dataPartition(arr['ticket']))
+      setQName(arr['ticket_label'])
     }
     else
     fetchTickets(searchP, dataPartition(where))  
@@ -489,6 +491,8 @@ const TicketsAssignee:FC = () => {
 
     const fastSearchArray = ['name', 'status_name', 'customer_name', 'description', 'team']
     const onFinish = async (values: any) => { 
+      setQName('')
+      setQueriesCache({ ticket: '', ticket_label: '' })
       console.log('Success:', values);
       let where_ = searchFormWhereBuild(values, fastSearchArray)
       fetchTickets({...searchP } , dataPartition(where_))
@@ -516,7 +520,7 @@ const TicketsAssignee:FC = () => {
     <Layout style={{height:"100vh"}}>
       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
-      <h1>{error}</h1>
+     <h1 className='ErrorH1'>{error}</h1>
       }
        <Form
        // layout="vertical"
@@ -813,7 +817,7 @@ const TicketsAssignee:FC = () => {
       bordered
       pagination={pagination}
       onChange={handleTableChange}
-      title={() => <h3>{t('tickets') + ' ' + t('total_count') + ' ' + ticketsCount }</h3> }
+      title={() => <h3>{t('tickets') + ' ' + t('total_count') + ' ' + ticketsCount }  { qName ? (t('query') +  ': ' + qName) : '' } </h3> }
       footer={() => t('total_count') + ' ' + ticketsCount}
       style={{width: '100%', padding: '5px'}}
       scroll={{ x: 1500, y: 550 }}
