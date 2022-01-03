@@ -8,12 +8,13 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import { SearchPagination, SelectOption } from '../../models/ISearch';
-import { searchFormWhereBuild } from '../../utils/formManipulation';
-import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
+import { nowDateString, searchFormWhereBuild, uTd } from '../../utils/formManipulation';
+import { FilterOutlined, FileExcelOutlined } from '@ant-design/icons/lib/icons';
 import { GROUP_LIST, IUserObjects, IUser, NOT_GROUP_LIST, TEAM_TYPE_ID } from '../../models/IUser';
 import { useHistory } from 'react-router-dom';
 import { RouteNames } from '../../router';
 import QueryBuild from '../../components/QueryBuild';
+import { CSVLink } from 'react-csv';
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
@@ -21,16 +22,19 @@ const WHERE_DEFAULT = ' active = 1  AND ' + NOT_GROUP_LIST
 
 const Users:FC = () => {
   const { t } = useTranslation();
-  const searchP = {
+  const searchP_ = {
     _limit: LIMIT_DEFAULT,
     _page: '1',
     _offset: SORT_DEFAULT
   } as SearchPagination
   const {error, isLoading, users, usersCount } = useTypedSelector(state => state.admin)
   const {selectSmall, queriesCache } = useTypedSelector(state => state.cache)
-  const {fetchUsers, setSelectSmall, setQueriesCache} = useAction()
+  const {fetchUsers, setSelectSmall, setQueriesCache, setAlert} = useAction()
   const [typeSelect, setTypeSelect] = useState('')
   const [qName, setQName] = useState('')  
+
+  const [searchP, setSearchP] = useState(searchP_)
+
   useEffect(() => {
     if(Object.keys(queriesCache).find( k=> k === 'contact')) {
       let arr:any = {...queriesCache}
@@ -209,6 +213,54 @@ const Users:FC = () => {
           <h1 style={{padding:'10px'}}>{   t('search')} { t('users')}</h1>
         )
     }
+    const columnsCsv: { label: string, key: string }[] = [
+      { label: t('last_name'), key: "last_name" }, 
+      { label: t('first_name'), key: "first_name" }, 
+      { label: t('email'), key: "email" }, 
+      { label: t('username'), key: "username" }, 
+      { label: t('locale'), key: "locale" }, 
+      { label: t('contact_number'), key: "contact_number" }, 
+      { label: t('job_title'), key: "job_title" }, 
+      { label: t('contact_type'), key: "contact_type" }, 
+      { label: t('phone'), key: "phone" }, 
+      { label: t('mobile_phone'), key: "mobile_phone" }, 
+      { label: t('additional_phone'), key: "additional_phone" }, 
+      { label: t('manager'), key: "manager" }, 
+      { label: t('organization'), key: "organization" }, 
+      { label: t('location'), key: "location" }, 
+      { label: t('department'), key: "department" }, 
+      { label: t('site'), key: "site" }, 
+      { label: t('defaultRole'), key: "defaultRole" }, 
+    ]
+     
+    const csvConvert = () => {
+      let tickets_csv:any[] = []
+          users.map( t => 
+            tickets_csv.push(
+              {
+                last_name: t.last_name,
+                first_name: t.first_name,
+                email: t.email,
+                username: t.login,
+                locale: t.locale,
+                contact_number: t.contact_number,
+                assignee: t.job_title?.label,
+                contact_type: t.contact_type?.label,
+                priority: t.phone,
+                mobile_phone: t.mobile_phone,
+                additional_phone: t.additional_phone,
+                manager: t.manager?.label,
+                organization: t.organization?.label,
+                location: t.location?.label,
+                department: t.department?.label,
+                site: t.site?.label,
+                defaultRole: t.defaultRole?.label,
+              }
+            )
+          )
+          return   tickets_csv
+    }
+       
   return (
     <Layout style={{height:"100vh"}}>
       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
@@ -256,6 +308,53 @@ const Users:FC = () => {
         } 
         
          </Col>
+         <Button 
+         >
+         <FileExcelOutlined style={{color:'#1eb386'}}/>&nbsp;
+         <CSVLink
+              filename={ t('users') + "_" + nowDateString() + ".csv" }
+              data={csvConvert()}
+              headers={columnsCsv}
+              className="btn btn-primary"
+              onClick={()=>{
+                setAlert({
+                  type: 'success' ,
+                  message: t('list_to_csv_success') ,
+                  closable: true ,
+                  showIcon: true ,
+                  visible: true,
+                  autoClose: 10 
+                })
+              }}
+            >
+              {t('export_to_csv')}
+            </CSVLink> 
+            </Button>
+            <Row >
+            
+              <Col>
+            <Input 
+            style={{
+                  width: 50,
+                  height: 31,
+                  marginLeft: 5,
+                  marginRight: 5,
+                  borderColor:'gray'
+                }}
+            value={pagination.pageSize}
+            onChange={(event) => {
+              setPagination({...pagination, pageSize: +event.target.value});
+              setSearchP({...searchP, _limit: event.target.value })   
+            }
+            }
+            />
+            </Col> 
+            <Col>
+            <label >
+            {t('size') + ' ' + t('page')}
+            </label>
+            </Col>
+            </Row>
          </div>
         </Row>
         {viewForm &&

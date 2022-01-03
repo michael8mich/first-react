@@ -2,10 +2,10 @@ import axios from 'axios'
 import FormData from 'form-data'
 import React from 'react';
 //----------local
-const SERVER = "https://localhost:44367"
+//const SERVER = "https://localhost:44367"
 //----------iis
 export const SSO_PATH = "http://mx/user/user.asp"
-//const SERVER = "http://mx/uta50"
+const SERVER = "http://mx/uta50"
 export const Base_URL = SERVER + "/v1/uta"
 const Base_URL_Email =  SERVER + "/v1/utaMail"
 const Base_URL_LOGIN =  SERVER + "/v1/utaAuth"

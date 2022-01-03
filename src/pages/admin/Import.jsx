@@ -10,9 +10,14 @@ import React from "react";
 import XLSX from "xlsx";
 import i18n from "i18next";
 import CloudUploadOutlined from '@ant-design/icons/lib/icons/CloudUploadOutlined';
+import { axiosFn } from '../../axios/axios.js';
+import { RouteNames } from '../../router';
+import { CacheActionCreators } from '../../store/reducers/cache/action-creators';
+import { useAction } from '../../hooks/useAction';
 
 export default class Import extends React.Component {
   constructor(props) {
+    debugger
     super(props);
     this.state = {
       data: [] /* Array of Arrays e.g. [["a","b"],[1,2]] */,
@@ -20,6 +25,39 @@ export default class Import extends React.Component {
     };
     this.handleFile = this.handleFile.bind(this);
     this.exportFile = this.exportFile.bind(this);
+  }
+
+  importList = () => {
+    let data = [...this.state.data]
+    let ids = []
+    debugger
+    data.map(async(r, i) => {
+      if(i>0)
+      {
+        let hasError
+        let user = {last_name: r[0],first_name: r[1], email:r[2], login:r[3], phone: r[4],mobile_phone: r[5], additional_phone: r[6]  }
+        const responseNew = await axiosFn("post", user, '*', 'contact', "id" , ''  )  
+        if(responseNew?.data["error"]) hasError = true;
+        if(responseNew?.data&&!hasError)
+        {
+            let new_id = responseNew.data[0].id
+            ids.push("'"+ new_id+ "'")
+        }
+        else {
+          //window.alert(user)
+          console.log(user, 'ERROR');
+        }  
+        console.log(user);
+        if(data.length===i+1){
+          let q = " ( id in ("+ ids.join() + ") ) "
+          let queriesCache = { ["contact"]: q, ["contact_label"]: 'Exported Users' }
+          CacheActionCreators.setQueriesCache(queriesCache)
+          this.props.history.push(RouteNames.USERS  )
+        }
+      }
+      
+      })
+
   }
   handleFile(file /*:File*/) {
     /* Boilerplate to set up FileReader */
@@ -61,11 +99,24 @@ export default class Import extends React.Component {
           <Row>
           <Col>
             <Button
+              type="primary" 
+              htmlType="button" 
               disabled={!this.state.data.length}
               className="btn btn-success"
               onClick={this.exportFile}
             >
               {i18n.t('export')} 
+            </Button>
+            </Col>
+            <Col>
+            <Button
+              type="primary" 
+              htmlType="button" 
+              disabled={!this.state.data.length}
+              className="btn btn-success"
+              onClick={this.importList}
+            >
+              {i18n.t('import')} 
             </Button>
             </Col>
         </Row>
@@ -133,7 +184,7 @@ class DataInput extends React.Component {
   render() {
     return (
       <form className="form-inline">
-        <div className="form-group">
+        <div className="form-group" style={{border:'1px gray solid', padding:10}}>
        
           <label htmlFor="file">
           <CloudUploadOutlined style={{fontSize:28}} />
@@ -165,9 +216,18 @@ class DataInput extends React.Component {
 */
 class OutTable extends React.Component {
   render() {
-    function handleChange(event) {
-      console.log(event.target.value);
+    const handleChange = (e,i_,ii_) => {
+      console.log(e.target.value);
+      let data = [...this.props.data]
+      data.map((r, i) => (
+          this.props.cols.map((c,ii) => {
+            if( i===i_&& ii===ii_ )
+            r[c.key] = e.target.value
+          }) 
+          ))
+      this.setState({ data :data });
     }
+
     return (
       <div className="table-responsive">
         <table className="table table-striped">
@@ -181,11 +241,12 @@ class OutTable extends React.Component {
           <tbody>
             {this.props.data.map((r, i) => (
               <tr key={i}>
-                {this.props.cols.map(c => (
+                {this.props.cols.map((c,ii) => (
                   <td key={c.key}>
                     <input 
+                    disabled={i===0}
                     value= {r[c.key]}
-                    onChange={handleChange}
+                    onChange={(event) => handleChange(event,i,ii)}
                     />                     
                   </td>
                 ))}

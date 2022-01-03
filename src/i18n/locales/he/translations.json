@@ -256,6 +256,10 @@
          "import": "ייבוא נתונים",
          "export": "יצוא נתונים",
          "spreadsheet": "גיליון אלקטרוני",
+         "defaultRole": "תפקיד ברירת מחדל",
+         "count": "כמות",
+         "size": "גודל",
+
  
          
         "TICKET_OPENED_BY_TEAM": "פניות פעילות לפי צוות",

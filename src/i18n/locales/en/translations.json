@@ -257,6 +257,10 @@
         "import": "Import Data",
         "export": "export Data",
         "spreadsheet":"Spreadsheet",
+        "defaultRole": "Default Role",
+        "count": "Count",
+        "size": "Size",
+       
 
         "TICKET_OPENED_BY_TEAM": "Active Tickets by Team",
         "TICKET_OPENED_BY_PRIORITY": "Active Tickets by Priority",

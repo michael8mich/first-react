@@ -108,6 +108,7 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
     }
     const goToQuery = (q:IQuery) => {
       if(props.edit || !props.sider) return
+      debugger
       setQueriesCache({ [q.factory]: q.query, [q.factory+'_label']: q.name })
       if(q.factory === 'ticket') {
         router.push(RouteNames.TICKETS)

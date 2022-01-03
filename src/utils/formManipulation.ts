@@ -168,3 +168,7 @@ export const removeNewRow = ( val:string ) => {
  return val.replace(/(?:\\[rn]|[\r\n]+)+/g, "")
 
 }
+ export const nowDateString = () => {
+  return moment().format('mm:HH YYYY/MM/DD').toString();
+
+ }

@@ -386,7 +386,7 @@ const TicketsAssignee:FC = () => {
     { label: t('ticket_status'), key: "ticket_status" }, 
     { label: t('team'), key: "team" }, 
     { label: t('assignee'), key: "assignee" }, 
-    { label: t('category'), key: "category" }, 
+    { label: t('tcategory'), key: "category" }, 
     { label: t('priority'), key: "priority" }, 
     { label: t('urgency'), key: "urgency" }, 
     { label: t('description'), key: "description" }, 
@@ -566,7 +566,7 @@ const TicketsAssignee:FC = () => {
          >
          <FileExcelOutlined style={{color:'#1eb386'}}/>&nbsp;
          <CSVLink
-              filename={"Expense_Table.csv"}
+              filename={ t('tickets') + ".csv" }
               data={csvConvert()}
               headers={columnsCsv}
               className="btn btn-primary"
