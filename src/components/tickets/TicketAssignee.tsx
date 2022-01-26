@@ -839,16 +839,21 @@ const TicketAssignee:FC = () => {
 
         }
 
-{
+        {     
              form.getFieldValue('status')?.value !== STATUS_CANCELED.value && form.getFieldValue('status')?.value !== STATUS_CLOSE.value &&
-             <>
-             <Popconfirm title={t('are_you_sure_cancel')} okText={t('yes')} cancelText={t('no')}  onConfirm={() =>  toCancel('Cancel Comment')}>
-              <Button type="primary" htmlType="button" key="toCancel"
+           
+             <Popconfirm title={t('are_you_sure_cancel')} 
+             okText={t('yes')} cancelText={t('no')}  
+             onConfirm={() =>  toCancel('Cancel Comment')} 
+             key="toCancel">
+               <>
+              <Button type="primary" htmlType="button" 
               >
               { t('toCancel') }
               </Button>&nbsp;&nbsp;&nbsp;
-              </Popconfirm>
               </>
+              </Popconfirm>
+           
 
         }
 
@@ -1446,7 +1451,8 @@ const TicketAssignee:FC = () => {
           onClose={() => setCustomerInfo(false)}
           visible={customerInfo}
           key={'customerInfo'}
-          width={ width>1000 ? 640 : 340 }
+          // width={ width>1000 ? 640 : 340 }
+          width={ width>1000 ? 640 : '90%' }
         >
           <CloseCircleOutlined  style={{fontSize:28,color:'gray'}} onClick={() => setCustomerInfo(false)} />
        {

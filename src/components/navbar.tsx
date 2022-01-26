@@ -1,7 +1,6 @@
-import React, {FC, useEffect, useState} from 'react';
-import { Layout, Row, Menu, Avatar, Button } from 'antd';
-import { MenuFoldOutlined, UserOutlined, MenuUnfoldOutlined,LogoutOutlined, LoginOutlined, CrownOutlined, RiseOutlined, GlobalOutlined,
-  SettingOutlined } from '@ant-design/icons';
+import  {FC, useEffect} from 'react';
+import {  Menu, Avatar } from 'antd';
+import {  UserOutlined,LogoutOutlined, LoginOutlined, CrownOutlined, RiseOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
 import { useTypedSelector } from '../hooks/useTypedSelector';
@@ -10,23 +9,17 @@ import SubMenu from 'antd/lib/menu/SubMenu';
 import { useTranslation } from 'react-i18next';
 import { ITicket, ITicketPrpTpl } from '../models/ITicket';
 import useWindowDimensions from '../hooks/useWindowDimensions';
-import { axiosFn } from '../axios/axios';
-import { DEFAULT_ROLE, IUser, NOT_GROUP_LIST } from '../models/IUser';
-import { setSourceMapRange } from 'typescript';
-import { SelectOption } from '../models/ISearch';
+import { DEFAULT_ROLE } from '../models/IUser';
 import AdminBar from './Adminbar';
 
 const Navbar: FC = () => {
     const { t, i18n } = useTranslation();      
     const router = useHistory()
     const {isAuth, user,defaultRole } = useTypedSelector(state => state.auth)
-    const {logout, setSelectedProperty, setProperties, setSelectedTicket, setPathForEmpty, setDefaultRole} = useAction()
+    const {logout, setSelectedProperty, setProperties, setSelectedTicket, setPathForEmpty, fetchNotificationsAll,
+      setDefaultRole} = useAction()
     const {setUser, refreshStorage} = useAction()
-    const [collapsed,setCollapsed] =  useState(true)
  
-    const toggleCollapsed = () => {
-      setCollapsed(!collapsed)
-    };
 
     function changeLen(len:string) {
       setUser({ ...user , locale: len})
@@ -43,7 +36,8 @@ const Navbar: FC = () => {
       setProperties([] as ITicketPrpTpl[])
       pathTrowEmpty(RouteNames.TICKETS + '/0')
     }
-    // const [defaultRole, setDefaultRole] = useState({} as SelectOption)
+    
+    
     useEffect(() => {
       if(Object.keys(defaultRole).length !== 0 ) return
       if(user)
@@ -63,32 +57,27 @@ const Navbar: FC = () => {
       
     }, [defaultRole,user.roles ])
 
-    
+    useEffect(() => {
+    fetchNotificationsAll() }, [])
 
     const { height, width } = useWindowDimensions();
     return (
         <>
-        {/* <button onClick={() => window.location.reload()}>Click to reload!</button> */}
-          {/* <Row justify="start" style={{width:'100%'}}> */}
           {
            isAuth
               ? 
-              <div style={{display:'flex', justifyContent:'space-between',background:'#001529'}} >
-                <div hidden={width<400} style={{color:'rgba(255, 255, 255, 0.65)',background:'#00152'}} >
-                <Avatar size={32} icon={<UserOutlined />} 
-                src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
-                />&nbsp;
-                  {user.name} - {user.locale === 'heIL' ? 'עברית' : 'English'}
-                </div> 
-                <div  style={{ width: '100vh',background:'#001529' }} >
                   <Menu theme="dark" mode="horizontal" 
                   selectable={true}
                   forceSubMenuRender={true}
                   title="Menu"
                   >
+                      <Menu.Item    key="user" >
+                        <Avatar size={32} icon={<UserOutlined />} 
+                         src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
+                        />&nbsp;
+                        {user.name}
+                      </Menu.Item>
                       <Menu.Item  onClick={logout}  key="logout" ><LogoutOutlined />{ t('logout') }</Menu.Item>
-                      {/* <Menu.Item key="events" onClick={() => router.push(RouteNames.EVENT) } >
-                        { t('events') }</Menu.Item> */}
                       {
                          user.roles &&
                          <SubMenu  key="roles" title={ defaultRole ? defaultRole.label : '' } 
@@ -107,7 +96,8 @@ const Navbar: FC = () => {
                       }
                   
           
-                      <SubMenu key="Language" title={ t('language') }
+                      <SubMenu key="Language" title={ t(user.locale) }  
+
                       icon={<GlobalOutlined />}
                       >
                         <Menu.Item key="enUS" disabled={user.locale === 'enUS'} onClick={() => changeLen('enUS') }  >{ t('english') }</Menu.Item>
@@ -136,8 +126,6 @@ const Navbar: FC = () => {
                       }
                       
                   </Menu>
-                </div>
-              </div>
               :
               <>
               <Menu theme="dark" mode="horizontal" selectable={false}>
@@ -147,7 +135,7 @@ const Navbar: FC = () => {
               </Menu>
               </>  
           }
-          {/* </Row> */}
+         
   </>
     )
   }

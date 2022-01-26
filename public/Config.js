@@ -1,6 +1,4 @@
-export var CONFIG = {
-    SSO: true,
-    SSO_PATH: '',
-    KN_PATH: '',
-    HOSTNAME: "http://localhost:3000"
+var CONFIG = {
+    "SSO_PATH": "http://mx/user/user.asp",
+    "SERVER": "http://mx/uta50"
 }

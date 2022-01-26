@@ -82,6 +82,7 @@ const SiderAssignee: FC<SiderComponentProps> = (props) => {
     const getTeams = async () => {
       const teams_query =  await axiosFn('get', '', '* ', ' V_contacts ', GROUP_LIST + " order by name asc")
       let teams:IUser[] = teams_query.data
+      if(teams)
       setTeams(teams)
     }
     const [siderQueries, setSiderQueries] = useState([] as IQuery[])

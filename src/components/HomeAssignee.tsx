@@ -84,13 +84,15 @@ const getQueries = async () => {
     let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" + HOME_FOLDER + "' order by seq " , '' )  
     let result_query_Arr:IQuery[] =  result_query?.data 
     
-    if(result_query_Arr)
-    result_query_Arr.map(async ( q, index) =>  {
-      let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.factory === 'ticket' ? dataPartition(q.query) : q.query , '' )  
-      q.count = q_result.data[0].cnt
-      q.index = index
-    })
-    setQueries(result_query_Arr)
+    if(result_query_Arr) {
+      result_query_Arr.map(async ( q, index) =>  {
+        let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.factory === 'ticket' ? dataPartition(q.query) : q.query , '' )  
+        q.count = q_result.data[0].cnt
+        q.index = index
+      })
+      setQueries(result_query_Arr)
+    }
+    
   } catch(e){}
  
 }  

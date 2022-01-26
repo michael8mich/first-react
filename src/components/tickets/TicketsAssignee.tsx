@@ -561,7 +561,7 @@ const TicketsAssignee:FC = () => {
           style={{color:'green', fontSize: '24px'}}  
           rotate={180} />  
         } 
-         </Col>
+         
          <Button 
          >
          <FileExcelOutlined style={{color:'#1eb386'}}/>&nbsp;
@@ -584,6 +584,7 @@ const TicketsAssignee:FC = () => {
               {t('export_to_csv')}
             </CSVLink> 
             </Button>
+            </Col>
          </div>
         </Row>
         {viewForm &&

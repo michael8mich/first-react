@@ -28,7 +28,7 @@ const { Header, Sider, Content } = Layout;
 const App:FC = () => {
   let defaultLen = 'heIL'
   const { i18n } = useTranslation();   
-  const {setUser, setIsAuth, setFromLocation, fetchLoginUser, fetchNotificationsAll, sso} = useAction()
+  const {setUser, setIsAuth, setFromLocation, fetchLoginUser, sso} = useAction()
   const {isAuth, user } = useTypedSelector(state => state.auth) 
   const {alert } = useTypedSelector(state => state.admin) 
   const [collapsed, setCollapsed] = useState(true)
@@ -55,7 +55,7 @@ const App:FC = () => {
       goToLogin()
       //check_sso()
     }
-    fetchNotificationsAll()
+   
   }, [])
  
   const  check_sso = async () => {
@@ -96,7 +96,7 @@ const App:FC = () => {
      {
        isAuth ? 
        <> 
-        <Sider hidden={width<500} trigger={null} collapsible collapsed={collapsed} onCollapse={() => setCollapsed(collapsed ? false : true)}>
+        <Sider hidden={width<500} trigger={null} collapsible collapsed={width < 600 ? true :  collapsed} onCollapse={() => setCollapsed(collapsed  ? false : true)}>
         <SiderComponent
         collapsed={collapsed}
         setCollapsed={setCollapsed}

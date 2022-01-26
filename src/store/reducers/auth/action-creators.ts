@@ -89,7 +89,7 @@ export const AuthActionCreators =  {
             dispatch(AuthActionCreators.setIsError(i18n.t('login_incorrect'))) 
         }   
        } catch (e) {
-       dispatch(AuthActionCreators.setIsError(i18n.t('axios_error')))        
+       dispatch(AuthActionCreators.setIsError(i18n.t('network_error')))        
       } finally {
         dispatch(AuthActionCreators.IsLoading(false))
       }
