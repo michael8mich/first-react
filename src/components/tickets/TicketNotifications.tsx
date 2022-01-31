@@ -16,6 +16,7 @@ const TicketNotifications:FC = () => {
        dataIndex: 'name',
        sorter: (a:any, b:any) =>  a.name.localeCompare(b.name),
        width: '10%',
+       fixed: 'left'
      },
      {
        key: 'send_to',

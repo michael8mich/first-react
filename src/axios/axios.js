@@ -6,13 +6,15 @@ import FormData from 'form-data'
 //const SERVER = "https://localhost:44367"
 //----------iis
 export const SSO_PATH = window.CONFIG.SSO_PATH //"http://mx/user/user.asp"
-const SERVER = window.CONFIG.SERVER // "http://mx/uta50"
+const SERVER = window.CONFIG.SERVER // "http://mx"
+const SS_APP = window.CONFIG.SS_APP //uta50
+export const CHECK_SSO = window.CONFIG.CHECK_SSO //false
 //---------- local iis
 //const SERVER = "http://192.168.83.230/uta"
 
-export const Base_URL = SERVER + "/v1/uta"
-const Base_URL_Email = SERVER + "/v1/utaMail"
-const Base_URL_LOGIN = SERVER + "/v1/utaAuth"
+export const Base_URL = SERVER + "/" + SS_APP + "/v1/uta"
+const Base_URL_Email = SERVER + "/" + SS_APP + "/v1/utaMail"
+const Base_URL_LOGIN = SERVER + "/" + SS_APP + "/v1/utaAuth"
 const HOSTNAME = "http://localhost:3000"
 export class TOKEN {
   static token = ''
@@ -54,14 +56,14 @@ export async function axiosFn(type, data, first, second, third, id = '', limit =
         headers: headers
       })
   } catch (e) {
-    if (e.toString().indexOf('status code 401') != -1) {
+    if (e.toString().indexOf('status code 401') !== -1) {
       localStorage.removeItem('isAuth')
       localStorage.removeItem('token')
       TOKEN.token = ""
-      // let href = window.location.href.toString() || ''
-      // console.log('href.indexOf(login)', href.indexOf('login'));
-      // if(href.indexOf('login') == -1)
-      // window.location = HOSTNAME + "#/login"
+      let href = window.location.href.toString() || ''
+      console.log('href.indexOf(login)', href.indexOf('login'));
+      if (href.indexOf('login') !== -1)
+        window.location = HOSTNAME + "#/login"
     }
     return [{ error: e }]
   }
@@ -89,7 +91,7 @@ export async function axiosFnUpload(file, id) {
     })
 
   } catch (e) {
-    if (e.toString().indexOf('status code 401') != -1) {
+    if (e.toString().indexOf('status code 401') !== -1) {
       localStorage.removeItem('isAuth')
       localStorage.removeItem('token')
       TOKEN.token = ""
@@ -115,7 +117,7 @@ export async function axiosFnEmail(ToEmail, Subject, Body) {
     })
 
   } catch (e) {
-    if (e.toString().indexOf('status code 401') != -1) {
+    if (e.toString().indexOf('status code 401') !== -1) {
       localStorage.removeItem('isAuth')
       localStorage.removeItem('token')
       TOKEN.token = ""
@@ -131,7 +133,7 @@ export async function axiosFnLogin(username, password) {
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE'
   }
   try {
-    let data = new Object()
+    let data = {}
     data.username = username
     data.password = password
     return await axios.post(path, data, {

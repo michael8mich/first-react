@@ -66,14 +66,14 @@ const Cis:FC = () => {
       title: t('name'),
       dataIndex: 'name',
       sorter: true,
-      fixed: 'left',
       width: 120,
       render: (name, record, index) => {
         return (
           <a onClick={(event) => goToObject(event, record.id  ) }>
             {name} 
           </a>
-        );}
+        );},
+        fixed: 'left',
     
     },
     {

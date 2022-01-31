@@ -1,7 +1,6 @@
-import {Form, Input, Button, Select, DatePicker,TimePicker, Row, Alert, AlertProps, message}  from 'antd';
-import  {FC, useEffect, useState} from 'react';
+import { message}  from 'antd';
+import  {FC, useEffect} from 'react';
 import { useAction } from '../hooks/useAction';
-
 import { AlertPrp } from '../models/admin/IUtil';
 
 
@@ -17,16 +16,16 @@ const AlertComponent: FC<AlertPrp> = (props) => {
     }
     , [props])
     
-    const autoClose = () => {
-    const seconds = props?.autoClose || 0
-    if(seconds > 0) 
-        setTimeout(() => {
-          let new_alert = {} as AlertPrp
-          setAlert({...new_alert , visible: false
-          })
-        }, seconds*1000);
+    // const autoClose = () => {
+    // const seconds = props?.autoClose || 0
+    // if(seconds > 0) 
+    //     setTimeout(() => {
+    //       let new_alert = {} as AlertPrp
+    //       setAlert({...new_alert , visible: false
+    //       })
+    //     }, seconds*1000);
 
-    }
+    // }
 
     return (
       <div></div>

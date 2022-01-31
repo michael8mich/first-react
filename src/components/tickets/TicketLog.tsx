@@ -15,20 +15,7 @@ const TicketLog:FC = () => {
         dataIndex: 'name',
         sorter: (a:any, b:any) =>  a.name.localeCompare(b.name),
         width: '10%',
-      },
-      {
-        key: 'old_value',
-        title: t('old_value'),
-        dataIndex: 'old_value',
-        sorter: (a:any, b:any) =>  a.old_value.localeCompare(b.old_value),
-        width: '35%',
-      },
-      {
-        key: 'new_value',
-        title: t('new_value'),
-        dataIndex: 'new_value',
-        sorter: (a:any, b:any) =>  a.new_value.localeCompare(b.new_value),
-        width: '35%',
+        fixed: 'left',
       },
       {
         key: 'last_mod_dt',
@@ -40,6 +27,21 @@ const TicketLog:FC = () => {
               {uTd(record.last_mod_dt)} 
               </>
           );}
+          
+      },
+      {
+        key: 'new_value',
+        title: t('new_value'),
+        dataIndex: 'new_value',
+        sorter: (a:any, b:any) =>  a.new_value.localeCompare(b.new_value),
+        width: '35%',
+      },
+      {
+        key: 'old_value',
+        title: t('old_value'),
+        dataIndex: 'old_value',
+        sorter: (a:any, b:any) =>  a.old_value.localeCompare(b.old_value),
+        width: '35%',
       },
       {
         key: 'last_mod_by',

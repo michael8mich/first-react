@@ -200,7 +200,7 @@ const TicketsAllWfs:FC = () => {
       key: 'ticket_name',
       title: t('ticket_name'),
       sorter: true,
-      fixed: 'left',
+     
       width: 140,
       render: (ticket_name, record, index) => {
         return (
@@ -208,7 +208,8 @@ const TicketsAllWfs:FC = () => {
              onClick={(event) => goToObject(event, record.ticket?.value, record.id  ) } style={{cursor: 'pointer'}}>
              {  record.ticket?.label }  
           </div>
-        );}
+        );},
+        fixed: 'left',
     },
     {
       key: 'name',
@@ -225,14 +226,14 @@ const TicketsAllWfs:FC = () => {
       key: 'task',
       title: t('task'),
       sorter: true,
-      fixed: 'left',
       width: 140,
       render: (task, record, index) => {
         return (
           <div>
              {  record.task?.label }  
           </div>
-        );}
+        );},
+        fixed: 'left'
     },
     {
       key: 'start_dt',
@@ -303,13 +304,13 @@ const TicketsAllWfs:FC = () => {
       title: t('tcategory'),
       dataIndex: 'category',
       sorter: true,
-      fixed: width > 500 && 'right' ,
       render: (category, record ) => {
         return (
             <div>        
             {record.tcategory && record.tcategory?.label} 
             </div>
-        );}
+        );},
+        fixed: width > 500 && 'right' 
     }
   ]
   const columnsCsv: { label: string, key: string }[] = [

@@ -237,7 +237,6 @@ const TicketsAssignee:FC = () => {
       title: t('ticket_name'),
       dataIndex: 'name',
       sorter: true,
-      fixed: 'left',
       width: 140,
       render: (name, record, index) => {
         return (
@@ -285,8 +284,8 @@ const TicketsAssignee:FC = () => {
              
           </div>
           </Dropdown>
-        );}
-    
+        );},
+        fixed: 'left',
     },
     {
       key: 'create_date',
@@ -370,13 +369,13 @@ const TicketsAssignee:FC = () => {
       title: t('tcategory'),
       dataIndex: 'category',
       sorter: true,
-      fixed: width > 500 && 'right' ,
       render: (category, record ) => {
         return (
             <div>        
             {record.category && record.category?.label} 
             </div>
-        );}
+        );},
+        fixed: width > 500 && 'right' 
     }
   ]
   const columnsCsv: { label: string, key: string }[] = [

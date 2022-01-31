@@ -1,53 +1,32 @@
 import React, {FC, useEffect, useState } from 'react';
-import {  DragDropContext,
-  Draggable,
-  DraggingStyle,
-  Droppable,
-  DropResult,
-  NotDraggingStyle } from 'react-beautiful-dnd';
-import { Bar, Gauge, Pie, Liquid, measureTextWidth, Waterfall, Treemap  } from '@ant-design/charts';
 import { axiosFn } from '../axios/axios';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from '../hooks/useTypedSelector';
-import { AutoComplete, Avatar, Badge, Button, Card, Col, Input, Popconfirm, Row, Tooltip } from 'antd';
+import { AutoComplete,  Badge, Button, Card, Col, Input,  Row, Tooltip } from 'antd';
 import { SelectProps } from 'antd/es/select';
-import { ReloadOutlined, PlusCircleOutlined, MinusCircleOutlined,EditOutlined, 
-  CloseCircleOutlined, DeleteOutlined,SearchOutlined } from '@ant-design/icons';
+import { ReloadOutlined,SearchOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import { useAction } from '../hooks/useAction';
-import { HOME_FOLDER, IQuery } from '../models/ISearch';
+import {  IQuery } from '../models/ISearch';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
-import Drd from './DrugAndDrop';
-import { ANALYST_DTP, ANALYST_DTP_REPORTS, EMPLOYEE_DTP } from '../models/IUser';
-import { FROM, SELECT, WHERE } from '../utils/formManipulation';
-import { IIFrame, ITicket, ITicketPrpTpl, PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM } from '../models/ITicket';
-import { IChatQuery } from '../models/IChart';
-import { Content } from 'antd/lib/layout/layout';
+import { EMPLOYEE_DTP } from '../models/IUser';
+import { IIFrame, ITicket, ITicketPrpTpl } from '../models/ITicket';
 import { IUtil } from '../models/admin/IUtil';
 import classes from './HomeEmployee.module.css'
 import Iframe from 'react-iframe'
 import CloseOutlined from '@ant-design/icons/lib/icons/CloseOutlined';
 import useWindowDimensions from '../hooks/useWindowDimensions';
-const {Meta} = Card
-  
-
 
 const HomeEmployee: FC = () => {
-  const { user, defaultRole } = useTypedSelector(state => state.auth)
-  const { configs} = useTypedSelector(state => state.cache)
-  const {setConfigs, setConfigsArr } = useAction()
-  const {logout, setSelectedProperty, setProperties, setSelectedTicket,setPathForEmpty} = useAction()
+  const { user } = useTypedSelector(state => state.auth)
+  const { setSelectedProperty, setProperties, setSelectedTicket,setPathForEmpty} = useAction()
   const dataPartition = (where: string, report: boolean = false) => {
      return EMPLOYEE_DTP.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
    }
   
   const { t } = useTranslation();    
 
-  let chart: any;
-  
-  const [getMore, setGetMore] =  useState(false) 
-  const [edit, setEdit] =  useState(false) 
   const {setQueriesCache} = useAction()
   const router = useHistory()
 
@@ -67,9 +46,7 @@ const HomeEmployee: FC = () => {
     console.log('onSelect', value);
   };
 
-  function getRandomInt(max: number, min: number = 0) {
-    return Math.floor(Math.random() * (max - min + 1)) + min; // eslint-disable-line no-mixed-operators
-  }
+
   const [knArray, setKnArray] = useState([] as IUtil[])
   const emptyFrame:IIFrame ={width:'0px', height:'0px', url:''}
   const [selectedKn, setSelectedKn] = useState(emptyFrame) 
@@ -105,13 +82,7 @@ const HomeEmployee: FC = () => {
   } 
 
     
-  const toDataURL = () => {
-    console.log(chart?.toDataURL());
-  };
-  interface CHART_CONFIG  {
-    name: String
-    config: any[]
-  }
+ 
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -119,7 +90,7 @@ const HomeEmployee: FC = () => {
     }, 300000);
     return () => clearInterval(interval);
   }, []);
-  const {fetchQueries,setAlert} = useAction()
+  
   const [queries, setQueries] = useState([] as IQuery[])
   useEffect(  ()  => {
     if(user) {
@@ -202,7 +173,6 @@ const getQueries = async () => {
 }  
 
   const goTo = (q:IQuery) => {
-    if(edit) return
     if(q.factory === 'ticket') {
       setQueriesCache({ [q.factory]: q.query })
       router.push(RouteNames.TICKETS)
@@ -226,10 +196,7 @@ const getQueries = async () => {
   }
   //---------------------------------------
 
-  const getListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
-    background: isDraggingOver ? "lightblue" : "transparent",
-  });
-  const { height, width } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const autocompleteStyle = () => {
     let width_ = width<400 ? 250 : 700
     return { width: width_, height: '32px'}
@@ -246,21 +213,25 @@ const getQueries = async () => {
       <Col  xs={24} xl={3} lg={5}  sm={12} key={'q_col_first'}></Col>
       {queries.map((q, index) =>( 
                 
-                        <Col  xs={24} xl={6} sm={24} lg={6}   key={q.id}
+                        <Col  xs={24} xl={6} sm={24} lg={6}   key={index}
                         >
-                        <Card   key={q.id} 
-                        className={'homeQueryCard'}
+                         <Tooltip title={q.name + ' ' + q.count}>
+                          <div   key={q.id} 
+                        className='homeQueryCard'
                         onClick={()=>goTo(q)}
                         >
-                        <div  key={1} style={{alignItems:'center',textAlign:'center'}}>
-                        <Tooltip title={q.name}>
-                        {q.name.toString().substring(0,40)} 
+                        <Badge.Ribbon  text={q.count} color="#f5222d">
+                        <Card size="small" title= {q.name.toString().substring(0,40)}    style={{alignItems:'center',textAlign:'center',color:'white'}}
+                        bodyStyle={{height:1,padding:1}}
+                        headStyle={{background: 'lightgrey',
+                        border: '1px solid #28a4ae',
+                        borderRadius:5
+                          }}
+                        >
+                        </Card>  
+                        </Badge.Ribbon>   
+                        </div>
                         </Tooltip>
-                        </div> 
-                        <div key={2} style={{alignItems:'center',textAlign:'center'}}>
-                         <b>{q.count}</b>
-                        </div> 
-                        </Card>
                        </Col>                   
           )) 
     }    

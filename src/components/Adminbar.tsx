@@ -1,15 +1,12 @@
-import React, {FC} from 'react';
+import  {FC} from 'react';
 import {  Menu} from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
 import SubMenu from 'antd/lib/menu/SubMenu';
 import { useTranslation } from 'react-i18next';
-
-
-
 const AdminBar: FC = () => {
-    const { t, i18n } = useTranslation();      
+    const { t } = useTranslation();      
     const router = useHistory()
     return (
     
@@ -24,10 +21,6 @@ const AdminBar: FC = () => {
                         <Menu.Item key="tcategories" onClick={() => router.push(RouteNames.TCATEGORIES) } >{ t('tcategories') }</Menu.Item>
                         <Menu.Item key="import" onClick={() => router.push(RouteNames.IMPORT) } >{ t('import') }</Menu.Item>
                       </SubMenu>
-                      
-       
     )
   }
-  
-  
   export default AdminBar;

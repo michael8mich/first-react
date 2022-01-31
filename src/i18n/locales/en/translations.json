@@ -266,6 +266,7 @@
        
 
         "TICKET_OPENED_BY_TEAM": "Active Tickets by Team",
+        "TICKET_OPENED_BY_ASSIGNEE": "Active Tickets by Assignee",
         "TICKET_OPENED_BY_PRIORITY": "Active Tickets by Priority",
         "TICKET_OPENED_BY_URGENCY": "Active Tickets by Urgency",
         "TICKET_OPENED_BY_CATEGORY": "Active Top 10 Tickets by Category",

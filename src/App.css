@@ -61,12 +61,13 @@ body {
     box-sizing: border-box;
 }
 .homeQueryCard {
-    /* border: 3px solid #cc3333; */
-    border-radius:5px;
+    /* border: 1px solid #28a4ae;
+    border-radius:5px; */
     padding:'10px';
     margin:10px;
-    color:white;;
-    background: linear-gradient(to bottom, #01a77c 0%,#28a4ae 100%);
+    color:white!important;
+    /* background: #f5222d; */
+    /* linear-gradient(to bottom, #01a77c 0%,#28a4ae 100%); */
       /* rgba(234,107,76,255); */
     /* #FAAD14;  */
     font-size:18px;
@@ -77,7 +78,7 @@ body {
 .homeQueryCard:hover {
     align-items: center;
     text-align: center;
-    color: white;
+    color: white!important;
     font-size: 19px;
     /* border: 10 solid green; */
   }

@@ -1,107 +1,123 @@
 import React, {FC, useEffect, useState } from 'react';
 import {  DragDropContext,
   Draggable,
-  DraggingStyle,
   Droppable,
-  DropResult,
-  NotDraggingStyle } from 'react-beautiful-dnd';
-import { Bar, Gauge, Pie, Liquid, measureTextWidth, Waterfall, Treemap  } from '@ant-design/charts';
+  DropResult } from 'react-beautiful-dnd';
+import { Bar, Gauge, Pie, Liquid,  Waterfall, Treemap  } from '@ant-design/charts';
 import { axiosFn } from '../axios/axios';
 import { useTranslation } from 'react-i18next';
+import { useInterval } from '../hooks/useInterval'
 import { useTypedSelector } from '../hooks/useTypedSelector';
-import { Card, Col, Popconfirm, Row, Tooltip } from 'antd';
+import { Badge, Card, Col, Popconfirm, Row, Tooltip } from 'antd';
 import { ReloadOutlined, PlusCircleOutlined, MinusCircleOutlined,EditOutlined, CloseCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import { useAction } from '../hooks/useAction';
 import { HOME_FOLDER, IQuery } from '../models/ISearch';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
-import Drd from './DrugAndDrop';
 import { ANALYST_DTP, ANALYST_DTP_REPORTS } from '../models/IUser';
 import { FROM, SELECT, WHERE } from '../utils/formManipulation';
 import { PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM } from '../models/ITicket';
 import { IChatQuery } from '../models/IChart';
   
 
+interface HomeAssigneeProps {
+  defaultRoleLabel: string
+}
 
-
-const HomeAssignee: FC = () => {
+const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
   const { user, defaultRole } = useTypedSelector(state => state.auth)
-  const { configs} = useTypedSelector(state => state.cache)
-  const {setConfigs, setConfigsArr } = useAction()
-  const dataPartition = (where: string, report: boolean = false) => {
-    if(defaultRole)
-    if(defaultRole.label !== 'Admin') {
-      if(report)
-     return ANALYST_DTP_REPORTS.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
-     else
-     return ANALYST_DTP.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
-    }
-    return where
-   }
-  
   const { t } = useTranslation();    
 
-  let chart: any;
   
   const [getMore, setGetMore] =  useState(false) 
   const [edit, setEdit] =  useState(false) 
+  const [selectedTeam, setSelectedTeam] =  useState('')
   const {setQueriesCache} = useAction()
   const router = useHistory()
+  const dataPartition = (where: string, report: boolean = false, userDefaultRole = defaultRole) => {
+        if(userDefaultRole.label !== 'Admin') {
+            if(report)
+          return ANALYST_DTP_REPORTS.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
+          else
+          return ANALYST_DTP.replace(/currentUser/g, user.id) + ( where !== '' ? " AND ( " + where + ")" : "" )
+      }
+      return where
+   }
+  
   // Export Image
-  const downloadImage = () => {
-    chart?.downloadImage();
-  };
+  // const downloadImage = () => {
+  //   chart?.downloadImage();
+  // };
 
   // Get chart base64 string
-  const toDataURL = () => {
-    console.log(chart?.toDataURL());
-  };
-  interface CHART_CONFIG  {
-    name: String
-    config: any[]
-  }
+  // const toDataURL = () => {
+  //   console.log(chart?.toDataURL());
+  // };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-        getData()
-        getQueries()     
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
-  const {fetchQueries,setAlert} = useAction()
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     refresh.bind(null, defaultRole)()
+  //   }, 10000);
+  //   return () => clearInterval(interval);
+  // }, []);
+
+
+  useInterval(() => {
+    refresh.bind(null, defaultRole)()
+  }, 10000);
+
+  const {setAlert} = useAction()
   const [queries, setQueries] = useState([] as IQuery[])
+  const [ticket_open_by_team_data, setTicket_open_by_team_data ] = useState()
+  const [ticket_open_by_assignee_data, setTicket_open_by_assignee_data ] = useState()
+  const [ticket_open_by_team_name, setTicket_open_by_team_name ] = useState()
+
+  const [ticket_open_by_priority_data, setTicket_open_by_priority_data ] = useState([])
+  const [ticket_open_by_urgency_data, setTicket_open_by_urgency_data ] = useState([])
+  const [ticket_open_by_category_data, setTicket_open_by_category_data ] = useState([])
+  const [ticket_opened_percent_high_priority_data, setTicket_opened_percent_high_priority_data ] = useState({target:0,all:0})
+  const [ticket_opened_percent_high_urgency_data, setTicket_opened_percent_high_urgency_data ] = useState({target:0,all:0})
+  const [ticket_opened_closed_today_data, setTicket_opened_closed_today_data ] = useState({target:0,all:0})
+  const [ticket_by_weekday, setTicket_by_weekday ] = useState([])
+  
   useEffect(  ()  => {
-    if(user) {
+    if(defaultRole?.label) {
       getData()
       getQueries()
     }
-  }, [user])
+  }, [defaultRole])
 
 
-const getQueries = async () => {
-  try {
-    let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" + HOME_FOLDER + "' order by seq " , '' )  
-    let result_query_Arr:IQuery[] =  result_query?.data 
-    
-    if(result_query_Arr) {
-      result_query_Arr.map(async ( q, index) =>  {
-        let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.factory === 'ticket' ? dataPartition(q.query) : q.query , '' )  
-        q.count = q_result.data[0].cnt
-        q.index = index
-      })
-      setQueries(result_query_Arr)
-    }
-    
-  } catch(e){}
- 
-}  
- const getData = async () => {
-    const TICKET_OPENED_BY_TEAM:IChatQuery = {
-      what: "  count(id) as value, isnull(team_name, N'@none') as type, '       ' + isnull(team_name, N'@none') as name ",
-      tname: " V_tickets ",
-      where: dataPartition(" active = 1 ", true) + " group by team_name order by count(id) desc " 
-    } 
+  const getQueries = async () => {
+    try {
+      let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" + HOME_FOLDER + "' order by seq " , '' )  
+      let result_query_Arr:IQuery[] =  result_query?.data 
+      
+      if(result_query_Arr) {
+        result_query_Arr.map(async ( q, index) =>  {
+          let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.factory === 'ticket' ? dataPartition(q.query) : q.query , '' )  
+          q.count = q_result.data[0].cnt
+          q.index = index
+        })
+        setQueries(result_query_Arr)
+      }
+      
+    } catch(e){}
+  
+  } 
+
+
+  const getData = async ( ) => {
+  const TICKET_OPENED_BY_TEAM:IChatQuery = {
+    what: "  count(id) as value, isnull(team_name, N'@none') as type, '       ' + isnull(team_name, N'@none') as name ",
+    tname: " V_tickets ",
+    where: dataPartition(" active = 1 ", true) + " group by team_name order by count(id) desc " 
+  } 
+  const ticket_open_by_team_data = await  axiosFn("get", '', TICKET_OPENED_BY_TEAM.what.replace(/@none/g, t('non') + ' ' + t('team') ), TICKET_OPENED_BY_TEAM.tname, TICKET_OPENED_BY_TEAM.where , ''  )  
+  if(ticket_open_by_team_data?.data)
+  setTicket_open_by_team_data(ticket_open_by_team_data?.data)
+   
     const TICKET_OPENED_BY_PRIORITY:IChatQuery = {
       what: "  count(id) as value, isnull(priority_name, N'@none') as type ",
       tname: " V_tickets ",
@@ -147,28 +163,25 @@ const getQueries = async () => {
       tname: " empty ",
       where: "" 
     } 
-    let c0nfigs:CHART_CONFIG[] = [] 
-    const ticket_open_by_team_data = await  axiosFn("get", '', TICKET_OPENED_BY_TEAM.what.replace(/@none/g, t('non') + ' ' + t('team') ), TICKET_OPENED_BY_TEAM.tname, TICKET_OPENED_BY_TEAM.where , ''  )  
-    if(ticket_open_by_team_data?.data)
-    c0nfigs.push({ name: 'ticket_open_by_team_data' , config: ticket_open_by_team_data.data}) 
+
     let ticket_open_by_priority_data = await  axiosFn("get", '', TICKET_OPENED_BY_PRIORITY.what.replace(/@none/g, t('non') + ' ' + t('priority') ), TICKET_OPENED_BY_PRIORITY.tname, TICKET_OPENED_BY_PRIORITY.where , ''  )  
     if(ticket_open_by_priority_data?.data)
-    c0nfigs.push({ name: 'ticket_open_by_priority_data' , config: ticket_open_by_priority_data.data})
+    setTicket_open_by_priority_data(ticket_open_by_priority_data?.data)
     let ticket_open_by_urgency_data = await  axiosFn("get", '', TICKET_OPENED_BY_URGENCY.what.replace(/@none/g, t('non') + ' ' + t('urgency') ), TICKET_OPENED_BY_URGENCY.tname, TICKET_OPENED_BY_URGENCY.where , ''  )  
     if(ticket_open_by_urgency_data?.data)
-    c0nfigs.push( { name: 'ticket_open_by_urgency_data' , config: ticket_open_by_urgency_data.data})
+    setTicket_open_by_urgency_data(ticket_open_by_urgency_data?.data)
     let ticket_open_by_category_data = await  axiosFn("get", '', TICKET_OPENED_BY_CATEGORY.what.replace(/@none/g, t('non') + ' ' + t('tcategory') ), TICKET_OPENED_BY_CATEGORY.tname, TICKET_OPENED_BY_CATEGORY.where , ''  )  
     if(ticket_open_by_category_data?.data)
-    c0nfigs.push( { name: 'ticket_open_by_category_data' , config: ticket_open_by_category_data.data} )
+    setTicket_open_by_category_data(ticket_open_by_category_data?.data)
     let ticket_opened_percent_high_priority_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_PRIORITY.what, TICKET_OPENED_PERCENT_HIGH_PRIORITY.tname, TICKET_OPENED_PERCENT_HIGH_PRIORITY.where , ''  )  
-    if(ticket_opened_percent_high_priority_data?.data)
-    c0nfigs.push( { name: 'ticket_opened_percent_high_priority_data' , config: ticket_opened_percent_high_priority_data.data})
+    if(ticket_opened_percent_high_priority_data?.data[0])
+    setTicket_opened_percent_high_priority_data(ticket_opened_percent_high_priority_data?.data[0])
     let ticket_opened_percent_high_urgency_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_URGENCY.what, TICKET_OPENED_PERCENT_HIGH_URGENCY.tname, TICKET_OPENED_PERCENT_HIGH_URGENCY.where , ''  )  
-    if(ticket_opened_percent_high_urgency_data?.data)
-    c0nfigs.push( { name: 'ticket_opened_percent_high_urgency_data' , config: ticket_opened_percent_high_urgency_data.data})
+    if(ticket_opened_percent_high_urgency_data?.data[0])
+    setTicket_opened_percent_high_urgency_data(ticket_opened_percent_high_urgency_data?.data[0])
     let ticket_opened_closed_today_data = await  axiosFn("get", '', TICKET_OPENED_CLOSED_TODAY.what, TICKET_OPENED_CLOSED_TODAY.tname, TICKET_OPENED_CLOSED_TODAY.where , ''  )  
-    if(ticket_opened_closed_today_data?.data)
-    c0nfigs.push( { name: 'ticket_opened_closed_today_data' , config: ticket_opened_closed_today_data.data} )
+    if(ticket_opened_closed_today_data?.data[0])
+    setTicket_opened_closed_today_data(ticket_opened_closed_today_data?.data[0])
     let ticket_by_weekday = await  axiosFn("get", '', TICKET_BY_WEEKDAY.what, TICKET_BY_WEEKDAY.tname, TICKET_BY_WEEKDAY.where , ''  )  
     if(ticket_by_weekday?.data)
     {
@@ -176,14 +189,30 @@ const getQueries = async () => {
         return {...e ,  type: t(e.type) }
   
       } )
-      c0nfigs.push( { name: 'ticket_by_weekday' , config: arr_ticket_by_weekday} )
+      setTicket_by_weekday(arr_ticket_by_weekday)
     }
-    setConfigsArr(c0nfigs)
   }
   
+
+  const getDataAssignee = async ( name:string) => {
+    
+    const TICKET_OPENED_BY_ASSIGNEE = {
+      what: "  count(id) as value, isnull(assignee_name, N'@none') as type, '       ' + isnull(assignee_name, N'@none') as name ",
+      tname: " V_tickets ",
+      where: dataPartition(" active = 1 ", true) + " group by assignee_name order by count(id) desc " 
+    }
+    
+    const ticket_open_by_assignee_data = await  axiosFn("get", '', TICKET_OPENED_BY_ASSIGNEE.what.replace(/@none/g, t('non') + ' ' + t('assignee') ), TICKET_OPENED_BY_ASSIGNEE.tname,  "  team_name = '" + name + "' AND " + TICKET_OPENED_BY_ASSIGNEE.where  , ''  )  
+    if(ticket_open_by_assignee_data?.data)
+    setTicket_open_by_assignee_data(ticket_open_by_assignee_data.data) 
+
+    
+
+  }
+
   const TICKET_OPENED_BY_TEAM_CONFIG = {
     appendPadding: 15,
-    data: configs.find( c => c.name === 'ticket_open_by_team_data')?.config  || [],
+    data: ticket_open_by_team_data  || [] ,
     angleField: 'value',
     colorField: 'type',
     radius: 0.75,
@@ -194,18 +223,25 @@ const getQueries = async () => {
       labelHeight: 28,
       content: '{name}\n{percentage}',
     },
-    interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
-  }  
+    // interactions: [{ type: 'element-selected' }, { type: 'element-active' }]
+    
+  } 
   const TICKET_OPENED_BY_TEAM_TREE_MAP_CONFIG = {
-    data: { name: 'root', children:configs.find( c => c.name === 'ticket_open_by_team_data')?.config  || [] },
+    data: { name: 'root', children:ticket_open_by_team_data  || [] },
     colorField: 'name',
     Legend:false,
 
   }
+  const TICKET_OPENED_BY_ASSIGNEE_TREE_MAP_CONFIG = {
+    data: { name: 'root', children:ticket_open_by_assignee_data  || [] },
+    colorField: 'name',
+    Legend:false,
+    
 
+  }
   const TICKET_OPENED_BY_PRIORITY_CONFIG = {
     appendPadding: 15,
-    data: configs.find( c => c.name === 'ticket_open_by_priority_data')?.config  || [] ,
+    data: ticket_open_by_priority_data ,
     angleField: 'value',
     colorField: 'type',
     radius: 0.75,
@@ -220,7 +256,7 @@ const getQueries = async () => {
   }
   const TICKET_OPENED_BY_URGENCY_CONFIG = {
     appendPadding: 15,
-    data: configs.find( c => c.name === 'ticket_open_by_urgency_data')?.config  || [] ,
+    data: ticket_open_by_urgency_data ,
     angleField: 'value',
     colorField: 'type',
     radius: 0.75,
@@ -234,14 +270,14 @@ const getQueries = async () => {
     interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
   }
   const TICKET_OPENED_BY_CATEGORY_CONFIG = {
-    data: configs.find( c => c.name === 'ticket_open_by_category_data')?.config  || [] ,
+    data: ticket_open_by_category_data ,
     xField: 'value',
     yField: 'type',
     meta: {
       type: { alias: '' },
       value: { alias: t('tickets') },
     },
-    isRange: true,
+    isRange: true
     // label: {
     //   position: 'middle',
     //   layout: [{ type: 'adjust-color' }],
@@ -255,7 +291,7 @@ const getQueries = async () => {
     // ],
   }
  const TICKET_OPENED_PERCENT_HIGH_PRIORITY_CONFIG = {
-      percent: +(configs.find( c => c.name === 'ticket_opened_percent_high_priority_data')?.config[0].target)  / (+configs.find( c => c.name === 'ticket_opened_percent_high_priority_data')?.config[0].all) ,
+      percent: +(ticket_opened_percent_high_priority_data?.target)  / (+ticket_opened_percent_high_priority_data?.all) ,
       style:{width:300, height:300},
       type: 'meter',
       innerRadius: 0.75,
@@ -289,7 +325,7 @@ const getQueries = async () => {
       }
   }
   const TICKET_OPENED_PERCENT_HIGH_URGENCY_CONFIG = {
-    percent: +(configs.find( c => c.name === 'ticket_opened_percent_high_urgency_data')?.config[0].target)  / (+configs.find( c => c.name === 'ticket_opened_percent_high_urgency_data')?.config[0].all) ,
+    percent: +(ticket_opened_percent_high_urgency_data?.target)  / (+ticket_opened_percent_high_urgency_data?.all) ,
     style:{width:300, height:300},
     range: {
       ticks: [0, 1 / 3, 2 / 3, 1],
@@ -328,7 +364,7 @@ const getQueries = async () => {
 
   }
   const TICKET_OPENED_CLOSED_TODAY_CONFIG = {
-    percent:  liquidStyle( +(configs.find( c => c.name === 'ticket_opened_closed_today_data')?.config[0].target)  / (+configs.find( c => c.name === 'ticket_opened_closed_today_data')?.config[0].all)) ,
+    percent:  liquidStyle( +(ticket_opened_closed_today_data?.target)  / (+ticket_opened_closed_today_data?.all)) ,
     outline: {
       border: 8,
       distance: 4,
@@ -337,7 +373,7 @@ const getQueries = async () => {
     statistic: {
       title: {
         formatter: function formatter() {
-          return configs.find( c => c.name === 'ticket_opened_closed_today_data')?.config[0].all + '/' + configs.find( c => c.name === 'ticket_opened_closed_today_data')?.config[0].target
+          return ticket_opened_closed_today_data?.all + '/' + ticket_opened_closed_today_data?.target
         },
         style: function style(_ref:any) {
           var percent = _ref.percent;
@@ -371,7 +407,7 @@ const getQueries = async () => {
   }
   
   const TICKET_BY_WEEKDAY_CONFIG = {
-    data: configs.find( c => c.name === 'ticket_by_weekday')?.config  || [] ,
+    data: ticket_by_weekday ,
     // padding: 'auto',
     appendPadding: [20, 0, 0, 0],
     xField: 'type',
@@ -402,21 +438,7 @@ const getQueries = async () => {
     },
     legend:false
   }
-  const goTo = (q:IQuery) => {
-    if(edit) return
-    setQueriesCache({ [q.factory]: q.query, [q.factory+'_label']: q.name })
-    if(q.factory === 'ticket') {
-      router.push(RouteNames.TICKETS)
-    } else if(q.factory === 'contact') { 
-      router.push(RouteNames.USERS)
-    } 
-    else if(q.factory === 'ci') {
-      router.push(RouteNames.CIS)
-    } 
-    else if(q.factory === 'allWf') {
-      router.push(RouteNames.WFS)
-    } 
-  }
+
   const deleteQuery = async (id:string) => {
     
       let result_query = await axiosFn("delete", '', '*', 'queries', "id" , id ) 
@@ -465,12 +487,53 @@ const getQueries = async () => {
   const getListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
     background: isDraggingOver ? "lightblue" : "transparent",
   });
+  
+  const refresh = () => {
+    getData(); 
+    getQueries(); 
+    if(selectedTeam)
+    getDataAssignee(selectedTeam)
+  }
+  const goTo = (q:IQuery) => {
+    if(edit) return
+    setQueriesCache({ [q.factory]: q.query, [q.factory+'_label']: q.name })
+    if(q.factory === 'ticket') {
+      router.push(RouteNames.TICKETS)
+    } else if(q.factory === 'contact') { 
+      router.push(RouteNames.USERS)
+    } 
+    else if(q.factory === 'ci') {
+      router.push(RouteNames.CIS)
+    } 
+    else if(q.factory === 'allWf') {
+      router.push(RouteNames.WFS)
+    } 
+  }
+  const drillDownChart = (event: any, reportName: string) => {
 
+  if(reportName === 'ticket_open_by_team_data') {
+    if(event[0]?.data?.name) {
+      let name = event[0]?.data?.name.toString().trim()
+      setSelectedTeam(name)
+      getDataAssignee(name)
+      setTicket_open_by_team_name(name)
+    }
+  } else if(reportName === 'ticket_open_by_assignee_data') {
+    if(event[0]?.data?.name) {
+      let name = event[0]?.data?.name.toString().trim()
+      let ass_name =  name.replace( t('non') + ' ' + t('assignee') , '')
+      let query = dataPartition(" active = 1 ", true) + " AND  team_name = N'" + selectedTeam + "' AND " + "  isnull(assignee_name, '') = N'" + ass_name + "'"
+      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_ASSIGNEE'), query: query } as IQuery
+      goTo(q)
+    }
+  }
+    
+  }
   return (
     <Card>
        <Tooltip title={t('refresh')}>
       <ReloadOutlined 
-      onClick={()=>{getData(); getQueries()}}
+      onClick={refresh}
       style={{fontSize:'24px',fontWeight:900}}/>&nbsp;&nbsp;
       {moment().format("DD/MM/YY HH:mm:ss")}
       </Tooltip>
@@ -489,9 +552,33 @@ const getQueries = async () => {
         </Col>
         <Col  xs={24} xl={12} sm={12}>
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_TEAM')}</h3>
-         <Treemap   {...TICKET_OPENED_BY_TEAM_TREE_MAP_CONFIG} />
+         <Treemap   {...TICKET_OPENED_BY_TEAM_TREE_MAP_CONFIG}  
+         onReady={(plot) => {
+          plot.chart.on('plot:click', (evt:any) => {
+          const { x, y } = evt;
+          drillDownChart(plot.chart.getTooltipItems({ x, y }), 'ticket_open_by_team_data');
+           });
+          }}
+        />
         </Col>
-
+        {
+        selectedTeam.length > 0 &&
+        <Col  xs={24} xl={24} sm={24}>
+        <Tooltip title={t('close') + ' ' + t('TICKET_OPENED_BY_ASSIGNEE') + ' ' + t('team') + ' ' + ticket_open_by_team_name }>
+        <CloseCircleOutlined onClick={() => setSelectedTeam('')} style={{fontSize:26}}/> 
+        </Tooltip>
+        <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_ASSIGNEE') + ' ' + t('team') + ' ' + ticket_open_by_team_name}</h3>
+        <Treemap   {...TICKET_OPENED_BY_ASSIGNEE_TREE_MAP_CONFIG}  
+        onReady={(plot) => {
+          plot.chart.on('plot:click', (evt:any) => {
+          const { x, y } = evt;
+          drillDownChart(plot.chart.getTooltipItems({ x, y }), 'ticket_open_by_assignee_data');
+           });
+          }}
+        />
+        </Col>
+        }
+       
         
         <Col  xs={2} xl={2} style={{display:'flex',justifyContent:'flex-end', alignSelf: 'flex-end'}} >
        
@@ -531,7 +618,14 @@ const getQueries = async () => {
        <Row key="3">
        <Col  xs={24} xl={12} >
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_CATEGORY')}</h3>
-         <Bar  {...TICKET_OPENED_BY_CATEGORY_CONFIG} />
+         <Bar  {...TICKET_OPENED_BY_CATEGORY_CONFIG} 
+         onReady={(plot) => {
+          plot.chart.on('plot:click', (evt:any) => {
+          const { x, y } = evt;
+          console.log(plot.chart.getTooltipItems({ x, y }));
+           });
+                }}
+  />
         </Col>  
        <Col  xs={24} xl={12} >
         <h3 style={{textAlign:'center'}}>{t('TICKET_BY_WEEKDAY')}</h3>
@@ -557,18 +651,32 @@ const getQueries = async () => {
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         >
-                        <Card   key={q.id} 
+                        <Tooltip title={q.name + ' ' + q.count}>
+                        <div   key={q.id} 
                         className={!edit ? 'homeQueryCard' : 'homeQueryCardEdit'}
                         onClick={()=>goTo(q)}
                         >
-                        <div  key={1} style={{alignItems:'center',textAlign:'center'}}>
-                        <Tooltip title={q.name}>
+                          
+                        <Badge.Ribbon  text={q.count} color="#f5222d">
+                        <Card size="small" title= {q.name.toString().substring(0,40)}    style={{alignItems:'center',textAlign:'center',color:'white'}}
+                        bodyStyle={{height:1,padding:1}}
+                        headStyle={{background: 'lightgrey',
+                        border: '1px solid #28a4ae',
+                        borderRadius:5
+                          }}
+                        type="inner"
+                        >
+                        </Card>  
+                        </Badge.Ribbon>   
+                      
+                        {/* <h3  key={1} style={{alignItems:'center',textAlign:'center',color:'white'}}>
+                        <Tooltip title={q.name + ' ' + q.count}>
                         {q.name.toString().substring(0,40)} 
                         </Tooltip>
-                        </div> 
-                        <div key={2} style={{alignItems:'center',textAlign:'center'}}>
+                        </h3>  */}
+                        {/* <div key={2} style={{alignItems:'center',textAlign:'center'}}>
                          <b>{q.count}</b>
-                        </div> 
+                        </div>  */}
                         {
                           edit &&
                           <Tooltip title={t('delete')}>
@@ -578,7 +686,8 @@ const getQueries = async () => {
                             </Popconfirm>
                           </Tooltip>
                         }
-                        </Card>
+                        </div>
+                        </Tooltip>
                       </Col>
                        )}
                       </Draggable>

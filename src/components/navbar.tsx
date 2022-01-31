@@ -1,6 +1,6 @@
 import  {FC, useEffect} from 'react';
 import {  Menu, Avatar } from 'antd';
-import {  UserOutlined,LogoutOutlined, LoginOutlined, CrownOutlined, RiseOutlined, GlobalOutlined } from '@ant-design/icons';
+import {  UserOutlined,LogoutOutlined, LoginOutlined, CrownOutlined, RiseOutlined, GlobalOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
 import { useTypedSelector } from '../hooks/useTypedSelector';
@@ -70,6 +70,7 @@ const Navbar: FC = () => {
                   selectable={true}
                   forceSubMenuRender={true}
                   title="Menu"
+                  overflowedIndicator={<UnorderedListOutlined style={{fontSize:25, color:'white'}} />}
                   >
                       <Menu.Item    key="user" >
                         <Avatar size={32} icon={<UserOutlined />} 

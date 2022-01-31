@@ -1,4 +1,4 @@
-import { Alert, Layout, Menu } from 'antd';
+import { Layout } from 'antd';
 import  {FC, useEffect, useState} from 'react';
 import './App.css';
 import AppRouter from './components/AppRouter';
@@ -17,11 +17,10 @@ import AlertComponent from './components/AlertComponent';
 import SiderComponent from './components/SiderComponent';
 import useWindowDimensions from './hooks/useWindowDimensions';
 import { useHistory } from 'react-router-dom';
-import { RouteNames } from './router';
 import Login from './pages/Login';
 import FooterComponent from './components/FooterComponent';
 import axios from 'axios'
-import { SSO_PATH, TOKEN } from './axios/axios';
+import { CHECK_SSO, SSO_PATH, TOKEN } from './axios/axios';
 
 
 const { Header, Sider, Content } = Layout;
@@ -32,7 +31,7 @@ const App:FC = () => {
   const {isAuth, user } = useTypedSelector(state => state.auth) 
   const {alert } = useTypedSelector(state => state.admin) 
   const [collapsed, setCollapsed] = useState(true)
-  const { height, width } = useWindowDimensions();
+  const {  width } = useWindowDimensions();
   const router = useHistory()
 
   useEffect(() => {
@@ -40,7 +39,6 @@ const App:FC = () => {
       goToLogin()
       TOKEN.token_error = false
     }
-    
     if(localStorage.getItem('isAuth')) {
       let user = JSON.parse(localStorage.getItem('isAuth')?.toString() || "") as IUser
       setUser(user)
@@ -53,7 +51,8 @@ const App:FC = () => {
     else
     {
       goToLogin()
-      //check_sso()
+      if(CHECK_SSO)
+      check_sso()
     }
    
   }, [])
@@ -64,8 +63,8 @@ const App:FC = () => {
         const headers = { 'Content-Type': 'text'}
         let ssoName =  await axios.get(SSO_PATH, { headers: headers })
         let username = ''
-        let ssoName_: string = ssoName?.data|| '';
-            if (ssoName_ != '') {
+        let ssoName_: string = ssoName?.data || '';
+            if (ssoName_ !== '') {
               let usernameAr: string[] = [];
               usernameAr = ssoName_.split('\\');
               if (usernameAr.length === 2) {
@@ -76,7 +75,7 @@ const App:FC = () => {
           sso(username, fromLocation) 
         }
         else {
-          throw new Error
+          throw new Error()
         }
       } catch {
         goToLogin()
