@@ -55,7 +55,7 @@ const App:FC = () => {
       check_sso()
     }
    
-  }, [])
+  }, [CHECK_SSO])
  
   const  check_sso = async () => {
       try {

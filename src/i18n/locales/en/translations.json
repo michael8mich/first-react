@@ -263,7 +263,8 @@
         "defaultRole": "Default Role",
         "count": "Count",
         "size": "Size",
-       
+        "manger_view": "Manager view",
+        "ticketsmv": "Manager view",
 
         "TICKET_OPENED_BY_TEAM": "Active Tickets by Team",
         "TICKET_OPENED_BY_ASSIGNEE": "Active Tickets by Assignee",

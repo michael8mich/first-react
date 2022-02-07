@@ -3,7 +3,9 @@ import {  DragDropContext,
   Draggable,
   Droppable,
   DropResult } from 'react-beautiful-dnd';
-import { Bar, Gauge, Pie, Liquid,  Waterfall, Treemap  } from '@ant-design/charts';
+import { Gauge, Pie, Liquid,  Waterfall, Treemap  } from '@ant-design/charts';
+import { Rose } from '@antv/g2plot';
+import { Bar } from '@ant-design/plots';
 import { axiosFn } from '../axios/axios';
 import { useTranslation } from 'react-i18next';
 import { useInterval } from '../hooks/useInterval'
@@ -88,27 +90,40 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     }
   }, [defaultRole])
 
+  useEffect(  ()  => {
+    if(getMore) {
+      getData()
+    }
+  }, [getMore])
 
+ 
   const getQueries = async () => {
     try {
       let result_query = await axiosFn("get", '', '*', 'queries', " object='"+user.id+"' AND folder = '" + HOME_FOLDER + "' order by seq " , '' )  
       let result_query_Arr:IQuery[] =  result_query?.data 
-      
       if(result_query_Arr) {
         result_query_Arr.map(async ( q, index) =>  {
           let q_result = await axiosFn("get", '', ' count(id) as cnt ', 'V_' + q.factory + 's', q.factory === 'ticket' ? dataPartition(q.query) : q.query , '' )  
           q.count = q_result.data[0].cnt
           q.index = index
-        })
-        setQueries(result_query_Arr)
+          setQueries( prevQueries => {
+            const CurrQuery = prevQueries.find(currQ => currQ.index === q.index)
+            if(CurrQuery) {
+              prevQueries[index].count = q.count
+              return [...prevQueries]
+            }
+            else
+           return [...prevQueries, {...q, countPrev:q.count}]
+          }
+            )
+        }) 
       }
-      
     } catch(e){}
   
   } 
 
 
-  const getData = async ( ) => {
+  const getData =  async ( ) => {
   const TICKET_OPENED_BY_TEAM:IChatQuery = {
     what: "  count(id) as value, isnull(team_name, N'@none') as type, '       ' + isnull(team_name, N'@none') as name ",
     tname: " V_tickets ",
@@ -163,16 +178,30 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       tname: " empty ",
       where: "" 
     } 
-
-    let ticket_open_by_priority_data = await  axiosFn("get", '', TICKET_OPENED_BY_PRIORITY.what.replace(/@none/g, t('non') + ' ' + t('priority') ), TICKET_OPENED_BY_PRIORITY.tname, TICKET_OPENED_BY_PRIORITY.where , ''  )  
-    if(ticket_open_by_priority_data?.data)
-    setTicket_open_by_priority_data(ticket_open_by_priority_data?.data)
-    let ticket_open_by_urgency_data = await  axiosFn("get", '', TICKET_OPENED_BY_URGENCY.what.replace(/@none/g, t('non') + ' ' + t('urgency') ), TICKET_OPENED_BY_URGENCY.tname, TICKET_OPENED_BY_URGENCY.where , ''  )  
-    if(ticket_open_by_urgency_data?.data)
-    setTicket_open_by_urgency_data(ticket_open_by_urgency_data?.data)
-    let ticket_open_by_category_data = await  axiosFn("get", '', TICKET_OPENED_BY_CATEGORY.what.replace(/@none/g, t('non') + ' ' + t('tcategory') ), TICKET_OPENED_BY_CATEGORY.tname, TICKET_OPENED_BY_CATEGORY.where , ''  )  
-    if(ticket_open_by_category_data?.data)
-    setTicket_open_by_category_data(ticket_open_by_category_data?.data)
+    if(getMore) {
+      let ticket_open_by_priority_data = await  axiosFn("get", '', TICKET_OPENED_BY_PRIORITY.what.replace(/@none/g, t('non') + ' ' + t('priority') ), TICKET_OPENED_BY_PRIORITY.tname, TICKET_OPENED_BY_PRIORITY.where , ''  )  
+      if(ticket_open_by_priority_data?.data )
+      setTicket_open_by_priority_data(ticket_open_by_priority_data?.data)
+      let ticket_open_by_urgency_data = await  axiosFn("get", '', TICKET_OPENED_BY_URGENCY.what.replace(/@none/g, t('non') + ' ' + t('urgency') ), TICKET_OPENED_BY_URGENCY.tname, TICKET_OPENED_BY_URGENCY.where , ''  )  
+      if(ticket_open_by_urgency_data?.data )
+      setTicket_open_by_urgency_data(ticket_open_by_urgency_data?.data)
+      
+      let ticket_open_by_category_data = await  axiosFn("get", '', TICKET_OPENED_BY_CATEGORY.what.replace(/@none/g, t('non') + ' ' + t('tcategory') ), TICKET_OPENED_BY_CATEGORY.tname, TICKET_OPENED_BY_CATEGORY.where , ''  )  
+      if(ticket_open_by_category_data?.data )
+      setTicket_open_by_category_data(ticket_open_by_category_data?.data)
+      let ticket_by_weekday = await  axiosFn("get", '', TICKET_BY_WEEKDAY.what, TICKET_BY_WEEKDAY.tname, TICKET_BY_WEEKDAY.where , ''  )  
+      if(ticket_by_weekday?.data )
+      {
+        let arr_ticket_by_weekday = ticket_by_weekday.data.map( (e: { type: any; }) => {
+          return {...e ,  type: t(e.type) }
+    
+        } )
+        setTicket_by_weekday(arr_ticket_by_weekday)
+      }
+    }
+  
+    
+    
     let ticket_opened_percent_high_priority_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_PRIORITY.what, TICKET_OPENED_PERCENT_HIGH_PRIORITY.tname, TICKET_OPENED_PERCENT_HIGH_PRIORITY.where , ''  )  
     if(ticket_opened_percent_high_priority_data?.data[0])
     setTicket_opened_percent_high_priority_data(ticket_opened_percent_high_priority_data?.data[0])
@@ -182,15 +211,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     let ticket_opened_closed_today_data = await  axiosFn("get", '', TICKET_OPENED_CLOSED_TODAY.what, TICKET_OPENED_CLOSED_TODAY.tname, TICKET_OPENED_CLOSED_TODAY.where , ''  )  
     if(ticket_opened_closed_today_data?.data[0])
     setTicket_opened_closed_today_data(ticket_opened_closed_today_data?.data[0])
-    let ticket_by_weekday = await  axiosFn("get", '', TICKET_BY_WEEKDAY.what, TICKET_BY_WEEKDAY.tname, TICKET_BY_WEEKDAY.where , ''  )  
-    if(ticket_by_weekday?.data)
-    {
-      let arr_ticket_by_weekday = ticket_by_weekday.data.map( (e: { type: any; }) => {
-        return {...e ,  type: t(e.type) }
-  
-      } )
-      setTicket_by_weekday(arr_ticket_by_weekday)
-    }
+    
   }
   
 
@@ -199,15 +220,11 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     const TICKET_OPENED_BY_ASSIGNEE = {
       what: "  count(id) as value, isnull(assignee_name, N'@none') as type, '       ' + isnull(assignee_name, N'@none') as name ",
       tname: " V_tickets ",
-      where: dataPartition(" active = 1 ", true) + " group by assignee_name order by count(id) desc " 
+      where: " active = 1  group by assignee_name order by count(id) desc " 
     }
-    
     const ticket_open_by_assignee_data = await  axiosFn("get", '', TICKET_OPENED_BY_ASSIGNEE.what.replace(/@none/g, t('non') + ' ' + t('assignee') ), TICKET_OPENED_BY_ASSIGNEE.tname,  "  team_name = '" + name + "' AND " + TICKET_OPENED_BY_ASSIGNEE.where  , ''  )  
     if(ticket_open_by_assignee_data?.data)
     setTicket_open_by_assignee_data(ticket_open_by_assignee_data.data) 
-
-    
-
   }
 
   const TICKET_OPENED_BY_TEAM_CONFIG = {
@@ -216,26 +233,42 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     angleField: 'value',
     colorField: 'type',
     radius: 0.75,
-    legend:false,
+    // legend:false,
     locale:user.locale,
     label: {
-      type: 'spider',
+      // type: 'spider',
+      type: 'inner',
       labelHeight: 28,
       content: '{name}\n{percentage}',
     },
+    // title: {
+    //   visible: true,
+    //   text: '日流量统计图',
+    // },
+    // label: {
+    //   type: 'inner',
+    //   offset: '-30%',
+    //   content: function content(_ref:any) {
+    //     return ''.concat(_ref.value, '%');
+    //   },
+    //   style: {
+    //     fontSize: 14,
+    //     textAlign: 'center',
+    //   },
+    // },
     // interactions: [{ type: 'element-selected' }, { type: 'element-active' }]
     
   } 
   const TICKET_OPENED_BY_TEAM_TREE_MAP_CONFIG = {
     data: { name: 'root', children:ticket_open_by_team_data  || [] },
     colorField: 'name',
-    Legend:false,
+    // Legend:false,
 
   }
   const TICKET_OPENED_BY_ASSIGNEE_TREE_MAP_CONFIG = {
     data: { name: 'root', children:ticket_open_by_assignee_data  || [] },
     colorField: 'name',
-    Legend:false,
+    // Legend:false,
     
 
   }
@@ -245,10 +278,10 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     angleField: 'value',
     colorField: 'type',
     radius: 0.75,
-    legend:false,
+    // legend:false,
     locale:user.locale,
     label: {
-      type: 'spider',
+      type: 'inner',
       labelHeight: 28,
       content: '{name}\n{percentage}',
     },
@@ -260,10 +293,10 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     angleField: 'value',
     colorField: 'type',
     radius: 0.75,
-    legend:false,
+    // legend:false,
     locale:user.locale,
     label: {
-      type: 'spider',
+      type: 'inner',
       labelHeight: 28,
       content: '{name}\n{percentage}',
     },
@@ -273,11 +306,23 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     data: ticket_open_by_category_data ,
     xField: 'value',
     yField: 'type',
+    barBackground: { style: { fill: 'rgba(0,0,0,0.1)' } },
+    interactions: [
+      {
+        type: 'active-region',
+        enable: false,
+      },
+    ],
     meta: {
       type: { alias: '' },
       value: { alias: t('tickets') },
     },
-    isRange: true
+    seriesField: 'type',
+    // legend: null,
+    // // legend: {
+    //   position: 'top-left',
+    // },
+    // isRange: true
     // label: {
     //   position: 'middle',
     //   layout: [{ type: 'adjust-color' }],
@@ -436,7 +481,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
         padding: 1.5,
       },
     },
-    legend:false
+    // legend:false
   }
 
   const deleteQuery = async (id:string) => {
@@ -453,7 +498,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
             visible: true,
             autoClose: 10 
            })
-           getQueries()
+           setQueries( prevQueries => prevQueries.filter(pQ=>pQ.id!==id))
         }
         else {
           setAlert({
@@ -529,6 +574,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
   }
     
   }
+
   return (
     <Card>
        <Tooltip title={t('refresh')}>
@@ -553,7 +599,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
         <Col  xs={24} xl={12} sm={12}>
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_TEAM')}</h3>
          <Treemap   {...TICKET_OPENED_BY_TEAM_TREE_MAP_CONFIG}  
-         onReady={(plot) => {
+         onReady={(plot:any) => {
           plot.chart.on('plot:click', (evt:any) => {
           const { x, y } = evt;
           drillDownChart(plot.chart.getTooltipItems({ x, y }), 'ticket_open_by_team_data');
@@ -568,8 +614,8 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
         <CloseCircleOutlined onClick={() => setSelectedTeam('')} style={{fontSize:26}}/> 
         </Tooltip>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_ASSIGNEE') + ' ' + t('team') + ' ' + ticket_open_by_team_name}</h3>
-        <Treemap   {...TICKET_OPENED_BY_ASSIGNEE_TREE_MAP_CONFIG}  
-        onReady={(plot) => {
+        <Treemap   {...TICKET_OPENED_BY_ASSIGNEE_TREE_MAP_CONFIG}  style={{height:200}}
+        onReady={(plot:any) => {
           plot.chart.on('plot:click', (evt:any) => {
           const { x, y } = evt;
           drillDownChart(plot.chart.getTooltipItems({ x, y }), 'ticket_open_by_assignee_data');
@@ -591,7 +637,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
             </Tooltip> :
              <Tooltip title={t('getMore')}>
              <PlusCircleOutlined style={{fontSize: '36px'}}
-             onClick={() => setGetMore(true)}
+             onClick={() => { setGetMore(true)}}
              />
              </Tooltip>
 
@@ -604,32 +650,28 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       <Row key="2">
         <Col  xs={24} xl={8} sm={12}>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_TEAM')}</h3>
-        <Pie  {...TICKET_OPENED_BY_TEAM_CONFIG} />
+        <Pie  {...TICKET_OPENED_BY_TEAM_CONFIG} style={{direction:'ltr'}}/>
        </Col>
        <Col  xs={24} xl={8} sm={12}>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_PRIORITY')}</h3>
-        <Pie  {...TICKET_OPENED_BY_PRIORITY_CONFIG} />
+        <Pie  {...TICKET_OPENED_BY_PRIORITY_CONFIG} style={{direction:'ltr'}} />
        </Col>
        <Col  xs={24} xl={8} sm={12}>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_URGENCY')}</h3>
-        <Pie  {...TICKET_OPENED_BY_URGENCY_CONFIG} />
+        <Pie  {...TICKET_OPENED_BY_URGENCY_CONFIG} style={{direction:'ltr'}}/>
        </Col>
        </Row>
        <Row key="3">
        <Col  xs={24} xl={12} >
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_CATEGORY')}</h3>
          <Bar  {...TICKET_OPENED_BY_CATEGORY_CONFIG} 
-         onReady={(plot) => {
-          plot.chart.on('plot:click', (evt:any) => {
-          const { x, y } = evt;
-          console.log(plot.chart.getTooltipItems({ x, y }));
-           });
-                }}
+        style={{direction:'ltr'}}
   />
         </Col>  
        <Col  xs={24} xl={12} >
         <h3 style={{textAlign:'center'}}>{t('TICKET_BY_WEEKDAY')}</h3>
-        <Waterfall  {...TICKET_BY_WEEKDAY_CONFIG} />
+        <Waterfall  {...TICKET_BY_WEEKDAY_CONFIG} 
+        style={{direction:'ltr'}}/>
        </Col>
         
       </Row>
@@ -656,8 +698,9 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
                         className={!edit ? 'homeQueryCard' : 'homeQueryCardEdit'}
                         onClick={()=>goTo(q)}
                         >
-                          
-                        <Badge.Ribbon  text={q.count} color="#f5222d">
+                         
+                        <Badge.Ribbon  text={q.count + '' + (q.count !== q.countPrev ? ('<=' + q.countPrev) : '' ) } color="#f5222d">
+                        
                         <Card size="small" title= {q.name.toString().substring(0,40)}    style={{alignItems:'center',textAlign:'center',color:'white'}}
                         bodyStyle={{height:1,padding:1}}
                         headStyle={{background: 'lightgrey',
@@ -719,3 +762,4 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
   
   
   export default HomeAssignee;
+  ///https://github.com/ant-design/ant-design-charts#readme

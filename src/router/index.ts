@@ -19,6 +19,7 @@ import CisDtl from '../pages/cis/CiDtl';
 import Cis from '../pages/cis/Cis';
 import TicketsAllWfs from '../components/tickets/TicketsAllWfs';
 import Import from '../pages/admin/Import';
+import TicketMangerView from '../pages/ticket/TicketMangerView';
 
 
 export interface IRoute {
@@ -42,6 +43,7 @@ export enum RouteNames {
     NOTIFICATIONS= '/notifications',
     TICKETS= '/tickets',
     TICKET_DTL= '/tickets/:id',
+    TICKET_MANAGER_VIEW= '/ticketsmv',
     TCATEGORIES = '/tcategories',
     TCATEGORY_DTL= '/tcategories/:id',
     WFS='/wfs',
@@ -70,6 +72,8 @@ export const privateRoutes:IRoute[] = [
     {path: RouteNames.DASHBOARD, component: Dashboard, exact: true},
     {path: RouteNames.EMPTY, component: Empty, exact: true},
     {path: RouteNames.IMPORT, component: Import, exact: true},
+    {path: RouteNames.TICKET_MANAGER_VIEW, component: TicketMangerView, exact: true},
+    
     
      
 ]

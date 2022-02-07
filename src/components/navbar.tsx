@@ -1,6 +1,6 @@
 import  {FC, useEffect} from 'react';
 import {  Menu, Avatar } from 'antd';
-import {  UserOutlined,LogoutOutlined, LoginOutlined, CrownOutlined, RiseOutlined, GlobalOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import {  UserOutlined,LogoutOutlined, LoginOutlined, CrownOutlined, TeamOutlined, GlobalOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
 import { useTypedSelector } from '../hooks/useTypedSelector';
@@ -72,7 +72,7 @@ const Navbar: FC = () => {
                   title="Menu"
                   overflowedIndicator={<UnorderedListOutlined style={{fontSize:25, color:'white'}} />}
                   >
-                      <Menu.Item    key="user" >
+                      <Menu.Item    key="user" onClick={() => router.push(RouteNames.USERS + '/' + user.id) } >
                         <Avatar size={32} icon={<UserOutlined />} 
                          src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
                         />&nbsp;
@@ -117,15 +117,23 @@ const Navbar: FC = () => {
                         <Menu.Item key="tickets" onClick={() => router.push(RouteNames.TICKETS) } >{ t('tickets') }</Menu.Item>
                         <Menu.Item key="wfs" onClick={() => router.push(RouteNames.WFS) } >{ t('wfs') }</Menu.Item>
                       </SubMenu>
-                      {
-                        defaultRole?.label !== 'Employee' &&
+                      {/* {
+                        defaultRole?.label !== 'Employee' && 
                         <SubMenu key="charts" title={ t('charts') }
                         icon={<RiseOutlined />}
                         >
                           <Menu.Item key="dashboard" onClick={() => router.push(RouteNames.DASHBOARD) } >{ t('dashboard') }</Menu.Item>
                         </SubMenu>
+                      } */}
+                      {
+                        defaultRole?.label !== 'Employee' && 
+                        <SubMenu key="ticketsmv" title={ t('manger_view') }
+                        onTitleClick={() => router.push(RouteNames.TICKET_MANAGER_VIEW) }
+                        icon={<TeamOutlined />}
+                        >
+                          <Menu.Item key="manger_view" onClick={() => router.push(RouteNames.TICKET_MANAGER_VIEW) } >{ t('manger_view') }</Menu.Item>
+                        </SubMenu>
                       }
-                      
                   </Menu>
               :
               <>

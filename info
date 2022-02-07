@@ -14,3 +14,5 @@ npm i lodash/debounce
 git mich_hoh@yahoo.com Mcse9876
 
 https://ant.design/components/overview/
+
+npm install --save react-infinite-scroll-component

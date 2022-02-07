@@ -144,24 +144,24 @@ const Dashboard: FC = () => {
   
     
     let TICKET_OPENED_BY_TEAM_CONFIG = {
-      appendPadding: 15,
+      // appendPadding: 15,
       data:  configs.find( c => c.name === 'ticket_open_by_team_data')?.config  || [] ,
       angleField: 'value',
       colorField: 'type',
       radius: 0.75,
-      legend:false,
+      // legend:false,
       locale:user.locale,
       label: {
         type: 'spider',
         labelHeight: 28,
         content: '{name}\n{percentage}',
       },
-      interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
+      // interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
     }  
     let TICKET_OPENED_BY_TEAM_TREE_MAP_CONFIG = {
       data: { name: 'root',  children:configs.find( c => c.name === 'ticket_open_by_team_data')?.config  || [] } ,
       colorField: 'name',
-      Legend:false,
+      // Legend:false,
   
     }
     let TICKET_OPENED_BY_PRIORITY_CONFIG = {
@@ -170,7 +170,7 @@ const Dashboard: FC = () => {
       angleField: 'value',
       colorField: 'type',
       radius: 0.75,
-      legend:false,
+      // legend:false,
       locale:user.locale,
       label: {
         type: 'spider',
@@ -185,7 +185,7 @@ const Dashboard: FC = () => {
       angleField: 'value',
       colorField: 'type',
       radius: 0.75,
-      legend:false,
+      // legend:false,
       locale:user.locale,
       label: {
         type: 'spider',
@@ -361,7 +361,7 @@ const Dashboard: FC = () => {
           padding: 1.5,
         },
       },
-      legend:false
+      // legend:false
     }
 
   return (

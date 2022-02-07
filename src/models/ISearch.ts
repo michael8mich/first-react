@@ -30,6 +30,7 @@ export interface SelectOption {
 	last_mod_dt: string
 	create_date: string
   count:string
+  countPrev?: string
   index:number
   key?:string
   }

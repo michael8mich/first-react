@@ -77,6 +77,7 @@ const TicketAssignee:FC = () => {
   
   const router = useHistory()
   useEffect( () => {
+    if(!id) return
      setTicketId(id)
       if(id==='0')  {
         setRo(false)
