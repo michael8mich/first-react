@@ -13,6 +13,10 @@ import { useTypedSelector } from '../hooks/useTypedSelector';
 import useWindowDimensions from '../hooks/useWindowDimensions';
 import {   CloseCircleOutlined, ToolOutlined } from '@ant-design/icons';
 import TicketAssignee from './tickets/TicketAssignee';
+import {  DragDropContext,
+  Draggable,
+  Droppable,
+  DropResult } from 'react-beautiful-dnd';
 interface ScrollListProps {
     data:ITicket[]
 }
@@ -40,7 +44,7 @@ const ScrollList = (props:ScrollListProps) => {
   useEffect(() => {
     let data_ = translateObj(props.data, ITicketObjects)
     setData([...data_]);
-  }, []);
+  }, [props.data]);
 
   const goTo = (route:string, id:string) =>
   {
@@ -62,7 +66,15 @@ const ScrollList = (props:ScrollListProps) => {
     setTicketInfo(id)
   }
   
-
+  const onDragEnd = (result: DropResult): void => {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+  }
+    const getListStyle = (isDraggingOver: boolean): React.CSSProperties => ({
+    background: isDraggingOver ? "lightblue" : "transparent",
+  });
   return (
     <div
       id="scrollableDiv"

@@ -237,6 +237,7 @@
         "go_to_same_tickets": "Go To Same Tickets List",
         "select_ci": "Select Equipment",
         "go_to_ci": "Go to Equipment",
+        "go_to_ticket_details": "Go to ticket details",
         "open_additionalFilter": "Open Additional Filter",
         "close_additionalFilter": "Close Additional Filter",
         "toCopy": "Copy",

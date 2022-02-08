@@ -11,6 +11,7 @@ const { TextArea } = Input;
 
 interface PopoverDtlProps {
   record:ITicket
+  description?:boolean
 }
 
 const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
@@ -43,19 +44,19 @@ const PopoverDtl: FC<PopoverDtlProps> =  (props)  => {
     style={{border:'solid 1px gray'}}
     >
       <>
-      {/* {
-        extra.length !== 0 &&
+      {
+        props.description &&
         <Row key="description">
                <Col key="description_col" xs={24} xl={24} sm={24} lg={24}>
                  <label> {t('description')}</label>
                  <TextArea 
-                 rows={4}
+                 rows={props.record.description.length /10 }
                  disabled={true}
                  value={props.record.description}
                  />
                 </Col>
        </Row>
-      } */}
+      } 
       </>
               
           {

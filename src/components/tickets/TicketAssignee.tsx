@@ -47,11 +47,14 @@ interface RefObject {
   upload_files: (id:string) => void
   get_files: () => void
 }
+interface TicketAssigneeProps {
+  id?: string
+}
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
 const { Option } = Select;
 
-const TicketAssignee:FC = () => {
+const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
   const { height, width } = useWindowDimensions();
   const { t } = useTranslation();
   const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, 
@@ -77,7 +80,11 @@ const TicketAssignee:FC = () => {
   
   const router = useHistory()
   useEffect( () => {
-    if(!id) return
+    if(!id) 
+    {
+      id = props?.id || ''
+    }
+   
      setTicketId(id)
       if(id==='0')  {
         setRo(false)
