@@ -586,19 +586,19 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       <Row key="1">
         <Col  xs={24} xl={4} sm={12}>
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_PERCENT_HIGH_PRIORITY')}</h3>
-         <Gauge  {...TICKET_OPENED_PERCENT_HIGH_PRIORITY_CONFIG} />
+         <Gauge  {...TICKET_OPENED_PERCENT_HIGH_PRIORITY_CONFIG}  style={{height:200}} />
         </Col>
         <Col  xs={24} xl={4} sm={12}>
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_PERCENT_HIGH_URGENCY')}</h3>
-         <Gauge  {...TICKET_OPENED_PERCENT_HIGH_URGENCY_CONFIG} />
+         <Gauge  {...TICKET_OPENED_PERCENT_HIGH_URGENCY_CONFIG}  style={{height:200}} />
         </Col>
         <Col  xs={24} xl={4} sm={12}>
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_CLOSED_TODAY')}</h3>
-         <Liquid  {...TICKET_OPENED_CLOSED_TODAY_CONFIG} />
+         <Liquid  {...TICKET_OPENED_CLOSED_TODAY_CONFIG}  style={{height:200}} />
         </Col>
         <Col  xs={24} xl={12} sm={12}>
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_TEAM')}</h3>
-         <Treemap   {...TICKET_OPENED_BY_TEAM_TREE_MAP_CONFIG}  
+         <Treemap   {...TICKET_OPENED_BY_TEAM_TREE_MAP_CONFIG}  style={{height:200}}
          onReady={(plot:any) => {
           plot.chart.on('plot:click', (evt:any) => {
           const { x, y } = evt;
@@ -614,7 +614,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
         <CloseCircleOutlined onClick={() => setSelectedTeam('')} style={{fontSize:26}}/> 
         </Tooltip>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_ASSIGNEE') + ' ' + t('team') + ' ' + ticket_open_by_team_name}</h3>
-        <Treemap   {...TICKET_OPENED_BY_ASSIGNEE_TREE_MAP_CONFIG}  style={{height:200}}
+        <Treemap   {...TICKET_OPENED_BY_ASSIGNEE_TREE_MAP_CONFIG}  style={{height:150}}
         onReady={(plot:any) => {
           plot.chart.on('plot:click', (evt:any) => {
           const { x, y } = evt;
@@ -688,7 +688,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
                 {queries.map((q, index) =>( 
                 <Draggable key={q.id} draggableId={q.id} index={index} isDragDisabled={!edit}>
                 {(provided, snapshot) => (
-                        <Col  xs={24} xl={6} lg={8}  sm={12} key={q.id}
+                        <Col  xs={24} xl={4} lg={6}  sm={8} key={q.id}
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
@@ -703,9 +703,10 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
                         
                         <Card size="small" title= {q.name.toString().substring(0,40)}    style={{alignItems:'center',textAlign:'center',color:'white'}}
                         bodyStyle={{height:1,padding:1}}
-                        headStyle={{background: 'lightgrey',
+                        headStyle={{background: '#49b6ba',
                         border: '1px solid #28a4ae',
-                        borderRadius:5
+                        borderRadius:5,
+                        color:'white'
                           }}
                         type="inner"
                         >

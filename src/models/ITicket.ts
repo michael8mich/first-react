@@ -144,7 +144,7 @@ export interface ITicketsAllWfs {
     customer: SelectOption
     ticket_assignee: SelectOption
     ticket_team: SelectOption
-    ticket_status_team: SelectOption
+    ticket_status_team: SelectOption,
     }
 
 export interface INameBoolValue {

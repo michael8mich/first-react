@@ -223,9 +223,10 @@ const getQueries = async () => {
                         <Badge.Ribbon  text={q.count} color="#f5222d">
                         <Card size="small" title= {q.name.toString().substring(0,40)}    style={{alignItems:'center',textAlign:'center',color:'white'}}
                         bodyStyle={{height:1,padding:1}}
-                        headStyle={{background: 'lightgrey',
+                        headStyle={{background: '#49b6ba',
                         border: '1px solid #28a4ae',
-                        borderRadius:5
+                        borderRadius:5,
+                        color:'white'
                           }}
                         >
                         </Card>  

@@ -48,7 +48,8 @@ interface RefObject {
   get_files: () => void
 }
 interface TicketAssigneeProps {
-  id?: string
+  id?: string,
+  wf?:string
 }
 const { TabPane } = Tabs;
 const { Panel } = Collapse;

@@ -270,7 +270,9 @@
  
          
         "TICKET_OPENED_BY_TEAM": "פניות פעילות לפי צוות",
+        "WF_OPENED_BY_TEAM": "משימות פעילות לפי צוות",
         "TICKET_OPENED_BY_ASSIGNEE": "פניות פעילות לפי גורם מטפל",
+        "WF_OPENED_BY_ASSIGNEE": "משימות פעילות לפי גורם מטפל",
         "TICKET_OPENED_BY_PRIORITY": "פניות פעילות לפי עדיפות",
         "TICKET_OPENED_BY_URGENCY": "פניות פעילות לפי דחיפות",
         "TICKET_OPENED_BY_CATEGORY": "פניות פעילות לפי סיווג פניה",
