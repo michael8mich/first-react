@@ -15,13 +15,19 @@ export const CHECK_SSO = window.CONFIG.CHECK_SSO //false
 export const Base_URL = SERVER + "/" + SS_APP + "/v1/uta"
 const Base_URL_Email = SERVER + "/" + SS_APP + "/v1/utaMail"
 const Base_URL_LOGIN = SERVER + "/" + SS_APP + "/v1/utaAuth"
-const HOSTNAME = "http://localhost:3000"
+
 export class TOKEN {
   static token = ''
   static token_error = false
 }
 
-
+function eraseCache() {
+  window.location = window.location.href + '?eraseCache=true';
+  window.location.reload()
+  window.dispatchEvent(new KeyboardEvent('keydown', {
+    key: 'enter', which: 13
+  }))
+}
 export async function axiosFn(type, data, first, second, third, id = '', limit = '', page = '', offset = '') {
 
   let path = Base_URL;
@@ -60,10 +66,11 @@ export async function axiosFn(type, data, first, second, third, id = '', limit =
       localStorage.removeItem('isAuth')
       localStorage.removeItem('token')
       TOKEN.token = ""
-      let href = window.location.href.toString() || ''
-      console.log('href.indexOf(login)', href.indexOf('login'));
-      if (href.indexOf('login') !== -1)
-        window.location = HOSTNAME + "#/login"
+      eraseCache()
+      // let href = window.location.href.toString() || ''
+      // console.log('href.indexOf(login)', href.indexOf('login'));
+      // if (href.indexOf('login') !== -1)
+      //   window.location = HOSTNAME + "#/login"
     }
     return [{ error: e }]
   }

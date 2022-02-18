@@ -1,12 +1,12 @@
-import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover, Badge} from 'antd';
-import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined,
+import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin, Table, TablePaginationConfig, Tabs, DatePicker, Popover, Badge, Drawer} from 'antd';
+import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined,CloseCircleOutlined,
   TeamOutlined, ToolOutlined, UnorderedListOutlined, LayoutOutlined  } from '@ant-design/icons';
 import  {FC, useEffect, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
-import { axiosFn } from '../../axios/axios';
+import { axiosFn, axiosFnUpload } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
 import { DATETIMEFORMAT, PRPID, removeNewRow, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
 import {  ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
@@ -29,14 +29,17 @@ import PopoverDtl from '../../pages/ticket/PopoverDtl';
 import { P } from '@antv/g2plot';
 import { red, volcano, gold, yellow, lime, green, cyan, blue, geekblue, purple, magenta, grey } from '@ant-design/colors';
 import { generate, presetDarkPalettes } from '@ant-design/colors';
+import ContentEditable from 'react-contenteditable';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
+import { IAttachment } from '../../models/IObject';
 
 // Generate dark color palettes by a given color
 const colors = generate('#1890ff', {
   theme: 'dark',
   backgroundColor: '#141414'
 });
-console.log(blue); // ['#E6F7FF', '#BAE7FF', '#91D5FF', ''#69C0FF', '#40A9FF', '#1890FF', '#096DD9', '#0050B3', '#003A8C', '#002766']
-console.log(blue.primary); // '#1890FF'
+//console.log(blue); // ['#E6F7FF', '#BAE7FF', '#91D5FF', ''#69C0FF', '#40A9FF', '#1890FF', '#096DD9', '#0050B3', '#003A8C', '#002766']
+//console.log(blue.primary); // '#1890FF'
 interface RefObject {
   upload_files: (id:string) => void
   get_files: () => void
@@ -52,7 +55,7 @@ const TicketEmployee:FC = () => {
   const {user } = useTypedSelector(state => state.auth)
   const { Option } = Select;
   const { TextArea } = Input;
-
+  const { height, width } = useWindowDimensions();
   const uploadRef=useRef<RefObject>(null)
   const [userCurrentLoaded] = useState(selectedTicket)
   const [form] = Form.useForm()
@@ -62,6 +65,10 @@ const TicketEmployee:FC = () => {
   const [init, setInit] = useState(false) 
   const [ticketPrp, setTicketPrp] = useState([] as ITicketPrpTpl[] ) 
   const [ticketId, setTicketId] = useState('0') 
+  const [openPrScreen, setOpenPrScreen] = useState(false) 
+  const [prScreenValue, setPrScreenValue] = useState('')
+  const [prScreenNewValues, setPrScreenNewValues] = useState([] as string[])
+
   let {id} = useParams<Params>()
   
   const [sendedFromQuery, setSendedFromQuery] = useState(false)
@@ -178,6 +185,10 @@ const TicketEmployee:FC = () => {
           fetchTicket(selectedTicket.id)
           setTicketId(selectedTicket.id) 
           upload_files(selectedTicket.id)
+          if(prScreenNewValues.length>0)
+          prScreenNewValues.map(prs=> {
+            prScreenSaveToServer(selectedTicket.id,prs )
+          })
           
         }
       }
@@ -446,6 +457,117 @@ const TicketEmployee:FC = () => {
         )
     }
 
+    const  buildContentEditableTitle = () => {
+      return (
+        <div style={{display:'flex', justifyContent:'space-between'}}> 
+        <label key="prScreenValue_label">{t('print_screen_label')}</label>
+        {
+        prScreenValue.length>0 &&
+        <Button key="prScreenValue_save"  onClick={() => prScreenSave()}>{t('save')}</Button>
+        }
+        </div>
+      )
+    } 
+    
+    const contentEditableChange = (evt:any) => {
+        let value = evt.target.value
+        if(value.length===0) {
+          setPrScreenValue('')
+          return
+        }
+        else
+        setPrScreenValue(value)
+    } 
+    const prScreenSaveToServer = async (selectedTicket_id:string,_blob:string) => {
+      selectedTicket_id = selectedTicket_id || ''
+      _blob = _blob || ''
+      if(selectedTicket_id.length===0||selectedTicket_id.length===0)
+      return
+      let hasError = false
+            const file_name = t('_printScreen') +'.png'
+            fetch(_blob)
+            .then(res => res.blob())
+            .then(async blob =>  {
+              const f = new File([blob], file_name,{ type: "image/png" })
+              const  response:any = await axiosFnUpload(f, selectedTicket_id)
+              if(response.data["error"]&&!response.data["fileName"]) hasError = true;
+              if(!hasError)
+              {
+                let att = {
+                  name:f.name,
+                  file_name: response.data.fileName,
+                  factory: 'ticket',
+                  object: selectedTicket_id,
+                  last_mod_by: user.id
+                } as IAttachment
+                const  response_att = await axiosFn('post', att, '', 'attachment', 'id')
+                let value = {new_value: f.name + ' ' + t('file_was_added')} as any
+                let values = {...value, name: t('file_was_added'), ticket: selectedTicket_id, old_value: '' }
+                createTicketActivity(values, user.id)
+                setPrScreenValue('')
+                setOpenPrScreen(false)
+                get_files()
+                }
+            }) 
+
+    }
+    const prScreenSave = async (selectedTicket_id=selectedTicket.id) => {
+      if(!selectedTicket_id) {
+        setAlert({
+          type: 'success' ,
+          message: t('upload_files_on_new') ,
+          closable: true ,
+          showIcon: true ,
+          visible: true,
+          autoClose: 15 
+        }) 
+        setPrScreenValue('')
+        setOpenPrScreen(false)
+        let divElement = document.getElementById('contentEditable')
+        if (divElement)
+        if ( document.getElementById('contentEditable')?.getElementsByTagName('img').length !== 0) 
+        {
+          let prsr = document.getElementById('contentEditable')?.getElementsByTagName('img')[0]?.src;
+          if(prsr)
+          setPrScreenNewValues([...prScreenNewValues, prsr])
+        }
+        return
+       }
+      let divElement = document.getElementById('contentEditable')
+        if (divElement)
+        if ( document.getElementById('contentEditable')?.getElementsByTagName('img').length !== 0) 
+        {
+          let prsr = document.getElementById('contentEditable')?.getElementsByTagName('img')[0]?.src;
+          if(prsr)
+          {
+            prScreenSaveToServer(selectedTicket_id,prsr )
+            
+          }
+          else
+        {
+          console.log('Error _printScreen 1');  
+          setAlert({
+            type: 'error' ,
+            message: t('_printScreen') + ' ' + t('not_correct'),
+            closable: true ,
+            showIcon: true ,
+            visible: true,
+            autoClose: 10 
+          }) 
+        }
+        }
+        else {
+          console.log('Error _printScreen 2');
+          setAlert({
+            type: 'error' ,
+            message: t('_printScreen') + ' ' + t('not_correct'),
+            closable: true ,
+            showIcon: true ,
+            visible: true,
+            autoClose: 10 
+          })
+        }
+    } 
     
     const customerLabel = () =>
     {
@@ -495,7 +617,6 @@ const TicketEmployee:FC = () => {
         fetchTicketLog(selectedTicket)
         
       }
-      console.log(key);
     }
   const edit = (event:any) => {
     event.preventDefault()
@@ -639,10 +760,8 @@ const TicketEmployee:FC = () => {
   const setDefaultPrpValue = (value:string) => {
     if(ticketId === '0' && value )
     {
-      console.log(value);
       try {
       let new_value = JSON.parse(value)
-      console.log(new_value);
       return new_value
       } catch (e:any) {
         console.log(e);
@@ -958,6 +1077,7 @@ const TicketEmployee:FC = () => {
            ref={uploadRef}
            id={selectedTicket?.id ? selectedTicket?.id : ticketId}
            factory="ticket"
+           setOpenPrScreen={setOpenPrScreen}
            />
            </Col>
         </Row>   
@@ -1202,7 +1322,31 @@ const TicketEmployee:FC = () => {
        }
       </Col>
        
-     </Row>  
+     </Row>
+     <Drawer
+          title=""
+          placement={ user.locale === 'heIL' ? 'left' : 'right'}
+          closable={false}
+          onClose={() => {setOpenPrScreen(false);setPrScreenValue('')}}
+          visible={openPrScreen}
+          key={'openPrScreen'}
+          width={ width>1000 ? '80%' : '90%' }
+          height={ '90%' }
+        >
+            <CloseCircleOutlined  style={{fontSize:28,color:'gray'}} onClick={() => {setOpenPrScreen(false);setPrScreenValue('')}} />
+            <Card  title={buildContentEditableTitle()}
+             style={{background:'#fafafa', border:'solid 1px lightgray', borderRadius:'10px', marginLeft:'3px',marginRight:'3px', width:'100%', color:'gray'}}>
+            <ContentEditable
+            id='contentEditable'
+            style={{ background:'lightblue',width:width-width/3, height:height-height/3}}
+            html={prScreenValue} // innerHTML of the editable div
+            disabled={false} // use true to disable edition
+            onChange={contentEditableChange} // handle innerHTML change
+            tagName='div'
+          />
+         </Card>
+        
+      </Drawer>     
   <Modal
        title={t(activityType) + ' ' +  t('ticket') + ' ' + t('number') + ' '  + selectedTicket?.name }
        footer={null}

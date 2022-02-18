@@ -1,31 +1,19 @@
-import React, {FC, forwardRef, useEffect, useImperativeHandle, useState} from 'react';
-import { Menu, Avatar, Button, Tooltip, Popconfirm, Card, Spin, Badge } from 'antd';
-import { MenuFoldOutlined, UserOutlined, MenuUnfoldOutlined, DesktopOutlined,
-  PieChartOutlined,
-  FileOutlined,SettingOutlined,
-  TeamOutlined,FullscreenOutlined, FullscreenExitOutlined
+import React, { forwardRef, useEffect, useImperativeHandle, useState} from 'react';
+import { Menu, Button, Tooltip, Popconfirm, Card, Spin, Badge } from 'antd';
+import {  FileOutlined
  } from '@ant-design/icons';
 import { useHistory } from 'react-router';
 import { RouteNames } from '../router';
 import { useTypedSelector } from '../hooks/useTypedSelector';
 import { useAction } from '../hooks/useAction';
 import { useTranslation } from 'react-i18next';
-import { ITicket, ITicketPrpTpl } from '../models/ITicket';
-import { ANALYST_DTP, GROUP_LIST, IUser, NOT_GROUP_LIST } from '../models/IUser';
+import { ANALYST_DTP, IUser, NOT_GROUP_LIST } from '../models/IUser';
 import { axiosFn } from '../axios/axios';
-import { FROM, SELECT, WHERE } from '../utils/formManipulation';
-import { filter, replace } from 'lodash';
-import { relativeTimeRounding } from 'moment';
+import { FROM, SELECT } from '../utils/formManipulation';
 import { HOME_FOLDER, IQuery, SelectOption, SIDER_NO_FOLDER } from '../models/ISearch';
-import ReloadOutlined from '@ant-design/icons/lib/icons/ReloadOutlined';
-import moment from 'moment';
-import EditOutlined from '@ant-design/icons/lib/icons/EditOutlined';
-import CloseCircleOutlined from '@ant-design/icons/lib/icons/CloseCircleOutlined';
-import DeleteOutlined from '@ant-design/icons/lib/icons/DeleteOutlined';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import AsyncSelect from 'react-select/async';
-import { OptGroup } from 'rc-select';
-import BookOutlined from '@ant-design/icons/lib/icons/BookOutlined';
+import {DeleteOutlined} from '@ant-design/icons';
 
 const { SubMenu } = Menu;
 interface QueriesTreeProps {
@@ -40,9 +28,9 @@ interface oldNew  {
   new: string
 }
 const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
-    const { t, i18n } = useTranslation();      
+    const { t } = useTranslation();      
     const router = useHistory()
-    const {logout, setSelectedProperty, setProperties, setSelectedTicket, setAlert} = useAction()
+    const { setAlert} = useAction()
     const {selectSmall } = useTypedSelector(state => state.cache)
     const { user, siderQueries, defaultRole } = useTypedSelector(state => state.auth)
     const [userId, setUserId ] = useState('')
@@ -66,7 +54,6 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
 
     useEffect(() => {
       if(userId!=='') {
-          console.log(userId);
           getSiderQueries()
       }
     }, [userId])
@@ -197,8 +184,7 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
      setSiderQueries(queries_)
      queries_.map(async q => {
       let js = {seq:q.index} as Object
-      let q_result = await axiosFn("put", js,  '', 'queries', 'id',  q.id  )  
-      console.log(q_result);
+      let q_result = await axiosFn("put", js,  '', 'queries', 'id',  q.id  ) 
       }
       ) 
   }

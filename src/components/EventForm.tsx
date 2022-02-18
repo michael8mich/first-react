@@ -1,6 +1,5 @@
-import {Form, Input, Button, Select, DatePicker,TimePicker, Row}  from 'antd';
+import {Form, Input, Button, Select, DatePicker, Row}  from 'antd';
 import  {FC, useEffect, useState} from 'react';
-import { useAction } from '../hooks/useAction';
 import { useTypedSelector } from '../hooks/useTypedSelector';
 import { IEvent } from '../models/IEvent';
 import { IUser } from '../models/IUser';
@@ -17,14 +16,13 @@ interface EventFormProps {
 const EventForm: FC<EventFormProps> = (props) => {
 
   const {error, isLoading } = useTypedSelector(state => state.event)
-  const {} = useAction()
   const {user } = useTypedSelector(state => state.auth)
   
   const { t } = useTranslation();
-  const [initialForm, setInitialForm] = useState({})
+  const [initialForm] = useState({})
   const [form] = Form.useForm()
   useEffect(() => {
-    console.log('props.modalVisible',props.modalVisible );
+    //console.log('props.modalVisible',props.modalVisible );
     
     form.resetFields()
   },[props.modalVisible])
@@ -36,9 +34,9 @@ const EventForm: FC<EventFormProps> = (props) => {
     Object.keys(values_).map(k=> {
       if(values_[k] instanceof moment )
       {
-       values_[k] = values_[k].unix()
+       return values_[k] = values_[k].unix()
       }
-      values[k] = ''
+      return values[k] = ''
     })
     form.resetFields()
     props.submit(values_)

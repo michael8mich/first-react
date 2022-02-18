@@ -4,7 +4,6 @@ import {  DragDropContext,
   Droppable,
   DropResult } from 'react-beautiful-dnd';
 import { Gauge, Pie, Liquid,  Waterfall, Treemap  } from '@ant-design/charts';
-import { Rose } from '@antv/g2plot';
 import { Bar } from '@ant-design/plots';
 import { axiosFn } from '../axios/axios';
 import { useTranslation } from 'react-i18next';

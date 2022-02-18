@@ -192,28 +192,31 @@ body {
 
 .table-row-selected {
   text-decoration: underline;
-  color:white;
-  background-color: black;
-  text-shadow: 2px 2px 5px black;
+  /* color:white;
+  background-color: black; */
+  /* text-shadow: 2px 2px 5px black; */
   font-weight:500;
+  font-size: larger;
   border: black 2px solid!important;
   padding:5px;
 }
 .table-row-selected:hover {
   text-decoration: underline;
-  color:black;
-  background-color: white;
-  text-shadow: 2px 2px 5px white;
+  /* color:black; */
+  /* background-color: white; */
+  /* text-shadow: 2px 2px 5px white; */
   font-weight:500;
+  font-size: larger;
   border: black 2px solid!important;
   padding:5px;
 }
 .table-row-selected:-moz-focusring {
   text-decoration: underline;
-  color:white;
-  background-color: black;
-  text-shadow: 2px 2px 5px black;
+  /* color:white;
+  background-color: black; */
+  /* text-shadow: 2px 2px 5px black; */
   font-weight:500;
+  font-size: larger;
   border: black 2px solid!important;
   padding:5px;
 }
@@ -269,4 +272,10 @@ body {
   font-weight: 700;
   background-color:black;
   padding:5px;
+}
+#contentEditable img {
+  height:100%;
+  width:100%;
+  margin: auto;
+  display: block;
 }

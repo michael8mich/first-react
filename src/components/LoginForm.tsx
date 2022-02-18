@@ -1,14 +1,14 @@
 import {Form, Input, Checkbox, Button}  from 'antd';
-import  {FC, useEffect} from 'react';
+import  {FC} from 'react';
 import { useAction } from '../hooks/useAction';
 import { useTypedSelector } from '../hooks/useTypedSelector';
 import { UnlockOutlined, UserOutlined } from "@ant-design/icons";
 import { useTranslation } from 'react-i18next';
 
 const LoginForm: FC = () => {
-  const { t, i18n } = useTranslation();      
-  const {error, isLoading, user } = useTypedSelector(state => state.auth)
-  const {login,logout} = useAction()
+  const { t } = useTranslation();      
+  const {error, isLoading } = useTypedSelector(state => state.auth)
+  const {login} = useAction()
   const [form] = Form.useForm()
   const onFinish =  (values: any) => {
     console.log('Success:', values);

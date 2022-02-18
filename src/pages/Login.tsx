@@ -1,13 +1,11 @@
 import { Card, Layout, Row } from 'antd';
-import React, {FC, useEffect} from 'react';
+import  {FC, useEffect} from 'react';
 import { TOKEN } from '../axios/axios';
 import LoginForm from '../components/LoginForm';
 import { useAction } from '../hooks/useAction';
-import { useTypedSelector } from '../hooks/useTypedSelector';
 
 const Login:FC = () => {
-  const {isAuth} = useTypedSelector(state => state.auth)
-  const {login,logout} = useAction()
+  const {logout} = useAction()
   useEffect(  ()  => {
     if(TOKEN.token)
     logout()

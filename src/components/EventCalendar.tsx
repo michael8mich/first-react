@@ -1,4 +1,4 @@
-import { Badge, Calendar, Card } from 'antd';
+import { Badge, Calendar } from 'antd';
 import moment from 'moment';
 import { Moment } from 'moment';
 import  {FC} from 'react';

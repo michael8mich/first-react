@@ -1,5 +1,5 @@
-import { Upload, Button, Space } from 'antd';
-import { UploadOutlined, PlusOutlined, SyncOutlined } from '@ant-design/icons';
+import { Upload, Button, Space, Tooltip } from 'antd';
+import { UploadOutlined, PictureOutlined, SyncOutlined } from '@ant-design/icons';
 import React,  {FC, forwardRef, Ref, useEffect, useImperativeHandle, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
@@ -13,7 +13,8 @@ import { useAction } from '../../hooks/useAction';
 import { factory } from 'typescript';
 interface UploadFProps {
   id:string,
-  factory:string
+  factory:string,
+  setOpenPrScreen: (event: boolean) => void,
 }
 
 const UploadFiles = forwardRef((props:UploadFProps, ref) => {
@@ -147,6 +148,16 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
     return (
       <>
     <Space direction="vertical" style={{ width: '100%' }} size="small">
+    <Tooltip title={t('_printScreen')} >
+      <Button 
+      onClick={() => props.setOpenPrScreen(true) }
+      >
+      <PictureOutlined 
+          style={{color:'gray',fontSize:'18px'}}
+          
+         />{t('makePrintScreen')}
+         </Button>
+          </Tooltip>
       <Upload
            {...prp}
           listType="picture"
@@ -159,6 +170,7 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
         <UploadOutlined
         title= {t('select_files_for_upload')}
         style={{border:'1px dashed gray', fontSize:'33px', color:'gray'}}/>
+         
               
          {
            loading &&

@@ -16,55 +16,7 @@ const TicketWfs:FC = () => {
     const { selectedTicket, selectedWfsId } = useTypedSelector(state => state.ticket)
     const {user, defaultRole } = useTypedSelector(state => state.auth)
     const {setSelectedWfsId} = useAction()
-    // useEffect(() => {
-     
-  
-    //  }, [selectedWfsId])
     const ticketWfsColumns: ColumnsType<ITicketWfTpl> = [
-        // {
-        //     key: 'action',   
-        //     title: t('actions'),
-        //     width: '7%',
-        //     fixed: 'left',
-        //     render: (record, index) => {
-        //       return (
-        //         <>
-        //         {/* {
-        //             record.task.value !== WF_TASK_START_GROUP.value && record.task.value !== WF_TASK_END_GROUP.value && 
-        //             <>
-        //             <FolderViewOutlined key="view" 
-        //                 onClick={() => selectWf(record, true)}
-        //             />&nbsp;&nbsp;
-        //             {
-        //                 record.status.value !== WF_STATUS_COMPLETE.value &&
-        //                 <EditOutlined key="edit"
-        //                 onClick={() => selectWf(record, false)}
-        //                 />
-        //             }
-        //             &nbsp;&nbsp;
-        //             {
-        //                 record.deleteable !== 0 &&
-        //                 <Tooltip title={t('delete')} key="delete">
-        //                 <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  onConfirm={() => deleteWf(record.id)}>
-        //                                 <DeleteOutlined 
-        //                                 ></DeleteOutlined>
-        //                 </Popconfirm>              
-        //                 </Tooltip>
-        //             }
-        //         </>
-        //         } */}
-        //         {
-        //             record.task.value === WF_TASK_START_GROUP.value &&  
-        //             <VerticalAlignBottomOutlined  style={{fontSize:30,color:'#49b6ba'} }   />
-               
-        //         }
-        //         {
-        //             record.task.value === WF_TASK_END_GROUP.value &&  
-        //             <VerticalAlignBottomOutlined  style={{fontSize:30,color:'#49b6ba'} } rotate={180}   />
-        //         }
-        //        </>
-        //       )}
-        // },
         {
           key: 'sequence',
           title: t('sequence'),
@@ -85,7 +37,8 @@ const TicketWfs:FC = () => {
                 }
                 </>
                 
-            );}
+            );},
+            fixed: 'left'
         },
         {
           key: 'name',
@@ -93,6 +46,7 @@ const TicketWfs:FC = () => {
           dataIndex: 'name',
           sorter: (a:any, b:any) =>  a.name.localeCompare(b.name),
           width: '10%',
+          fixed: 'left'
         },
         {
           key: 'task',

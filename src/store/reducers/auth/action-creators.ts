@@ -76,7 +76,6 @@ export const AuthActionCreators =  {
                 third = " team  = '" + user.id + "'"
               } 
                 const response_multi = await  axiosFn("get", '', first, second,  third , ''  )  
-                console.log('m', m);
                 multiObject = { ...multiObject, [m]: response_multi.data}
                 dispatch(AuthActionCreators.setUser({...user, ...multiObject}))
                 if(remember)
@@ -139,7 +138,6 @@ export const AuthActionCreators =  {
               third = " team  = '" + user.id + "'"
             } 
               const response_multi = await  axiosFn("get", '', first, second,  third , ''  )  
-              console.log('m', m);
               multiObject = { ...multiObject, [m]: response_multi.data}
               dispatch(AuthActionCreators.setUser({...user, ...multiObject}))
               localStorage.setItem('isAuth', JSON.stringify({...user, ...multiObject}) )    
@@ -207,7 +205,6 @@ export const AuthActionCreators =  {
               third = " team  = '" + user.id + "'"
             } 
               const response_multi = await  axiosFn("get", '', first, second,  third , ''  )  
-              console.log('m', m);
               multiObject = { ...multiObject, [m]: response_multi.data}
               dispatch(AuthActionCreators.setUser({...user, ...multiObject}))
               localStorage.setItem('isAuth', JSON.stringify({...user, ...multiObject}) )    
@@ -261,7 +258,7 @@ export const AuthActionCreators =  {
        
         } catch (e) {
           return []
-          console.log('fetchTickets',e);
+       
               
           dispatch(AuthActionCreators.setIsError(i18n.t('axios_error')))        
        } finally {

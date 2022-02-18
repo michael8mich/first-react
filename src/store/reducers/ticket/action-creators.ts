@@ -362,20 +362,28 @@ export const TicketActionCreators = {
                  delete w.assignee_name
                  delete w.task_name
                   prev_wf = w
-                  if(w.task===WF_TASK_START_GROUP.value)
-                  start_group = true
                   if(w.task===WF_TASK_END_GROUP.value)
                   start_group = false
                   w.ticket = new_id
-                  if(index===0 || start_group){
-                    if(w.task===WF_TASK_START_GROUP.value)
-                    w.status = WF_STATUS_COMPLETE.value
+                  if(index===0 ) {
+                    if(w.task===WF_TASK_START_GROUP.value) {
+                      w.status = WF_STATUS_COMPLETE.value
+                      w.done_dt = nowToUnix()
+                      start_group = true
+                    }
                     else
                     w.status = WF_STATUS_PEND.value
                     w.start_dt = nowToUnix()
                   }
                   else
+                  if(start_group)
+                  {
+                    w.status = WF_STATUS_PEND.value
+                    w.start_dt = nowToUnix()
+                  }
+                  else
                   w.status = WF_STATUS_WAIT.value
+
                   w.created_dt =  nowToUnix().toString()
                   const responseNewWf = await  axiosFn("post", w, '*', 'wf', "id" , ''  )  
                   if(w.status === WF_STATUS_PEND.value) {

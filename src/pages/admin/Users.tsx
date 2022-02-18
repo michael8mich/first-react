@@ -70,12 +70,14 @@ const Users:FC = () => {
       title: t('name'),
       dataIndex: 'name',
       sorter: true,
+      width: 140,
       render: (name, record, index) => {
         return (
           <a onClick={(event) => goToObject(event, record.id  ) }>
             {name} 
           </a>
-        );}
+        );},
+        fixed: 'left'
     
     },
     {
@@ -280,11 +282,12 @@ const Users:FC = () => {
        > 
        <Row>
         <div style={{display:'flex', justifyContent:'start'}}>
-        <Col  xs={12} xl={24}>
+        <Col  xs={4} sm={6} xl={24}>
         
          {buildTitle()}
          </Col>
-        <Col  xs={12} xl={24}>
+         
+         <Col  xs={20} sm={18} xl={24} >
          <Button type="primary" htmlType="submit" loading={isLoading}
          >
          { t('search') }
@@ -454,11 +457,12 @@ const Users:FC = () => {
       title={() => <h3>{t('users')}/{t('teams') + ' ' + t('total_count') + ' ' + usersCount }  { qName ? (t('query') +  ': ' + qName) : '' }</h3> }
       footer={() => t('total_count') + ' ' + usersCount}
       style={{width: '100%', padding: '5px'}}
+      scroll={{ x: 1500, y: 550 }}
       // scroll={{ x: 1500, y: 700 }}
-      expandable={{
-        expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
-        rowExpandable: record => record.description !== '',
-      }}
+      // expandable={{
+      //   expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
+      //   rowExpandable: record => record.description !== '',
+      // }}
       />
       </Row>
       </Card>

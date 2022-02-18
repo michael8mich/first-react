@@ -534,11 +534,11 @@ const TicketsAssignee:FC = () => {
        > 
         <Row>
         <div style={{display:'flex', justifyContent:'start'}}>
-        <Col  xs={12} xl={24}>
+        <Col  xs={4} xl={24}>
         
          {buildTitle()}
          </Col>
-         <Col  xs={12} xl={24} >
+         <Col  xs={20} xl={24} >
          <Button type="primary" htmlType="submit" loading={isLoading} key="search"
          >
          { t('search') }

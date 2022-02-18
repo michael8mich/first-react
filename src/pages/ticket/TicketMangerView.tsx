@@ -192,7 +192,7 @@ const TicketMangerView:FC = () => {
   {
     if(wf)
     return (
-      <div>{record.description}</div>
+      <div key="div_hidden">{record.description}</div>
     )
     return (
          <PopoverDtl 
