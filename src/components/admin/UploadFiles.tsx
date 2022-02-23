@@ -1,5 +1,5 @@
-import { Upload, Button, Space, Tooltip } from 'antd';
-import { UploadOutlined, PictureOutlined, SyncOutlined } from '@ant-design/icons';
+import { Upload, Button, Space, Tooltip, Modal } from 'antd';
+import { UploadOutlined, PictureOutlined, SyncOutlined, DownloadOutlined,ImportOutlined } from '@ant-design/icons';
 import React,  {FC, forwardRef, Ref, useEffect, useImperativeHandle, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
@@ -11,12 +11,17 @@ import { IAttachment } from '../../models/IObject';
 import { anyTypeAnnotation } from '@babel/types';
 import { useAction } from '../../hooks/useAction';
 import { factory } from 'typescript';
+import { getFileMimeType } from '../../utils/validators';
 interface UploadFProps {
   id:string,
   factory:string,
   setOpenPrScreen: (event: boolean) => void,
 }
-
+interface File {
+  url: any
+  preview: any
+  originFileObj: any
+}
 const UploadFiles = forwardRef((props:UploadFProps, ref) => {
   const { t } = useTranslation();      
   const { user } = useTypedSelector(state => state.auth)
@@ -26,6 +31,13 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
   const [fileList, setFileList] = useState([] as any[]);
   const [toSaveFileList, setToSaveFileList] = useState([] as any[]);
   const {createTicketActivity, setAlert} = useAction()
+  const [previewVisible, setPreviewVisible] = useState(false)
+  const [previewImage, setPreviewImage] = useState('')
+  const [selectedFile, setSelectedFile] = useState({} as any)
+  const [selectedUrl, setSelectedUrl] = useState('')
+  const [selectedName, setSelectedName] = useState('')
+  
+
   useImperativeHandle(
     ref, () => ({
       
@@ -77,8 +89,14 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
   //const PATH_TO_FOLDER =  'http://mx/f/'
 
   const handleUpload =  async (info: any) => {
+    
+    
     if(info.file.status === "removed") 
     {
+      let confirm = window.confirm(t('are_you_sure')) ? true : false
+      if(!confirm) {
+        return
+      }
       let res = await axiosFn('delete', '', '', 'attachment', 'id', info.file.uid)
       if(props.factory === 'ticket') {
         let value = {new_value: info.file.name + ' ' + t('file_was_removed')} as any
@@ -145,6 +163,88 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
     action: PATH_TO_FOLDER,
     name: 'file',
   };
+  const handleCancel = () => {setPreviewVisible(false)};
+  const getImageOrFallback = (path:string) => {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.src = path;
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+    });
+  };
+  const downloadByLink = (src:string) => {
+    const link = document.createElement('a')
+            link.href = src
+            link.download = selectedName;
+            link.click()
+  }
+  const file2Base64 = (file:any):Promise<string> => {
+    return new Promise<string> ((resolve,reject)=> {
+         const reader = new FileReader();
+         reader.readAsDataURL(file);
+         reader.onload = () => resolve(reader.result?.toString() || '');
+         reader.onerror = error => reject(error);
+     })
+    }
+  const openInNewWindowByLink = async (src:string) => {
+    getImageOrFallback(src).then(async correctImg => {
+      if(correctImg) { 
+    const image = new Image();
+    image.src = src;
+    const imgWindow = window.open(src);
+    if(imgWindow)
+    imgWindow.document.write(image.outerHTML);
+      } else {
+        var w = window.open('about:blank');
+        const response = await fetch(src);
+        const data = await response.blob();
+        if( getFileMimeType(data.type) === 'Error') 
+        return
+        const b64 = await file2Base64(data)
+        setTimeout(function(){
+          if(w) {
+            w.document.body.style.width = '100%'
+            w.document.body.style.height = '100%'
+            let iframe = w.document.createElement('iframe')
+            iframe.style.width = '100%'
+            iframe.style.height = '100%'
+            w.document.body.appendChild(iframe)
+                .src = b64.toString()
+          }     
+        }, 0);
+      }
+    })
+}
+  
+  const handlePreview = async (file: any) => {
+    setSelectedFile(file)
+    if (file.url) {
+      let src = file.url;
+      if (src) {
+        setSelectedUrl(src)
+        setSelectedName(file.name)
+        getImageOrFallback(src).then(async correctImg => {
+          if(correctImg) {
+            setPreviewImage(src)
+            setPreviewVisible(true)
+          } else {
+            const response = await fetch(src);
+            const data = await response.blob();
+            if( getFileMimeType(data.type) === 'Error') 
+            downloadByLink(src)
+            else
+            {
+                setPreviewImage('')
+                setPreviewVisible(true)
+            }
+            }
+        }) 
+      }
+      else {
+        
+      }
+    }
+  }
     return (
       <>
     <Space direction="vertical" style={{ width: '100%' }} size="small">
@@ -160,10 +260,12 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
           </Tooltip>
       <Upload
            {...prp}
-          listType="picture"
+          listType="picture-card"
+          // listType="picture"
           maxCount={FILE_COUNT}
           multiple={true}
-          className="upload-list-inline"
+          // className="upload-list-inline"
+          onPreview={handlePreview}
           onChange={handleUpload}
           fileList={fileList}
         >
@@ -190,6 +292,27 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
            <h2  style={{color:'#FAAD14'}}>{t('upload_files_on_new')}</h2>
         }
   </Space>
+  <Modal
+          visible={previewVisible}
+          title={selectedName}
+          footer={null}
+          onCancel={handleCancel}
+          bodyStyle={{width:'100%',height:'100%'}}
+        >
+          <Tooltip title={t('download_file')} key="download">
+          <DownloadOutlined style={{fontSize:33, color:'gray'}}  onClick={()=>downloadByLink(selectedUrl)}/>&nbsp;&nbsp;
+          </Tooltip>
+          
+          <Tooltip title={t('open_file_in_new_window')} key="new_window">
+          <ImportOutlined style={{fontSize:33, color:'gray'}}  onClick={()=>openInNewWindowByLink(selectedUrl)}/>
+          </Tooltip>
+          <br />
+          {
+            previewImage && 
+            <img alt="example" style={{ width: '100%' }} src={previewImage} key="previewImage"/>
+          }
+          
+        </Modal>
   </>
     )
   })

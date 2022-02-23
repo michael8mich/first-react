@@ -125,3 +125,28 @@ export const validators = {
         }
     )
 }
+export const getFileMimeType = (type:string) => {
+            const mimeTypes = [
+                // Images
+                ['PNG', 'image/png'],
+                // Audio
+                ['ID3', 'audio/mpeg'],// MP3
+                // Video
+                ['ftypmp4', 'video/mp4'],// MP4
+                ['ftypisom', 'video/mp4'],// MP4
+                // HTML
+                ['<!DOCTYPE html>', 'text/html'],
+                // PDF
+                ['%PDF', 'application/pdf']
+                // Add the needed files for your case.
+            ];
+            // Iterate over the required types.
+            for(let i = 0;i < mimeTypes.length;i++){
+                // If a type matches we return the MIME type
+                if(type.indexOf(mimeTypes[i][1]) > -1){
+                    return mimeTypes[i][0]
+                }
+            }
+            // If not is found we resolve with a blank argument
+            return 'Error';
+};

@@ -270,6 +270,8 @@
         "size": "Size",
         "manger_view": "Manager view",
         "ticketsmv": "Manager view",
+        "download_file": "Download file",
+        "open_file_in_new_window": "Open file in new window",
 
         "TICKET_OPENED_BY_TEAM": "Active Tickets by Team",
         "WF_OPENED_BY_TEAM": "Active Workflows by Team",
