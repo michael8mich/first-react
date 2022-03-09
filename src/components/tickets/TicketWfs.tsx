@@ -1,21 +1,23 @@
-import { Button, Col, Popconfirm, Progress, Row, Steps, Switch, Table, Tabs, Tooltip } from "antd";
+import { Button, Col, Drawer, Popconfirm, Progress, Row, Steps, Switch, Table, Tabs, Tooltip } from "antd";
 import { ColumnsType } from "antd/lib/table";
 import { useTranslation } from "react-i18next";
 import { FC, useEffect, useState } from "react";
 import { useTypedSelector } from "../../hooks/useTypedSelector";
 import { ITicketWfTpl, WF_STATUS_COMPLETE, WF_STATUS_PEND, WF_STATUS_REJECT, WF_TASK_END_GROUP, WF_TASK_START_GROUP } from "../../models/ITicket";
 import { uTd } from "../../utils/formManipulation";
-import {FolderViewOutlined, EditOutlined,DeleteOutlined, VerticalAlignBottomOutlined} from '@ant-design/icons';
+import {UndoOutlined, PlusCircleOutlined,DeleteOutlined, VerticalAlignBottomOutlined} from '@ant-design/icons';
 import { axiosFn } from "../../axios/axios";
 import TicketWfDtl from "./TicketWfDtl";
 import { userInfo } from "os";
 import { useAction } from "../../hooks/useAction";
+import useWindowDimensions from "../../hooks/useWindowDimensions";
 const { Step } = Steps;
 const TicketWfs:FC = () => {
     const { t } = useTranslation();
+    const { height, width } = useWindowDimensions();
     const { selectedTicket, selectedWfsId } = useTypedSelector(state => state.ticket)
     const {user, defaultRole } = useTypedSelector(state => state.auth)
-    const {setSelectedWfsId} = useAction()
+    const {setSelectedWfsId, fetchTicketWfs} = useAction()
     const ticketWfsColumns: ColumnsType<ITicketWfTpl> = [
         {
           key: 'sequence',
@@ -35,7 +37,35 @@ const TicketWfs:FC = () => {
                 :   
                 record.sequence  
                 }
+                
+              
+                {
+                record.task?.value && record.task?.value !== WF_TASK_START_GROUP.value && record.task?.value && record.task?.value !== WF_TASK_END_GROUP.value &&
+                record.status.value !== WF_STATUS_COMPLETE.value && 
+                <Tooltip title={ t('add_new', { object: t('wf') })}>
+               <PlusCircleOutlined style={{cursor:"pointer",paddingInline:5}}
+               onClick={()=>setSelectedNewWf(record)}
+              
+               />
+                </Tooltip>
+
+                }
+                {
+                record.task?.value && record.task?.value !== WF_TASK_START_GROUP.value && record.task?.value && record.task?.value !== WF_TASK_END_GROUP.value &&
+                record.status.value !== WF_STATUS_COMPLETE.value && record.deleteable === 1 &&
+                <Tooltip title={ t('delete', { object: t('wf') })}>
+                   <Popconfirm title={t('are_you_sure')} okText={t('yes')} cancelText={t('no')}  
+                   onConfirm={() => deleteWf(record.id)}
+                   onCancel={()=> cancelDeleteWf()}
+   
+                   >
+                      <DeleteOutlined style={{cursor:"pointer",paddingInline:5}}/>
+                   </Popconfirm>
+                </Tooltip>
+
+                }
                 </>
+
                 
             );},
             fixed: 'left'
@@ -135,8 +165,9 @@ const TicketWfs:FC = () => {
       ]
   const [viewWf, setViewWf] = useState(false)
   const [roWf, setRoWf] = useState(false)
-  
+  const [selectedNewWf, setSelectedNewWf] = useState({} as ITicketWfTpl)
   useEffect(() => {
+
     if(selectedWfsId!=='')
     {
       let obj = selectedTicket.ticketWfs?.find(w=>w.id===selectedWfsId)
@@ -155,24 +186,42 @@ const TicketWfs:FC = () => {
     } 
   }, [selectedTicket.ticketWfs])
 
-  const addNewWfs = () => { 
-    setViewWf(true)
-    //setSelectedWf({} as ITicketWfTpl)
-    setRoWf(false)
-  }
+  useEffect(() => {
+    
+    if(selectedNewWf)
+    {
+      const selectedNewWf_ = JSON.parse(JSON.stringify({...selectedNewWf, id:'0'}) )
+      setSelectedWf(selectedNewWf_ )
+     
+        setSelectedNewWf({...selectedNewWf_, id: ''} )
+    
+      
+    }
+  }, [selectedNewWf.id])
+
   const deleteWf = async (id:string) => {
-    let result_query = await axiosFn("delete", '', '*', 'wftpl', "id" , id )
-    //fetchWfs(selectedCategory.id)
+    let result_query = await axiosFn("delete", '', '*', 'wf', "id" , id )
+    fetchTicketWfs(selectedTicket)
+    setViewWf(false)
+    setSelectedWf({} as ITicketWfTpl )
   }
+  const cancelDeleteWf =  () => {
+    setTimeout(() => {
+      setViewWf(false)
+      setSelectedWf({} as ITicketWfTpl )
+    }, 500);
+    
+  }
+  
   const [selectedWf, setSelectedWf] = useState({} as ITicketWfTpl)
+  
   const selectWf = (record:ITicketWfTpl, ro:boolean) => {
     if( record.task?.value === WF_TASK_START_GROUP.value || record.task?.value === WF_TASK_END_GROUP.value)
     return
     if(record.status?.value === WF_STATUS_COMPLETE.value && !ro) return
-    setSelectedWf(record)
-    setViewWf(true)
-    setRoWf(ro)
-
+      setSelectedWf(record)
+      setViewWf(true)
+      setRoWf(ro)
   }
 
   const resetSelectedWf =(id:string) => {
@@ -203,10 +252,11 @@ const TicketWfs:FC = () => {
   }
     return (
         <>
-           
-            <Switch checkedChildren={t('my_wfs_only')} unCheckedChildren={t('all_wfs')} 
+           <UndoOutlined onClick={()=>fetchTicketWfs(selectedTicket)} style={{fontSize:20}}/>&nbsp;&nbsp;&nbsp;
+            <Switch checkedChildren={t('my_wfs_only')} unCheckedChildren={t('all')} 
             onChange={() => setWiveMyWfs(!wiveMyWfs)}
             defaultChecked={wiveMyWfs} />
+            
             <Progress strokeColor={{
                     '0%': '#108ee9',
                     '100%': '#87d068',
@@ -233,17 +283,9 @@ const TicketWfs:FC = () => {
                     )
                 }
             </Steps>
- 
-        {
-            !viewWf && false &&
-            <Button
-              onClick={addNewWfs}
-              > {t('add_new')}
-            </Button>
-         }
          
            <Row>
-           <Col  xl={viewWf ? 12 : 24 }  lg={viewWf ? 12 : 24} sm={viewWf ? 12 : 24} xs={24} >
+           <Col  xl={viewWf ? 24 : 24 }  lg={viewWf ? 24 : 24} sm={viewWf ? 24 : 24} xs={24} >
            <Table<ITicketWfTpl>
              onRow={(record, rowIndex) => {
               return {
@@ -264,7 +306,7 @@ const TicketWfs:FC = () => {
            >
            </Table> 
            </Col>
-           <Col   xl={viewWf ? 12 : 0 }  lg={viewWf ? 12 : 0} sm={viewWf ? 12 : 0} xs={24} 
+           {/* <Col   xl={viewWf ? 12 : 0 }  lg={viewWf ? 12 : 0} sm={viewWf ? 12 : 0} xs={24} 
            >
            {
             viewWf &&
@@ -281,7 +323,33 @@ const TicketWfs:FC = () => {
             wfs={selectedTicket.ticketWfs ? selectedTicket.ticketWfs : [] as ITicketWfTpl[]}
             />
           }
-           </Col>
+           </Col> */}
+            <Drawer
+          title=""
+          placement={ user.locale === 'heIL' ? 'left' : 'right'}
+          closable={false}
+          onClose={() =>  { setViewWf(false); setSelectedWf({} as ITicketWfTpl ) } }
+          visible={viewWf}
+          key={'openWfScreen'}
+          width={ width>1000 ? '80%' : '90%' }
+          height={ '90%' }
+        >
+          {
+            viewWf &&
+            <TicketWfDtl 
+                save={() => setViewWf(false) }
+                cancel={() =>  { setViewWf(false); setSelectedWf({} as ITicketWfTpl ) } }
+                setRoWf={(value:boolean) => setRoWf(value) }
+                resetSelectedWf={(value:string) => resetSelectedWf(value) }
+                ro={roWf}
+              
+                // lastSequence={(+selectedTicket.ticketWfs[selectedTicket.ticketWfs?.length-1]?.sequence+10).toString()}
+                lastSequence={'10'}
+                selectedWf={selectedWf}
+                wfs={selectedTicket.ticketWfs ? selectedTicket.ticketWfs : [] as ITicketWfTpl[]}
+                />
+          }
+        </Drawer>
            </Row>
            
     </>        

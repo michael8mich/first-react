@@ -30,14 +30,20 @@ interface TicketWfDtlProps {
   selectedWf: ITicketWfTpl
   wfs: ITicketWfTpl[]
 }
-
+interface Ticket {
+  ticketId: string,
+  tCategory: string,
+  tStatus: string
+}
 const TicketWfDtl: FC<TicketWfDtlProps> =  (props)  => {
   const { t } = useTranslation();
   const [formWf] = Form.useForm()
-  const {createWf, fetchWf, fetchTicketWfs} = useAction()
+  const {createWf, fetchWf, fetchTicketWfs, setAlert} = useAction()
   const {user } = useTypedSelector(state => state.auth)
   const {selectedTicket } = useTypedSelector(state => state.ticket)
   const [ro, setRo] = useState(true)
+  const [ticket, setTicket] = useState({} as Ticket)
+
   const {notificationsAll } = useTypedSelector(state => state.admin)
   useEffect(() => {
     setFormValues()
@@ -60,11 +66,60 @@ const TicketWfDtl: FC<TicketWfDtlProps> =  (props)  => {
       const currWfFields= Object.keys(curWf)
       const  formFields = Object.keys((formWf.getFieldsValue()))
       const form_set_values = {} as any
-      formFields.map(ff => {
-        form_set_values[ff] = curWf[ff]
-      })
-      if(!curWf?.sequence )
-      form_set_values.sequence =  Number(props.lastSequence) ? props.lastSequence : 10
+      
+      if(curWf?.id === '0')
+      {
+        let ticket_:Ticket = {
+          ticketId: curWf?.ticket.value,
+          tCategory: curWf?.tcategory.value,
+          tStatus: curWf?.status.value
+        } 
+        formFields.map(ff => {
+          form_set_values[ff] = null
+        })
+        setTimeout(() => {
+          setRo(false)
+        }, 1000);
+        
+        let curSequence = curWf?.sequence
+        let curIndex = props.wfs.findIndex(e=>e.sequence === curSequence)
+        let newSequence = curIndex === props.wfs.length-1 ? +curSequence + 10 : 0
+        if(newSequence === 0)
+        {
+          let nextSequence =  props.wfs[curIndex+1].sequence
+          let availableNumbers = +nextSequence - +curSequence
+          if(availableNumbers===1)
+          {
+            setAlert({
+              type: 'warning' ,
+              message: t('sequence_exist') ,
+              closable: true ,
+              showIcon: true ,
+              visible: true,
+              autoClose: 10 
+            })
+            props.cancel()
+          }
+          newSequence = +curSequence + Math.floor(availableNumbers/2) 
+        } 
+        let ifInGroup = false
+        props.wfs.map(w=> {
+              if(w.task.value === WF_TASK_START_GROUP.value && +w.sequence < +curSequence)
+              ifInGroup = true 
+              if(w.task.value === WF_TASK_END_GROUP.value && +w.sequence < +curSequence)
+              ifInGroup = false 
+        })
+        if(!ifInGroup || ticket_.tStatus !== WF_STATUS_PEND.value)
+        ticket_.tStatus = WF_STATUS_WAIT.value
+        form_set_values.sequence =  newSequence
+        setTicket(ticket_)
+      }
+      else {
+        formFields.map(ff => {
+          form_set_values[ff] = curWf[ff]
+        })
+      }
+      
       formWf.setFieldsValue(form_set_values);
   }
 
@@ -72,14 +127,39 @@ const onFinish =async (values: any) => {
     console.log('Success:', values)
       
       let values_ = {} as any
-
       values_.team = values.team?.value ? values.team?.value  : ""
       values_.assignee = values.assignee?.value ? values.assignee?.value : ""
       values_.description = values?.description
-      const responseNewWf = await  axiosFn("put",values_, '*', 'wf', "id" , props.selectedWf.id  )  
-      fetchTicketWfs(selectedTicket) 
-      props.setRoWf(true)
-      
+
+      if(props.selectedWf?.id === '0'){
+      values_.task = values.task?.value ? values.task?.value : ""
+      values_.name = values?.name
+      values_.description = values?.description
+      values_.ticket = ticket.ticketId
+      values_.sequence = values?.sequence
+      values_.status = ticket.tStatus 
+      values_.created_dt =  nowToUnix().toString()
+      values_.tcategory =  ticket.tCategory  
+      values_.deleteable =  values?.deleteable  ? 1 : 0 
+  
+      if( values_.status === WF_STATUS_PEND.value)
+       values_.start_dt = nowToUnix()
+        const responseNewWf = await  axiosFn("post",values_, '*', 'wf', "id" , ''  )
+        fetchTicketWfs({...selectedTicket, id:ticket.ticketId} ) 
+        if( values_.status === WF_STATUS_PEND.value) 
+        {
+          if(responseNewWf?.data[0]?.id)
+          notifyWf(WF_PEND, selectedTicket, {...values_, id: responseNewWf?.data[0]?.id} , notificationsAll )  
+        }
+        
+        props.cancel()
+      } else {
+        const responseNewWf = await  axiosFn("put",values_, '*', 'wf', "id" , props.selectedWf.id  )  
+        fetchTicketWfs(selectedTicket) 
+        //props.setRoWf(true)
+        props.cancel()
+      }
+       
   };
   const cancel = (event:any) => {
     event.preventDefault()
@@ -101,7 +181,7 @@ const onFinish =async (values: any) => {
             }
     fetchTicketWfs(selectedTicket) 
     props.setRoWf(true)
-    //props.cancel()
+    props.cancel()
   }
   const approve_wf = async () => {
     let approve = {
@@ -195,7 +275,7 @@ const onFinish =async (values: any) => {
         if(pendArray.length === index+1)   {
           fetchTicketWfs(selectedTicket) 
           props.setRoWf(true)
-          //props.cancel() 
+          props.cancel() 
         }
       } )
     
@@ -385,6 +465,7 @@ const onFinish =async (values: any) => {
     return (
     <Card 
     style={borderStyle('card')}
+    title={t('wf_dtl') + ': ' + (props.selectedWf?.id === '0' ? t('new') : props.selectedWf.name) }
     >
       <Form
        layout="vertical"
@@ -406,22 +487,6 @@ const onFinish =async (values: any) => {
          
           > 
           <div style={{display:'flex', justifyContent:'space-between'}}>
-          {/* {
-              props.selectedWf.start_dt && props.selectedWf.done_dt &&
-              <> 
-              <i
-                 style={{fontSize: 24}}
-                  className={WaitingTime(true)}
-                  aria-hidden="true"
-                  
-                ></i>&nbsp;
-                <Badge.Ribbon 
-                 color={WaitingTime()}
-                 text={secondsToDhms(getDurationTime(+props.selectedWf.done_dt , +props.selectedWf.start_dt))}> 
-                 
-                 </Badge.Ribbon>
-              </> 
-            } */}
             {
                props.selectedWf && props.selectedWf?.status && props.selectedWf?.status?.value === WF_STATUS_PEND.value &&
                <>
@@ -503,7 +568,7 @@ const onFinish =async (values: any) => {
           rules={[validators.required()]}
         >
           <Input
-          disabled={true} 
+          disabled={props.selectedWf?.id === '0' ? false: true} 
           value="name"
           />
         </Form.Item>
@@ -515,19 +580,20 @@ const onFinish =async (values: any) => {
         >
           <AsyncSelect 
            menuPosition="fixed"
-           isDisabled={true}
+           isDisabled={props.selectedWf?.id === '0' ? false: true}
            isMulti={false}
            styles={SelectStyles}
            isClearable={true}
            placeholder={ t('task') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'task', ' top 20 name as label, id as value , code as code ', 'utils', " type = 'wf_task'", false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'task', ' top 20 name as label, id as value , code as code ', 'utils', " type = 'wf_task' and id not in ('" + WF_TASK_START_GROUP.value +  "', '" + WF_TASK_END_GROUP.value + "')", false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'task')}
            />
         </Form.Item>      
       </Col>
       </Row>
+      {props.selectedWf?.id !== '0' && 
       <Row>
       <Col   xl={8}  lg={12} sm={12} xs={24}> 
         
@@ -560,7 +626,9 @@ const onFinish =async (values: any) => {
         </Form.Item>      
       </Col>
       </Row>
+      }
       <Row>
+      {props.selectedWf?.id !== '0' &&
       <Col   xl={8}  lg={12} sm={12} xs={24} >
            <Form.Item 
            key="status"
@@ -582,6 +650,7 @@ const onFinish =async (values: any) => {
            />
            </Form.Item>
       </Col>
+      }
       <Col   xl={8}  lg={12} sm={12} xs={24} >
            <Form.Item 
            key="team"
@@ -651,7 +720,7 @@ const onFinish =async (values: any) => {
            valuePropName="checked"
            > 
            <Checkbox 
-             disabled={true}
+             disabled={props.selectedWf?.id === '0' ? false : true}
              style={{ height:'38px', width: 'maxContent'}}
              defaultChecked={true}
            />

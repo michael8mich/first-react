@@ -2,7 +2,7 @@ import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input,
 import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined, MailOutlined, SelectOutlined,
   UnorderedListOutlined, LayoutOutlined, FilePdfOutlined, QuestionCircleOutlined, CloseCircleOutlined,
   ApiOutlined,CopyOutlined,BranchesOutlined, ScissorOutlined } from '@ant-design/icons';
-import  {FC, useEffect, useRef, useState} from 'react';
+import  {FC, useEffect, useMemo, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
@@ -11,11 +11,11 @@ import { axiosFn, axiosFnUpload } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
 import { DATETIMEFORMAT, nowToUnix, PRPID, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
 import {  ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
-import {  useHistory, useParams } from 'react-router-dom';
+import {  useHistory, useLocation, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
 import { getValidatorsToProp, validators } from '../../utils/validators';
 import classes from './TicketDtl.module.css'
-import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketObjects,  ITicketPrpTpl, ITicketRoFields, ITicketTemplateFields, ITicketWfObjects, PRIORITY_LOW, STATUS_CANCELED, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW, WF_STATUS_CANCEL, WF_STATUS_COMPLETE, WF_STATUS_REJECT, WF_TASK_ACTION } from '../../models/ITicket';
+import { INameBoolValue, ITicket, ITicketCategory, ITicketCategoryObjects, ITicketObjects,  ITicketPrpTpl, ITicketRoFields, ITicketTemplateFields, ITicketWfObjects, PRIORITY_LOW, STATUS_CANCELED, STATUS_CLOSE, STATUS_CREATED, TICKET_REQUEST, URGENCY_LOW, WF_STATUS_CANCEL, WF_STATUS_COMPLETE, WF_STATUS_PEND, WF_STATUS_REJECT, WF_TASK_ACTION, WF_TASK_END_GROUP, WF_TASK_START_GROUP } from '../../models/ITicket';
 import { TabsPosition } from 'antd/lib/tabs';
 import { RouteNames } from '../../router';
 import UserAddOutlined from '@ant-design/icons/lib/icons/UserAddOutlined';
@@ -62,7 +62,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
   const { t } = useTranslation();
   const {fetchTicket, createTicket, fetchTicketLog, getCustomerInfo, CleanSelectedTicket, createTicketActivity, setAlert, 
     fetchProperties, setProperties, fetchTicketNotifications, setQueriesCache, setCopiedTicket,setSelectedProperty,
-    setSelectedTicket,setPathForEmpty, fetchTicketWfs} = useAction()
+    setSelectedTicket,setPathForEmpty, fetchTicketWfs, setSelectedWfsId} = useAction()
   const {error, isLoading, tickets, selectedTicket, properties, copiedTicket, selectedWfsId } = useTypedSelector(state => state.ticket)
   const {notificationsAll } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
@@ -84,6 +84,12 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
   const [prScreenNewValues, setPrScreenNewValues] = useState([] as string[])
 
   let {id} = useParams<Params>()
+  function useQuery() {
+    const { search } = useLocation();
+  
+    return useMemo(() => new URLSearchParams(search), [search]);
+  }
+  let query = useQuery();
   
   const router = useHistory()
   useEffect( () => {
@@ -128,6 +134,8 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
         }
         
       } else {
+        let wf_id = query.get("wf") || ''
+        if(wf_id)  setSelectedWfsId(wf_id) 
         fetchTicket(id) 
         get_files()
       }
@@ -1530,26 +1538,36 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
           <Badge key="rejected_wfs"
           size="small"
           count={selectedTicket?.ticketWfs?.filter(w=>w.status?.value===WF_STATUS_REJECT.value).length !== 0  ? selectedTicket?.ticketWfs?.filter(w=>w.status?.value===WF_STATUS_REJECT.value).length : 0 }
-          offset={[30,-2]}
+          offset={[50,-2]}
           color={'red'}
           title={t('rejected')}
           > 
-          <Badge key="completed_wfs"
+          <Badge key="completed"
           size="small"
-          count={selectedTicket?.ticketWfs?.filter(w=>w.status?.value===WF_STATUS_COMPLETE.value).length !== 0  ? selectedTicket?.ticketWfs?.filter(w=>w.status?.value===WF_STATUS_COMPLETE.value).length : 0 }
-          offset={[10,-2]}
+          count={selectedTicket?.ticketWfs?.filter(fwg=>fwg.task?.value!==WF_TASK_START_GROUP.value&&fwg.task?.value!==WF_TASK_END_GROUP.value)?.filter(w=>w.status?.value===WF_STATUS_COMPLETE.value).length !== 0  ? selectedTicket?.ticketWfs?.filter(fwg=>fwg.task?.value!==WF_TASK_START_GROUP.value&&fwg.task?.value!==WF_TASK_END_GROUP.value)?.filter(w=>w.status?.value===WF_STATUS_COMPLETE.value).length : 0 }
+          offset={[30,-2]}
           color={'green'}
           title={t('completed')}
           > 
+          <Badge key="pended_wfs"
+          size="small"
+          count={selectedTicket?.ticketWfs?.filter(fwg=>fwg.task?.value!==WF_TASK_START_GROUP.value&&fwg.task?.value!==WF_TASK_END_GROUP.value)?.filter(w=>w.status?.value===WF_STATUS_PEND.value).length !== 0  ? selectedTicket?.ticketWfs?.filter(fwg=>fwg.task?.value!==WF_TASK_START_GROUP.value&&fwg.task?.value!==WF_TASK_END_GROUP.value)?.filter(w=>w.status?.value===WF_STATUS_PEND.value).length : 0 }
+          offset={[10,-2]}
+          color={'#28a4ae'}
+          title={t('pended')}
+          > 
           <Badge key="all_wfs"
           size="small"
-          count={selectedTicket.ticketWfsCount !== 0  ? selectedTicket.ticketWfsCount : selectedTicket?.ticketWfs?.length }
-          offset={[-10,-5]}
+          count={selectedTicket?.ticketWfs?.filter(fwg=>fwg.task?.value!==WF_TASK_START_GROUP.value&&fwg.task?.value!==WF_TASK_END_GROUP.value)?.length }
+          offset={[-10,-2]}
+          color={'gray'}
+          title={t('all')}
           > 
           <span> 
           <BranchesOutlined />
           {t('wfs')} 
           </span>
+          </Badge>
           </Badge>
           </Badge>
           </Badge>

@@ -250,7 +250,7 @@ const TCategories:FC = () => {
          </Button>&nbsp;&nbsp;&nbsp;
          <Button  style={{ background: "#01a77c", borderColor: "white" }}
           onClick={() => createNew()  }
-          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
+          >{t('add_new', { object: t('tcategory') })}</Button>&nbsp;&nbsp;&nbsp;
           {viewForm ? 
          <FilterOutlined style={{color:'gray', fontSize: '24px'}}
          onClick={() => setViewForm(false)}

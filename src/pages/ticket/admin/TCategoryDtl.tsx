@@ -793,7 +793,7 @@ const TCategoryDtl:FC = () => {
                 !viewProperty &&
                 <Button
                   onClick={addNewProperties}
-                  > {t('add_new')}
+                  > {t('add_new', { object: t('property') })}
                 </Button>
               }
               {
@@ -828,7 +828,7 @@ const TCategoryDtl:FC = () => {
            !viewWf &&
            <Button
              onClick={addNewWfs}
-             > {t('add_new')}
+             > {t('add_new',  { object: t('wf') })}
            </Button>
         }
         {

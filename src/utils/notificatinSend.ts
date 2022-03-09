@@ -309,13 +309,19 @@ export const notifyWf = async ( type: string, ticket:ITicket,  wf:ITicketWfTpl, 
     }
     
     //--------------------------- wf
+    let wf_id = wf_arr.find(t=>t[0]==='id')
     let wf_name = wf_arr.find(t=>t[0]==='name')
     let wf_description = wf_arr.find(t=>t[0]==='description')
     let wf_team = wf_arr.find(t=>t[0]==='team')
     let wf_assignee = wf_arr.find(t=>t[0]==='assignee')
     let wf_task = wf_arr.find(t=>t[0]==='task') 
 
-    
+
+    if(wf_id?.[1])
+    {
+      subject = subject.replace(/#wf.id#/g, wf_id?.[1] ? wf_id?.[1] : '') 
+      body = body.replace(/#wf.id#/g, wf_id?.[1] ? wf_id?.[1] : '') 
+    }
     if(wf_name?.[1])
     {
       subject = subject.replace(/#wf.name#/g, wf_name?.[1] ? wf_name?.[1] : '') 

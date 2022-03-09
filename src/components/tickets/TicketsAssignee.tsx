@@ -550,7 +550,7 @@ const TicketsAssignee:FC = () => {
          </Button>&nbsp;&nbsp;&nbsp;
          <Button  style={{ background: "#01a77c", borderColor: "white" }} key="add_new"
           onClick={() => createNew()  }
-          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
+          >{t('add_new', { object: t('ticket') } )}</Button>&nbsp;&nbsp;&nbsp;
           {viewForm ? 
          <FilterOutlined style={{color:'gray', fontSize: '24px'}}
          onClick={() => setViewForm(false)}

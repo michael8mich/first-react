@@ -213,7 +213,7 @@ const Notifications:FC = () => {
          </Button>&nbsp;&nbsp;&nbsp;
          <Button  style={{ background: "orange", borderColor: "white" }}
           onClick={() => createNew()  }
-          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
+          >{t('add_new', { object: t('notification')})}</Button>&nbsp;&nbsp;&nbsp;
           {viewForm ? 
          <FilterOutlined style={{color:'gray', fontSize: '24px'}}
          onClick={() => setViewForm(false)}

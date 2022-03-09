@@ -16,6 +16,10 @@ export const Base_URL = SERVER + "/" + SS_APP + "/v1/uta"
 const Base_URL_Email = SERVER + "/" + SS_APP + "/v1/utaMail"
 const Base_URL_LOGIN = SERVER + "/" + SS_APP + "/v1/utaAuth"
 
+// export const Base_URL = "https://localhost:44367/v1/uta"
+// const Base_URL_Email = "https://localhost:44367/v1/utaMail"
+// const Base_URL_LOGIN = "https://localhost:44367/v1/utaAuth"
+
 export class TOKEN {
   static token = ''
   static token_error = false
