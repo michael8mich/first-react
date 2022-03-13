@@ -1,17 +1,17 @@
 import { Upload, Button, Space, Tooltip, Modal } from 'antd';
-import { UploadOutlined, PictureOutlined, SyncOutlined, DownloadOutlined,ImportOutlined } from '@ant-design/icons';
+import { UploadOutlined, PictureOutlined, SyncOutlined, DownloadOutlined,ImportOutlined, FileOutlined } from '@ant-design/icons';
 import React,  {FC, forwardRef, Ref, useEffect, useImperativeHandle, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
 import { RcFile } from 'antd/lib/upload';
-import { axiosFn, axiosFnUpload, Base_URL, TOKEN } from '../../axios/axios';
+import { axiosFn, axiosFnUpload, Base_URL, NO_IMAGE_PICTURE, TOKEN } from '../../axios/axios';
 import moment from 'moment';
 import CloudUploadOutlined from '@ant-design/icons/lib/icons/CloudUploadOutlined';
 import { IAttachment } from '../../models/IObject';
 import { anyTypeAnnotation } from '@babel/types';
 import { useAction } from '../../hooks/useAction';
 import { factory } from 'typescript';
-import { getFileMimeType } from '../../utils/validators';
+import { fileValidation, getFileMimeType } from '../../utils/validators';
 interface UploadFProps {
   id:string,
   factory:string,
@@ -74,9 +74,8 @@ const UploadFiles = forwardRef((props:UploadFProps, ref) => {
             uid: r.id,
             name: r.name,
             status: 'done', //error
-            url: PATH_TO_FOLDER + r.file_name ,
-            thumbUrl: PATH_TO_FOLDER + r.file_name ,
-            lastModifiedDate: moment.unix(r.create_date)
+            url: PATH_TO_FOLDER + r.file_name + "/" + user.login + "/" + TOKEN.token.substring(0,21) ,
+            thumbUrl: fileValidation(r.file_name) ? PATH_TO_FOLDER + r.file_name + "/" + user.login + "/" + TOKEN.token.substring(0,21) : NO_IMAGE_PICTURE,
           }
           resArray.push(at)
          })

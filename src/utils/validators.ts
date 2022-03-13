@@ -150,3 +150,13 @@ export const getFileMimeType = (type:string) => {
             // If not is found we resolve with a blank argument
             return 'Error';
 };
+
+export function fileValidation(filePath:string){
+    
+    var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.bmp|\.tiff|\.psd|\.raw|\.heif|\.indd|\.jpeg2000|\.svg|\.ai|\.eps)$/i;
+    if(!allowedExtensions.exec(filePath)){ 
+        return false;
+    }else{
+        return true
+    }
+}

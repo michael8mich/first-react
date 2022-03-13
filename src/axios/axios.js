@@ -9,6 +9,7 @@ export const SSO_PATH = window.CONFIG.SSO_PATH //"http://mx/user/user.asp"
 const SERVER = window.CONFIG.SERVER // "http://mx"
 const SS_APP = window.CONFIG.SS_APP //uta50
 export const CHECK_SSO = window.CONFIG.CHECK_SSO //false
+export const NO_IMAGE_PICTURE = window.CONFIG.NO_IMAGE_PICTURE
 //---------- local iis
 //const SERVER = "http://192.168.83.230/uta"
 
