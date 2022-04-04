@@ -225,3 +225,8 @@ export const WF_TASK_END_GROUP      =  {value:'FC5F3FE0F4BE0AA2477A3EC875E015D9'
 export const WF_LOG_REJECT = 'Workflow Status Reject'
 export const WF_LOG_PEND = 'Workflow Status Pend'
 export const WF_LOG_COMPLETE = 'Workflow Status Complete'
+
+export const WF_ = 'WF'
+export const WF_Description_Changed = 'Description Changed'
+export const WF_Assignee_Changed = 'Assignee Changed'
+export const WF_Team_Changed = 'Team Changed'

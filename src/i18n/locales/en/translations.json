@@ -290,6 +290,7 @@
         "TICKET_OPENED_PERCENT_HIGH_URGENCY": "% Tickets by High Urgency",
         "TICKET_OPENED_CLOSED_TODAY": "% Tickets Opened And Closed Today",
         "TICKET_BY_WEEKDAY": "Tickets Opened By Weekday",
+        "TICKET_OPENED_BY_CUSTOMER" : "Top 10 Tickets Opened By Customer",
 
         "_day":"Day",
         "_days":"Days",

@@ -5,6 +5,8 @@ import {  DragDropContext,
   DropResult } from 'react-beautiful-dnd';
 import { Gauge, Pie, Liquid,  Waterfall, Treemap  } from '@ant-design/charts';
 import { Bar } from '@ant-design/plots';
+import { RadialBar } from '@ant-design/plots';
+import { Rose, Funnel } from '@ant-design/plots';
 import { axiosFn } from '../axios/axios';
 import { useTranslation } from 'react-i18next';
 import { useInterval } from '../hooks/useInterval'
@@ -21,10 +23,12 @@ import { FROM, SELECT, WHERE } from '../utils/formManipulation';
 import { PRIORITY_HIGH, PRIORITY_MEDIUM, URGENCY_HIGH, URGENCY_MEDIUM } from '../models/ITicket';
 import { IChatQuery } from '../models/IChart';
   
-
+const PALETE = ['#E6F7FF', '#BAE7FF', '#91D5FF', '#69C0FF', '#40A9FF', '#1890FF', '#096DD9', '#0050B3', '#003A8C', '#002766']
 interface HomeAssigneeProps {
   defaultRoleLabel: string
 }
+type ReportPosition =  "bottom" | "left" | "right" | "top" | "top-left" | "top-right" | "right-top" | "right-bottom" | "left-top" | "left-bottom" | "bottom-left" | "bottom-right" | undefined
+type LineCap = "round" | "butt" | "square" | undefined
 
 const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
   const { user, defaultRole } = useTypedSelector(state => state.auth)
@@ -81,6 +85,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
   const [ticket_opened_percent_high_urgency_data, setTicket_opened_percent_high_urgency_data ] = useState({target:0,all:0})
   const [ticket_opened_closed_today_data, setTicket_opened_closed_today_data ] = useState({target:0,all:0})
   const [ticket_by_weekday, setTicket_by_weekday ] = useState([])
+  const [ticket_open_by_customer_data, setTicket_open_by_customer_data ] = useState([])
   
   useEffect(  ()  => {
     if(defaultRole?.label) {
@@ -185,6 +190,11 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       if(ticket_open_by_urgency_data?.data )
       setTicket_open_by_urgency_data(ticket_open_by_urgency_data?.data)
       
+ 
+      let ticket_open_by_customer_data = await  axiosFn("get", '', "top 10 count(id) as value, customer_name as type" , "V_tickets", dataPartition(" active = 1 ", true) + " group by customer_name order by count(id) desc "  , ''  )  
+      if(ticket_open_by_customer_data?.data )
+      setTicket_open_by_customer_data(ticket_open_by_customer_data?.data.reverse())
+
       let ticket_open_by_category_data = await  axiosFn("get", '', TICKET_OPENED_BY_CATEGORY.what.replace(/@none/g, t('non') + ' ' + t('tcategory') ), TICKET_OPENED_BY_CATEGORY.tname, TICKET_OPENED_BY_CATEGORY.where , ''  )  
       if(ticket_open_by_category_data?.data )
       setTicket_open_by_category_data(ticket_open_by_category_data?.data)
@@ -286,21 +296,99 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     },
     interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
   }
-  const TICKET_OPENED_BY_URGENCY_CONFIG = {
+  const TICKET_OPENED_BY_PRIORITY_CONFIG_ROSE = {
+    appendPadding: 15,
+    data: ticket_open_by_priority_data ,
+    xField: 'type',
+    yField: 'value',
+    legend: {
+      position: 'bottom' as ReportPosition,
+    },
+
+    shape: 'pyramid'
+  }
+  const TICKET_OPENED_BY_URGENCY_CONFIG_PAY = {
     appendPadding: 15,
     data: ticket_open_by_urgency_data ,
-    angleField: 'value',
-    colorField: 'type',
-    radius: 0.75,
-    // legend:false,
-    locale:user.locale,
-    label: {
-      type: 'inner',
-      labelHeight: 28,
-      content: '{name}\n{percentage}',
+    xField: 'type',
+    yField: 'value',
+    legend: {
+      position: 'bottom'as ReportPosition
     },
-    interactions: [{ type: 'element-selected' }, { type: 'element-active' }],
+
+    shape: 'pyramid'
   }
+  const TICKET_OPENED_BY_URGENCY_CONFIG = {
+    data: ticket_open_by_urgency_data ,
+    xField: 'type',
+    yField: 'value',
+    locale:user.locale,
+    isStack:true,
+    autoFit: false,
+    maxAngle: 270,
+    minBarWidth: 10,
+    maxBarWidth: 12,
+    limitInPlot: true,
+    barStyle: {
+      lineCap: 'round' as LineCap
+    },
+
+
+    colorField: 'type',
+    color: ({type}:any ) => {
+      if (type === URGENCY_HIGH.label) {
+        return 'red';
+      } else if (type === URGENCY_MEDIUM.label) {
+        return 'orange';
+      }
+      return 'green';
+    },
+  }
+  let index_color = -1;
+  const TICKET_OPENED_BY_CUSTOMER = {
+    data: ticket_open_by_customer_data ,
+    xField: 'type',
+    yField: 'value',
+    locale:user.locale,
+    isStack:true,
+    autoFit: false,
+    maxAngle: 270,
+    minBarWidth: 10,
+    maxBarWidth: 12,
+    limitInPlot: true,
+    barStyle: {
+      lineCap: 'round' as LineCap
+    },
+    annotations: [
+      {
+        type: 'html',
+        position: ['50%', '50%'],
+        html: (container:any, view:any) => {
+          const coord = view.getCoordinate();
+          const w = coord.polarRadius * coord.innerRadius * 1.15;
+          return `<div style="transform:translate(-50%,-46%)">
+          <img width="${
+            (w / 103) * 131
+          }" height="${w}" alt="" src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png">
+        </div>`;
+        },
+      },
+    ] as any,
+    tooltip: {
+      formatter: (datum:any) => {
+        return {
+          name: t('customer'),
+          value: datum.value,
+        };
+      },
+    },
+   
+    color: (index:any ) => {
+      
+      return PALETE[index_color++];
+    },
+  }
+  
   const TICKET_OPENED_BY_CATEGORY_CONFIG = {
     data: ticket_open_by_category_data ,
     xField: 'value',
@@ -554,7 +642,6 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     } 
   }
   const drillDownChart = (event: any, reportName: string) => {
-
   if(reportName === 'ticket_open_by_team_data') {
     if(event[0]?.data?.name) {
       let name = event[0]?.data?.name.toString().trim()
@@ -568,6 +655,14 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       let ass_name =  name.replace( t('non') + ' ' + t('assignee') , '')
       let query = dataPartition(" active = 1 ", true) + " AND  team_name = N'" + selectedTeam + "' AND " + "  isnull(assignee_name, '') = N'" + ass_name + "'"
       let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_ASSIGNEE'), query: query } as IQuery
+      goTo(q)
+    }
+  } else if(reportName === 'ticket_open_by_customer_data') {
+    if(event[0]?.data?.type) {
+      let name = event[0]?.data?.type.toString().trim()
+      let obj_name =  name.replace( t('non') + ' ' + t('customer') , '')
+      let query = dataPartition(" active = 1 ", true) + "  AND " + "  isnull(customer_name, '') = N'" + obj_name + "'"
+      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_CUSTOMER'), query: query } as IQuery
       goTo(q)
     }
   }
@@ -648,16 +743,28 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       <>
       <Row key="2">
         <Col  xs={24} xl={8} sm={12}>
-        <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_TEAM')}</h3>
-        <Pie  {...TICKET_OPENED_BY_TEAM_CONFIG} style={{direction:'ltr'}}/>
+        <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_CUSTOMER')}---</h3>
+        <RadialBar  {...TICKET_OPENED_BY_CUSTOMER} style={{direction:'ltr'}}
+        onReady={(plot:any) => {
+          plot.chart.on('plot:click', (evt:any) => {
+          const { x, y } = evt;
+          drillDownChart(plot.chart.getTooltipItems({ x, y }), 'ticket_open_by_customer_data');
+           });
+          }}
+        />
        </Col>
-       <Col  xs={24} xl={8} sm={12}>
+       {/* <Col  xs={24} xl={8} sm={12}>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_PRIORITY')}</h3>
         <Pie  {...TICKET_OPENED_BY_PRIORITY_CONFIG} style={{direction:'ltr'}} />
+       </Col> */}
+       <Col  xs={24} xl={8} sm={12}>
+        <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_PRIORITY')}</h3>
+        <Funnel  {...TICKET_OPENED_BY_PRIORITY_CONFIG_ROSE} style={{direction:'ltr'}} />
        </Col>
+       
        <Col  xs={24} xl={8} sm={12}>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_URGENCY')}</h3>
-        <Pie  {...TICKET_OPENED_BY_URGENCY_CONFIG} style={{direction:'ltr'}}/>
+        <Funnel {...TICKET_OPENED_BY_URGENCY_CONFIG} style={{direction:'ltr'}}/>
        </Col>
        </Row>
        <Row key="3">

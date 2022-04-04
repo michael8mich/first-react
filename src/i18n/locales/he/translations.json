@@ -290,6 +290,7 @@
         "TICKET_OPENED_PERCENT_HIGH_URGENCY": "% פניות לפי דחיפות גבעוה",
         "TICKET_OPENED_CLOSED_TODAY": "% פניות נפתחות מול נסגרות היום",
         "TICKET_BY_WEEKDAY": "פניות שנפתחו לפי יום בשבוע",
+        "TICKET_OPENED_BY_CUSTOMER" : "Top 10 פניות שנפתחו על ידי הלקוח",
 
         "_day":"יום",
         "_days": "ימים",

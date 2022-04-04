@@ -21,6 +21,7 @@ import PopoverDtl from '../../pages/ticket/PopoverDtl';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import {CSVLink} from "react-csv"
 import { translateObj } from '../../utils/translateObj';
+import { Skeleton } from 'antd';
 const { RangePicker } = DatePicker;
 const SORT_DEFAULT = 'name desc'
 const LIMIT_DEFAULT = '25'
@@ -516,6 +517,7 @@ const TicketsAssignee:FC = () => {
     
   const [vewAdditionalFilter, setVewAdditionalFilter ] = useState(false)
   return (
+   
     <Layout style={{height:"100vh"}}>
       <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
       {error && 
@@ -802,7 +804,8 @@ const TicketsAssignee:FC = () => {
       <Pagination 
       {...pagination }
       onChange={handlePaginationChange}
-      />
+      /> 
+      <Skeleton active loading={isLoading}>
       <Table<ITicket> 
        onRow={(record, rowIndex) => {
         return {
@@ -826,6 +829,7 @@ const TicketsAssignee:FC = () => {
         rowExpandable: record => record.description !== '',
       }}
       />
+          </Skeleton>
       </Row>
       </Card>
       <Modal
@@ -841,6 +845,7 @@ const TicketsAssignee:FC = () => {
          />
        </Modal> 
     </Layout>
+
   )
 }
 

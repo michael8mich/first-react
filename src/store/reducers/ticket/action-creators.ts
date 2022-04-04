@@ -1,5 +1,5 @@
 
-import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, ITicketPropertyObjects, ITicketPropertyObjectsMulti, ITicketPrpTpl, ITicketWfObjects, ITicketWfTpl, WF_STATUS_PEND, WF_STATUS_WAIT, WF_TASK_END_GROUP, WF_TASK_START_GROUP, WF_LOG_PEND, WF_STATUS_COMPLETE, ITicketAllWfsObjects, ITicketsAllWfs } from './../../../models/ITicket';
+import { ITicketCategory, ITicketCategoryObjects, ITicketCategoryObjectsMulti, ITicketPropertyObjects, ITicketPropertyObjectsMulti, ITicketPrpTpl, ITicketWfObjects, ITicketWfTpl, WF_STATUS_PEND, WF_STATUS_WAIT, WF_TASK_END_GROUP, WF_TASK_START_GROUP, WF_LOG_PEND, WF_STATUS_COMPLETE, ITicketAllWfsObjects, ITicketsAllWfs, WF_, WF_Description_Changed, WF_Assignee_Changed, WF_Team_Changed } from './../../../models/ITicket';
 
 import { AppDispatch } from '../..';
 import { axiosFn } from '../../../axios/axios';
@@ -97,7 +97,16 @@ export const TicketActionCreators = {
              let _count =  response.headers['x-total-count'] || 0
              
              tickets_log = tickets_log.map(e=> {
-              return { ...e, name:i18n.t(e.name) }  
+               let translatedName = e.name
+              if(translatedName.indexOf(WF_+' ') !=-1) 
+              translatedName = translatedName.replace(WF_, i18n.t('wf'))
+              .replace(WF_Description_Changed, i18n.t(WF_Description_Changed))
+              .replace(WF_Assignee_Changed, i18n.t(WF_Assignee_Changed))
+              .replace(WF_Team_Changed, i18n.t(WF_Team_Changed))
+              else
+              translatedName =  i18n.t(translatedName)
+
+              return { ...e, name:translatedName }  
                }
               ) 
               

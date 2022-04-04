@@ -205,7 +205,7 @@ export const notify = async (init: boolean, ticket_notify: ITicket, selectedTick
 
    })
 }
-export const notifyWf = async ( type: string, ticket:ITicket,  wf:ITicketWfTpl, notificationsAll:INotification[] = [] as INotification[]) => {
+export const notifyWf = async ( type: string, ticket:ITicket,  wf:ITicketWfTpl, notificationsAll:INotification[] = [] as INotification[], object:string = '') => {
   let notifications = [...notificationsAll]
   let  n = notifications.find(n=>n.notification_type.value===type&&n.active===1) 
   if(!n) return  
@@ -375,14 +375,14 @@ export const notifyWf = async ( type: string, ticket:ITicket,  wf:ITicketWfTpl, 
     let emails_where = ''
 
     emails_obj.map((e) =>{
-      
       let obj = wf_arr.find(t=>t[0]===e) 
       if(obj?.[1])
       if(obj?.[1].value)
-      if(obj?.[0] === 'team'){
+      if(obj?.[0] === 'team' && (object!=='assignee') ){
         emails_grp = SELECT + " member " + FROM + " teammember " + WHERE + " team = '"+obj?.[1].value+"'" 
       }
       else
+      if(obj?.[0] !== 'team')
        emails_where += "'"+obj?.[1].value+"',"
 
 

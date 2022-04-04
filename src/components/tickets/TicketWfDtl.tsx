@@ -148,13 +148,35 @@ const onFinish =async (values: any) => {
         fetchTicketWfs({...selectedTicket, id:ticket.ticketId} ) 
         if( values_.status === WF_STATUS_PEND.value) 
         {
-          if(responseNewWf?.data[0]?.id)
-          notifyWf(WF_PEND, selectedTicket, {...values_, id: responseNewWf?.data[0]?.id} , notificationsAll )  
+          if(responseNewWf?.data[0]?.id) {
+            let changedWf = {...values_, team: values.team, 
+              description: values_?.description,  assignee: values.assignee,
+              id: responseNewWf?.data[0]?.id
+            }
+            notifyWf(WF_PEND, selectedTicket, changedWf , notificationsAll )
+          }
+            
         }
         
         props.cancel()
       } else {
+       
         const responseNewWf = await  axiosFn("put",values_, '*', 'wf', "id" , props.selectedWf.id  )  
+        if(props?.selectedWf?.status?.value === WF_STATUS_PEND.value)
+        {
+        
+          let changedWf = {...props.selectedWf, team: values.team, 
+          description: values_?.description,  assignee: values.assignee }
+          if(values?.team?.value )
+          if(props?.selectedWf?.team?.value !== values?.team?.value){
+            notifyWf(WF_PEND, selectedTicket, changedWf , notificationsAll, 'team' )
+          }
+          if(values?.assignee?.value)
+          if(props?.selectedWf?.assignee?.value !== values?.assignee?.value){
+            notifyWf(WF_PEND, selectedTicket, changedWf , notificationsAll, 'assignee' )
+          }
+            
+        }
         fetchTicketWfs(selectedTicket) 
         //props.setRoWf(true)
         props.cancel()
@@ -291,6 +313,7 @@ const onFinish =async (values: any) => {
   {
     let values_:any =  { assignee:user.id } 
     const responseNewWf = await  axiosFn("put",values_, '*', 'wf', "id" , props.selectedWf.id  )  
+    notifyWf(WF_PEND, selectedTicket, {...props.selectedWf, assignee:{label:user.name, value:user.id,code:user.id}}  , notificationsAll, 'assignee' )
       fetchTicketWfs(selectedTicket) 
       props.setRoWf(true)
       //props.cancel()  
