@@ -191,7 +191,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       setTicket_open_by_urgency_data(ticket_open_by_urgency_data?.data)
       
  
-      let ticket_open_by_customer_data = await  axiosFn("get", '', "top 10 count(id) as value, customer_name as type" , "V_tickets", dataPartition(" active = 1 ", true) + " group by customer_name order by count(id) desc "  , ''  )  
+      let ticket_open_by_customer_data = await  axiosFn("get", '', "top 10 count(id) as value, customer_name as type, customer as id" , "V_tickets", dataPartition(" active = 1 ", true) + " group by customer_name , customer order by count(id) desc "  , ''  )  
       if(ticket_open_by_customer_data?.data )
       setTicket_open_by_customer_data(ticket_open_by_customer_data?.data.reverse())
 
@@ -658,11 +658,12 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       goTo(q)
     }
   } else if(reportName === 'ticket_open_by_customer_data') {
-    if(event[0]?.data?.type) {
-      let name = event[0]?.data?.type.toString().trim()
-      let obj_name =  name.replace( t('non') + ' ' + t('customer') , '')
-      let query = dataPartition(" active = 1 ", true) + "  AND " + "  isnull(customer_name, '') = N'" + obj_name + "'"
-      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_CUSTOMER'), query: query } as IQuery
+    debugger
+    if(event[0]?.data?.id) {
+      let id = event[0]?.data?.id.toString().trim()
+      let obj_id =  id.replace( t('non') + ' ' + t('customer') , '')
+      let query = dataPartition(" active = 1 ", true) + "  AND " + "  isnull(customer, '') = N'" + obj_id + "'"
+      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_CUSTOMER') + " " + event[0]?.data?.type , query: query } as IQuery
       goTo(q)
     }
   }
@@ -743,7 +744,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       <>
       <Row key="2">
         <Col  xs={24} xl={8} sm={12}>
-        <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_CUSTOMER')}---</h3>
+        <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_CUSTOMER')}</h3>
         <RadialBar  {...TICKET_OPENED_BY_CUSTOMER} style={{direction:'ltr'}}
         onReady={(plot:any) => {
           plot.chart.on('plot:click', (evt:any) => {
