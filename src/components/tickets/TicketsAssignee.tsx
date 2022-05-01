@@ -8,7 +8,7 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn } from '../../axios/axios';
 import { IQueriesCache, IQuery, SearchPagination, SelectOption } from '../../models/ISearch';
-import { DATETIMEFORMAT, searchFormWhereBuild, uTd } from '../../utils/formManipulation';
+import { DATETIMEFORMAT, ORDER_BY_NAME, searchFormWhereBuild, uTd } from '../../utils/formManipulation';
 import { FilterOutlined, ExclamationCircleOutlined, UsergroupAddOutlined, PaperClipOutlined, FileSearchOutlined,
   FileExcelOutlined, PlusCircleOutlined, MinusCircleOutlined, BranchesOutlined }  from '@ant-design/icons/lib/icons';
 import { useHistory, useParams } from 'react-router-dom';
@@ -22,11 +22,37 @@ import useWindowDimensions from '../../hooks/useWindowDimensions';
 import {CSVLink} from "react-csv"
 import { translateObj } from '../../utils/translateObj';
 import { Skeleton } from 'antd';
+import { Resizable } from 'react-resizable'
 const { RangePicker } = DatePicker;
 const SORT_DEFAULT = 'name desc'
 const LIMIT_DEFAULT = '25'
 const WHERE_DEFAULT = ' active = 1 '
+const ResizableTitle = (props: { [x: string]: any; onResize: any; width: any; }) => {
+const { onResize, width, ...restProps } = props;
 
+  if (!width) {
+    return <th {...restProps} />;
+  }
+
+  return (
+    <Resizable
+      width={width}
+      height={0}
+      handle={
+        <span
+          className="react-resizable-handle"
+          onClick={e => {
+            e.stopPropagation();
+          }}
+        />
+      }
+      onResize={onResize}
+      draggableOpts={{ enableUserSelectHack: false }}
+    >
+      <th {...restProps} />
+    </Resizable>
+  );
+};
 const TicketsAssignee:FC = () => {
   const { t } = useTranslation();
   const searchP = {
@@ -232,13 +258,13 @@ const TicketsAssignee:FC = () => {
     )
   }
   const { height, width } = useWindowDimensions();
-  const columns: ColumnsType<ITicket> = [
+  
+  const columns_array: ColumnsType<ITicket> = [
     {
       key: 'name',
       title: t('ticket_name'),
       dataIndex: 'name',
       sorter: true,
-      width: 140,
       render: (name, record, index) => {
         return (
           <Dropdown overlay={() => RightClickMenu(record)} trigger={['contextMenu']} >
@@ -287,6 +313,7 @@ const TicketsAssignee:FC = () => {
           </Dropdown>
         );},
         fixed: 'left',
+        width: 140,
     },
     {
       key: 'create_date',
@@ -298,7 +325,8 @@ const TicketsAssignee:FC = () => {
             <div>
               {uTd(record.create_date)} 
             </div>
-        )}
+        )},
+        width: 140,
     
     },
     {
@@ -311,7 +339,8 @@ const TicketsAssignee:FC = () => {
             <div>        
             {record.customer && record.customer?.label} 
             </div>
-        );}
+        );},
+        width: 140,
     },
     {
       key: 'status',
@@ -323,7 +352,8 @@ const TicketsAssignee:FC = () => {
             <div>        
             {record.status && record.status?.label} 
             </div>
-        );}
+        );},
+        width: 140,
     }
     ,
     // {
@@ -349,7 +379,8 @@ const TicketsAssignee:FC = () => {
             <div>        
             {record.team && record.team?.label} 
             </div>
-        );}
+        );},
+        width: 140,
     }
     ,
     {
@@ -362,7 +393,8 @@ const TicketsAssignee:FC = () => {
             <div>        
             {record.assignee && record.assignee?.label} 
             </div>
-        );}
+        );},
+        width: 140,
     }
     ,
     {
@@ -376,9 +408,38 @@ const TicketsAssignee:FC = () => {
             {record.category && record.category?.label} 
             </div>
         );},
-        fixed: width > 500 && 'right' 
+        fixed: width > 500 && 'right' ,
+        width: 140,
     }
   ]
+  const [sColumns, setSColumns] = useState(columns_array) 
+  const columns = sColumns.map((col, index) => ({
+    ...col,
+    // onHeaderCell: (column: any) => ({
+    //   width: column?.width,
+    //   onResize: handleResize(index),
+    // }),
+  }));
+
+  const components = {
+    header: {
+      cell: ResizableTitle,
+    },
+  };
+ 
+  
+
+  const handleResize = (index: number) => (_e: any, { size }: any) => {
+    const nextColumns = [...sColumns];
+      nextColumns[index] = {
+        ...nextColumns[index],
+        width: size.width,
+      };
+    setSColumns(nextColumns)
+  };
+  
+
+
   const columnsCsv: { label: string, key: string }[] = [
     { label: t('ticket_name'), key: "ticket_name" }, 
     { label: t('create_date'), key: "create_date" }, 
@@ -630,7 +691,7 @@ const TicketsAssignee:FC = () => {
            placeholder={ t('customer') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'customer',  ' top 20 name as label, id as value , isnull(phone, mobile_phone) as code ', 'V_contacts', NOT_GROUP_LIST , false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'customer',  ' top 20 name as label, id as value , isnull(phone, mobile_phone) as code ', 'V_contacts', NOT_GROUP_LIST + ORDER_BY_NAME, false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'customer')}
            />
            </Form.Item>
@@ -648,7 +709,7 @@ const TicketsAssignee:FC = () => {
            placeholder={ t('tcategory') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = 1 " , false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = 1 "  + ORDER_BY_NAME, false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'category')}
            />
            </Form.Item>
@@ -683,7 +744,7 @@ const TicketsAssignee:FC = () => {
            placeholder={ t('ticket_type') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_type',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'ticket_type' ", false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_type',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'ticket_type' " + ORDER_BY_NAME, false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_type')}
            />
            </Form.Item>
@@ -701,7 +762,7 @@ const TicketsAssignee:FC = () => {
            placeholder={ t('ticket_status') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'status',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'ticket_status' ", false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'status',  ' top 30 name as label, id as value , code as code', 'utils', " type = 'ticket_status' " + ORDER_BY_NAME, false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'status')}
            />
            </Form.Item>
@@ -719,7 +780,7 @@ const TicketsAssignee:FC = () => {
            placeholder={ t('team') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'team',  ' top 20 name as label, id as value , id as code ', 'V_contacts', GROUP_LIST , false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'team',  ' top 20 name as label, id as value , id as code ', 'V_contacts', GROUP_LIST + ORDER_BY_NAME , false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'team')}
            />
            </Form.Item>
@@ -737,7 +798,7 @@ const TicketsAssignee:FC = () => {
            placeholder={ t('assignee') }
            cacheOptions 
            defaultOptions
-           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'assignee',  ' top 20 name as label, id as value , id as code ', 'V_contacts', ASSIGNEE_LIST , false )} 
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'assignee',  ' top 20 name as label, id as value , id as code ', 'V_contacts', ASSIGNEE_LIST + ORDER_BY_NAME, false )} 
            onChange={(selectChange:any) => selectChanged(selectChange, 'assignee')}
            />
            </Form.Item>
@@ -813,11 +874,14 @@ const TicketsAssignee:FC = () => {
         };
       }}
       rowClassName={(record) => record.active === 1 ? 'table-row-light' :  'table-row-dark'}
+      components={components}
       columns={columns} 
+      bordered 
+      
+
       dataSource={tickets} 
       loading={isLoading}
       rowKey={record => record.id}
-      bordered
       pagination={pagination}
       onChange={handleTableChange}
       title={() => <h3>{t('tickets') + ' ' + t('total_count') + ' ' + ticketsCount }  { qName ? (t('query') +  ': ' + qName) : '' } </h3> }
@@ -852,4 +916,8 @@ const TicketsAssignee:FC = () => {
 
 
 export default TicketsAssignee;
+
+function index(index: any) {
+  throw new Error('Function not implemented.');
+}
 

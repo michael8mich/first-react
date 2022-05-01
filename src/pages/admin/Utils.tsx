@@ -1,4 +1,4 @@
-import { Button, Card, Checkbox, Col, Divider, Form, Input, Layout, Modal, Row, Table, TablePaginationConfig } from 'antd';
+import { Button, Card, Checkbox, Col, Divider, Drawer, Form, Input, Layout, Modal, Row, Table, TablePaginationConfig } from 'antd';
 import { FilterValue, SorterResult } from 'antd/lib/table/interface';
 import { ColumnsType  } from 'antd/es/table';
 import  {FC, useEffect, useState} from 'react';
@@ -12,6 +12,7 @@ import { axiosFn } from '../../axios/axios';
 import { SearchPagination, SelectOption } from '../../models/ISearch';
 import { searchFormWhereBuild } from '../../utils/formManipulation';
 import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
@@ -19,6 +20,8 @@ const WHERE_DEFAULT = ' active = 1 '
 
 
 const Utils:FC = () => {
+  const {user } = useTypedSelector(state => state.auth)
+  const { height, width } = useWindowDimensions();
   const { t } = useTranslation();
   const searchP = {
     _limit: LIMIT_DEFAULT,
@@ -186,6 +189,20 @@ const Utils:FC = () => {
           <h1 style={{padding:'10px'}}>{   t('search')} { t('utils')}</h1>
         )
     }
+    const buildModalTitle = () =>
+    {
+      let selectedObj = utils.find(u=>u.id===selectedId)  
+      if(selectedObj?.name) {
+        return selectedObj?.name + " " + t('util') 
+
+      } else
+      {
+       return  t('add_new', { object: t('util') }) 
+      }
+     
+    }
+
+   
   return (
     <Layout style={{height:"100vh"}}>
        <Card style={{background:'#fafafa', border:'solid 1px lightgray', marginTop:'10px'}}>
@@ -304,11 +321,14 @@ const Utils:FC = () => {
       />
       </Row>
       <Row justify="center" align="middle" >
-       <Modal
-       title={t('add_new')}
+       <Drawer
+       placement={ user.locale === 'heIL' ? 'left' : 'right'}
+       closable={false}
+       title={buildModalTitle()}
        footer={null}
-       onCancel={() => openCloseModal(false) }
+       onClose={() => openCloseModal(false) }
        visible={modalVisible}
+       width={ width>1000 ? 840 : '90%' }
        >
          <Card>
            <UtilForm
@@ -319,7 +339,7 @@ const Utils:FC = () => {
            clearSelectedId={() => setSelectedId('') }
            />
          </Card>
-       </Modal>
+       </Drawer>
       </Row>
       </Card>
     </Layout>

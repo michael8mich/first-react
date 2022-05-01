@@ -9,7 +9,7 @@ import { useTypedSelector } from '../../hooks/useTypedSelector';
 import AsyncSelect from 'react-select/async';
 import { axiosFn, axiosFnUpload } from '../../axios/axios';
 import {  SelectOption } from '../../models/ISearch';
-import { DATETIMEFORMAT, nowToUnix, PRPID, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
+import { DATETIMEFORMAT, nowToUnix, ORDER_BY_NAME, PRPID, saveFormBuild, saveFormBuildMulti, uTd } from '../../utils/formManipulation';
 import {  ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../models/IUser';
 import {  useHistory, useLocation, useParams } from 'react-router-dom';
 import { Params } from '../../models/IParams';
@@ -1115,7 +1115,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
             placeholder={ t('tcategory') }
             cacheOptions 
             defaultOptions
-            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = '1' order by name asc", false )} 
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'category',  ' top 200 name as label, id as value , id as code ', 'ticket_category', " active = '1' " + ORDER_BY_NAME, false )} 
             onChange={(selectChange:any) => selectChanged(selectChange, 'category')}
             />
             </Form.Item>
@@ -1160,7 +1160,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
             placeholder={ t('ci') }
             cacheOptions 
             defaultOptions
-            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ci',  ' top 20 name as label, id as value , id as code ', 'ci', " active = '1' order by name asc", false )} 
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ci',  ' top 20 name as label, id as value , id as code ', 'ci', " active = '1' "+ ORDER_BY_NAME, false )} 
             onChange={(selectChange:any) => selectChanged(selectChange, 'ci')}
             />
             </Form.Item>
@@ -1183,7 +1183,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
             placeholder={ t('ticket_type') }
             cacheOptions 
             defaultOptions
-            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_type',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_type'", false )} 
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_type',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_type'" + ORDER_BY_NAME, false )} 
             onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_type')}
             />
             </Form.Item>
@@ -1360,7 +1360,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
             placeholder={ t('ticket_status') }
             cacheOptions 
             defaultOptions
-            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'status',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_status'", false )} 
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'status',  ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_status'" + ORDER_BY_NAME, false )} 
             onChange={(selectChange:any) => selectChanged(selectChange, 'status')}
             />
             </Form.Item>
@@ -1382,7 +1382,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
             placeholder={ t('priority') }
             cacheOptions 
             defaultOptions
-            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'priority', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'priority_type'", false )} 
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'priority', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'priority_type'" + ORDER_BY_NAME, false )} 
             onChange={(selectChange:any) => selectChanged(selectChange, 'priority')}
             />
             </Form.Item>
@@ -1404,7 +1404,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
             placeholder={ t('urgency') }
             cacheOptions 
             defaultOptions
-            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'urgency', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'urgency_type'", false )} 
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'urgency', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'urgency_type'" + ORDER_BY_NAME, false )} 
             onChange={(selectChange:any) => selectChanged(selectChange, 'urgency')}
             />
             </Form.Item>

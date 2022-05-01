@@ -35,7 +35,7 @@ export interface ITicket {
     ticketWfsCount?: number
     customer_open_tickets?: number
     tickets_notifications: INotification[]
-
+    width?: string | number | undefined
 }
 export interface ITicketLog {
     id: string

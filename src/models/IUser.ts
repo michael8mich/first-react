@@ -53,8 +53,9 @@ export const NOT_GROUP_LIST = " ( contact_type<>'"+TEAM_TYPE_ID+"' ) "
 export const GROUP_LIST = " ( contact_type='"+TEAM_TYPE_ID+"' ) "
 
 export const ASSIGNEE_TYPE_ID = '3BDB6B6DBE05CF95B7E76C977A9AF04C'
-export const NOT_ASSIGNEE_LIST = " ( contact_type<>'"+ASSIGNEE_TYPE_ID+"' ) "
-export const ASSIGNEE_LIST = " ( contact_type='"+ASSIGNEE_TYPE_ID+"' ) "
+export const ADMINISTRATOR_TYPE_ID = '898C6B211043F9A2B7771508C7F526CE'
+export const NOT_ASSIGNEE_LIST = " ( contact_type<>'"+ASSIGNEE_TYPE_ID+"' AND   contact_type<>'"+ADMINISTRATOR_TYPE_ID+"') "
+export const ASSIGNEE_LIST = " ( contact_type IN ('"+ASSIGNEE_TYPE_ID+"', '"+ADMINISTRATOR_TYPE_ID+"')) "
 
 
 export const ORG_INFO_TYPE_DEPARTMENT = 'D421F990A306B50CF186BC38BFA7994A'

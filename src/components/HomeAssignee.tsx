@@ -50,22 +50,7 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       return where
    }
   
-  // Export Image
-  // const downloadImage = () => {
-  //   chart?.downloadImage();
-  // };
 
-  // Get chart base64 string
-  // const toDataURL = () => {
-  //   console.log(chart?.toDataURL());
-  // };
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     refresh.bind(null, defaultRole)()
-  //   }, 10000);
-  //   return () => clearInterval(interval);
-  // }, []);
 
 
   useInterval(() => {
@@ -138,19 +123,19 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
   setTicket_open_by_team_data(ticket_open_by_team_data?.data)
    
     const TICKET_OPENED_BY_PRIORITY:IChatQuery = {
-      what: "  count(id) as value, isnull(priority_name, N'@none') as type ",
+      what: "  count(id) as value, isnull(priority_name, N'@none') as type, priority as id",
       tname: " V_tickets ",
-      where: dataPartition(" active = 1 ", true) + " group by priority_name order by count(id) desc " 
+      where: dataPartition(" active = 1 ", true) + " group by priority_name, priority order by count(id) desc " 
     }  
     const TICKET_OPENED_BY_URGENCY:IChatQuery = {
-      what: "  count(id) as value, isnull(urgency_name, N'@none') as type ",
+      what: "  count(id) as value, isnull(urgency_name, N'@none') as type, urgency as id ",
       tname: " V_tickets ",
-      where: dataPartition(" active = 1 ", true) + " group by urgency_name order by count(id) desc " 
+      where: dataPartition(" active = 1 ", true) + " group by urgency_name, urgency order by count(id) desc " 
     } 
     const TICKET_OPENED_BY_CATEGORY:IChatQuery = {
-      what: " top 10 count(id) as value,  isnull(category_name, N'@none') + '    '  as  type ",
+      what: " top 10 count(id) as value,  isnull(category_name, N'@none') + '    '  as  type, category as id ",
       tname: " V_tickets ",
-      where: dataPartition(" active = 1 ", true) + " group by category_name order by count(id) desc " 
+      where: dataPartition(" active = 1 ", true) + " group by category_name, category order by count(id) desc " 
     } 
     const TICKET_BY_WEEKDAY:IChatQuery = {
       what: "  count(id) as value,   FORMAT( ( dateadd(s, create_date+DATEDIFF (S, GETUTCDATE(), GETDATE()), '1970-01-01')),'dddd' ) as type  ",
@@ -212,12 +197,15 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
     
     
     let ticket_opened_percent_high_priority_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_PRIORITY.what, TICKET_OPENED_PERCENT_HIGH_PRIORITY.tname, TICKET_OPENED_PERCENT_HIGH_PRIORITY.where , ''  )  
+    if(ticket_opened_percent_high_priority_data?.data)
     if(ticket_opened_percent_high_priority_data?.data[0])
     setTicket_opened_percent_high_priority_data(ticket_opened_percent_high_priority_data?.data[0])
     let ticket_opened_percent_high_urgency_data = await  axiosFn("get", '', TICKET_OPENED_PERCENT_HIGH_URGENCY.what, TICKET_OPENED_PERCENT_HIGH_URGENCY.tname, TICKET_OPENED_PERCENT_HIGH_URGENCY.where , ''  )  
+    if(ticket_opened_percent_high_urgency_data)
     if(ticket_opened_percent_high_urgency_data?.data[0])
     setTicket_opened_percent_high_urgency_data(ticket_opened_percent_high_urgency_data?.data[0])
     let ticket_opened_closed_today_data = await  axiosFn("get", '', TICKET_OPENED_CLOSED_TODAY.what, TICKET_OPENED_CLOSED_TODAY.tname, TICKET_OPENED_CLOSED_TODAY.where , ''  )  
+    if(ticket_opened_closed_today_data)
     if(ticket_opened_closed_today_data?.data[0])
     setTicket_opened_closed_today_data(ticket_opened_closed_today_data?.data[0])
     
@@ -227,11 +215,12 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
   const getDataAssignee = async ( name:string) => {
     
     const TICKET_OPENED_BY_ASSIGNEE = {
-      what: "  count(id) as value, isnull(assignee_name, N'@none') as type, '       ' + isnull(assignee_name, N'@none') as name ",
+      what: "  count(id) as value, isnull(assignee_name, N'@none') as type, '       ' + isnull(assignee_name, N'@none') as name, assignee as id",
       tname: " V_tickets ",
-      where: " active = 1  group by assignee_name order by count(id) desc " 
+      where: " active = 1  group by assignee_name, assignee order by count(id) desc " 
     }
     const ticket_open_by_assignee_data = await  axiosFn("get", '', TICKET_OPENED_BY_ASSIGNEE.what.replace(/@none/g, t('non') + ' ' + t('assignee') ), TICKET_OPENED_BY_ASSIGNEE.tname,  "  team_name = '" + name + "' AND " + TICKET_OPENED_BY_ASSIGNEE.where  , ''  )  
+    if(ticket_open_by_assignee_data)
     if(ticket_open_by_assignee_data?.data)
     setTicket_open_by_assignee_data(ticket_open_by_assignee_data.data) 
   }
@@ -650,20 +639,43 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
       setTicket_open_by_team_name(name)
     }
   } else if(reportName === 'ticket_open_by_assignee_data') {
-    if(event[0]?.data?.name) {
-      let name = event[0]?.data?.name.toString().trim()
-      let ass_name =  name.replace( t('non') + ' ' + t('assignee') , '')
-      let query = dataPartition(" active = 1 ", true) + " AND  team_name = N'" + selectedTeam + "' AND " + "  isnull(assignee_name, '') = N'" + ass_name + "'"
-      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_ASSIGNEE'), query: query } as IQuery
+    if(event[0]?.data?.id) {
+      let id = event[0]?.data?.id.toString().trim()
+      let obj_id =  id.replace( t('non') + ' ' + t('assignee') , '')
+      let query = dataPartition(" active = 1 ", true) + " AND  team_name = N'" + selectedTeam + "' AND " + "  isnull(assignee, '') = N'" + obj_id + "'"
+      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_ASSIGNEE') + " " + event[0]?.data?.type, query: query } as IQuery
       goTo(q)
     }
   } else if(reportName === 'ticket_open_by_customer_data') {
-    debugger
     if(event[0]?.data?.id) {
       let id = event[0]?.data?.id.toString().trim()
       let obj_id =  id.replace( t('non') + ' ' + t('customer') , '')
       let query = dataPartition(" active = 1 ", true) + "  AND " + "  isnull(customer, '') = N'" + obj_id + "'"
       let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_CUSTOMER') + " " + event[0]?.data?.type , query: query } as IQuery
+      goTo(q)
+    }
+  } else if(reportName === 'ticket_open_by_priority_data') {
+    if(event[0]?.data?.id) {
+      let id = event[0]?.data?.id.toString().trim()
+      let obj_id =  id.replace( t('non') + ' ' + t('priority') , '')
+      let query = dataPartition(" active = 1 ", true) + "  AND " + "  isnull(priority, '') = N'" + obj_id + "'"
+      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_PRIORITY') + " " + event[0]?.data?.type , query: query } as IQuery
+      goTo(q)
+    }
+  } else if(reportName === 'ticket_open_by_urgency_data') {
+    if(event[0]?.data?.id) {
+      let id = event[0]?.data?.id.toString().trim()
+      let obj_id =  id.replace( t('non') + ' ' + t('urgency') , '')
+      let query = dataPartition(" active = 1 ", true) + "  AND " + "  isnull(urgency, '') = N'" + obj_id + "'"
+      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_URGENCY') + " " + event[0]?.data?.type , query: query } as IQuery
+      goTo(q)
+    }
+  } else if(reportName === 'ticket_open_by_category_data') {
+    if(event[0]?.data?.id) {
+      let id = event[0]?.data?.id.toString().trim()
+      let obj_id =  id.replace( t('non') + ' ' + t('category') , '')
+      let query = dataPartition(" active = 1 ", true) + "  AND " + "  isnull(category, '') = N'" + obj_id + "'"
+      let q:IQuery = {factory:'ticket', name: t('TICKET_OPENED_BY_CATEGORY') + " " + event[0]?.data?.type , query: query } as IQuery
       goTo(q)
     }
   }
@@ -760,12 +772,26 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
        </Col> */}
        <Col  xs={24} xl={8} sm={12}>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_PRIORITY')}</h3>
-        <Funnel  {...TICKET_OPENED_BY_PRIORITY_CONFIG_ROSE} style={{direction:'ltr'}} />
+        <Funnel  {...TICKET_OPENED_BY_PRIORITY_CONFIG_ROSE} style={{direction:'ltr'}} 
+        onReady={(plot:any) => {
+          plot.chart.on('plot:click', (evt:any) => {
+          const { x, y } = evt;
+          drillDownChart(plot.chart.getTooltipItems({ x, y }), 'ticket_open_by_priority_data');
+           });
+          }}
+        />
        </Col>
        
        <Col  xs={24} xl={8} sm={12}>
         <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_URGENCY')}</h3>
-        <Funnel {...TICKET_OPENED_BY_URGENCY_CONFIG} style={{direction:'ltr'}}/>
+        <Funnel {...TICKET_OPENED_BY_URGENCY_CONFIG} style={{direction:'ltr'}}
+        onReady={(plot:any) => {
+          plot.chart.on('plot:click', (evt:any) => {
+          const { x, y } = evt;
+          drillDownChart(plot.chart.getTooltipItems({ x, y }), 'ticket_open_by_urgency_data');
+           });
+          }}
+        />
        </Col>
        </Row>
        <Row key="3">
@@ -773,6 +799,12 @@ const HomeAssignee: FC<HomeAssigneeProps> = (props) => {
          <h3 style={{textAlign:'center'}}>{t('TICKET_OPENED_BY_CATEGORY')}</h3>
          <Bar  {...TICKET_OPENED_BY_CATEGORY_CONFIG} 
         style={{direction:'ltr'}}
+        onReady={(plot:any) => {
+          plot.chart.on('plot:click', (evt:any) => {
+          const { x, y } = evt;
+          drillDownChart(plot.chart.getTooltipItems({ x, y }), 'ticket_open_by_category_data');
+           });
+          }}
   />
         </Col>  
        <Col  xs={24} xl={12} >

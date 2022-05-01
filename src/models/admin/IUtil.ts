@@ -1,9 +1,12 @@
+import { SelectOption } from "../ISearch"
+
 export interface IUtil {
     id: string
     name: string
     type: string
     active: number
-    code: string
+    code: string,
+    children: SelectOption[]
 }
 export interface IFilter {
     text: string,
@@ -17,3 +20,5 @@ export interface AlertPrp {
     visible: boolean,
     autoClose: number  
   }  
+
+  export const IUtilObjectsMulti:string[] = ['children']

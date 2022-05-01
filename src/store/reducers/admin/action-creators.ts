@@ -86,12 +86,13 @@ export const AdminActionCreators = {
       }
 
      },
-    createUtil: (util: IUtil ) => async (dispatch: AppDispatch) => {
+    createUtil: (util: IUtil, multi:any ) => async (dispatch: AppDispatch) => {
       dispatch(AdminActionCreators.setIsError(''))
       try { 
         let hasError = false;
         let util_ = JSON.parse(JSON.stringify(util)) 
         delete util_.id
+        delete util_.children
         //update
         if(util.id) {
           dispatch(AdminActionCreators.IsLoading(true))
@@ -100,6 +101,27 @@ export const AdminActionCreators = {
           if(response.data&&!hasError)
           {
           let utils: IUtil[] = response.data
+          Object.keys(multi).map(v => {
+            let arr:any[] = multi[v]
+            arr.map(async m => {
+              if(m.status) {              
+                if(v === 'children')
+                {
+                  let json_ = {
+                    parent: util.id,
+                    parent_type: util.type,
+                    util: m.value
+                  }
+                  const response = await  axiosFn("post", json_, '*', 'util_parent', "id" , ''  )  
+                } 
+              }
+              else {
+                if(v === 'children')
+                {
+                const response = await  axiosFn("delete", '', '*', 'util_parent', "id" , m.code  )  
+                } 
+            }})
+          })
           } else
           {
               dispatch(AdminActionCreators.setIsError(i18n.t('data_problem'))) 

@@ -4,6 +4,8 @@ export const SELECT = "__s__"
 export const FROM = "__f__"
 export const WHERE = "__w__"
 export const PRPID ="_prp_"
+export const ORDER_BY_NAME =" order by name "
+
 
 export const DATETIMEFORMAT = "DD/MM/YYYY HH:mm"
 function isBoolean(val:any) {
