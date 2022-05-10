@@ -14,6 +14,7 @@ import { useHistory } from 'react-router-dom';
 import { RouteNames } from '../../../router';
 import { ITicketCategoryObjects, ITicketCategory, ITicketCategoryObjectsMulti } from '../../../models/ITicket';
 import { ASSIGNEE_LIST, GROUP_LIST, NOT_GROUP_LIST } from '../../../models/IUser';
+import useWindowDimensions from '../../../hooks/useWindowDimensions';
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
@@ -52,6 +53,7 @@ const TCategories:FC = () => {
   const [filter, setFilter] = useState({ } as Record<string, FilterValue | null> )
   const [form] = Form.useForm()
   const [viewForm, setViewForm] = useState(true )
+  const { height, width } = useWindowDimensions();
   const goToObject = (event:any, id:string) => {
     event.stopPropagation()
     router.push(RouteNames.TCATEGORIES + '/' + id )
@@ -60,6 +62,7 @@ const TCategories:FC = () => {
     {
       key: 'name',
       title: t('ticket_name'),
+      width: width>1000 ? 400 : 120,
       dataIndex: 'name',
       sorter: true,
       render: (name, record, index) => {
@@ -67,7 +70,8 @@ const TCategories:FC = () => {
           <a onClick={(event) => goToObject(event, record.id  ) }>
             {name} 
           </a>
-        );}
+        );},
+        fixed: 'left',
     }
     ,
     {
@@ -284,7 +288,7 @@ const TCategories:FC = () => {
            name="ticket_types"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -317,7 +321,8 @@ const TCategories:FC = () => {
            name="team"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={150}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -329,13 +334,15 @@ const TCategories:FC = () => {
            />
            </Form.Item>
            </Col>
+          
            <Col xs={24} xl={4}  > 
            <Form.Item 
            // label={ t('type') }
            name="assignee"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={150}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -347,13 +354,15 @@ const TCategories:FC = () => {
            />
            </Form.Item>
            </Col>
+           </Row>
+        <Row >
           <Col  xs={24} xl={12} >
           <Form.Item
         //  label={ t('fast_search') }
           name="fast_search" 
-          style={{display:'flex', width:'100%', padding:'5px'}} > 
+          style={{ padding:'5px'}} > 
           <Input 
-          style={{ height:'38px', width: '400px'}}
+          style={{ height:'38px', width: 'maxContent'}}
           placeholder={ t('fast_search') }
           />
           </Form.Item>
@@ -376,11 +385,11 @@ const TCategories:FC = () => {
       title={() => <h3>{t('tcategories')}</h3> }
       footer={() => t('total_count') + ' ' + categoriesCount}
       style={{width: '100%', padding: '5px'}}
-      // scroll={{ x: 1500, y: 700 }}
-      expandable={{
-        expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
-        rowExpandable: record => record.description !== '',
-      }}
+      scroll={{ x: 1500, y: 700 }}
+      // expandable={{
+      //   expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
+      //   rowExpandable: record => record.description !== '',
+      // }}
       />
       </Row>
       </Card>

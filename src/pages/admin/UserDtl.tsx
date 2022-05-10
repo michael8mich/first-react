@@ -429,7 +429,7 @@ const UserDtl:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={false}
@@ -451,7 +451,7 @@ const UserDtl:FC = () => {
            name="job_title"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -471,7 +471,7 @@ const UserDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -490,7 +490,7 @@ const UserDtl:FC = () => {
            name="primary_group"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -675,7 +675,7 @@ const UserDtl:FC = () => {
            //  rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={true}
            styles={SelectStyles}
@@ -696,7 +696,7 @@ const UserDtl:FC = () => {
            //  rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={true}
            styles={SelectStyles}
@@ -717,7 +717,7 @@ const UserDtl:FC = () => {
            //  rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={true}
            styles={SelectStyles}
@@ -740,7 +740,7 @@ const UserDtl:FC = () => {
            //  rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={true}
            styles={SelectStyles}
@@ -763,7 +763,7 @@ const UserDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -783,7 +783,7 @@ const UserDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -803,7 +803,7 @@ const UserDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -823,7 +823,7 @@ const UserDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}

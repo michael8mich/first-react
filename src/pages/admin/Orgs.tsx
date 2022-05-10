@@ -13,6 +13,7 @@ import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
 import { useHistory } from 'react-router-dom';
 import { RouteNames } from '../../router';
 import { IOrgObjects, IOrg } from '../../models/IOrg';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
@@ -30,7 +31,7 @@ const Orgs:FC = () => {
   const {fetchOrgs, setSelectSmall} = useAction()
 
   const [typeSelect, setTypeSelect] = useState('')
-
+  const { height, width } = useWindowDimensions();
 
   useEffect(() => {
     fetchOrgs(searchP, where)
@@ -61,12 +62,14 @@ const Orgs:FC = () => {
       title: t('name'),
       dataIndex: 'name',
       sorter: true,
+      width: width>1000 ? 400 : 120,
       render: (name, record, index) => {
         return (
           <a onClick={(event) => goToObject(event, record.id  ) }>
             {name} 
           </a>
-        );}
+        );},
+        fixed: 'left',
     
     },
     {
@@ -174,7 +177,8 @@ const Orgs:FC = () => {
       container: (provided: any) => ({
         ...provided,
         width: '100%',
-        opacity: '1 !important'
+        opacity: '1 !important',
+        zIndex:1000
       })
     };
 
@@ -267,7 +271,7 @@ const Orgs:FC = () => {
            name="organizational_type"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -310,11 +314,11 @@ const Orgs:FC = () => {
       title={() => <h3>{t('orgs')}</h3> }
       footer={() => t('total_count') + ' ' + orgsCount}
       style={{width: '100%', padding: '5px'}}
-      // scroll={{ x: 1500, y: 700 }}
-      expandable={{
-        expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
-        rowExpandable: record => record.description !== '',
-      }}
+      scroll={{ x: 1500, y: 700 }}
+      // expandable={{
+      //   expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
+      //   rowExpandable: record => record.description !== '',
+      // }}
       />
       </Row>
       </Card>

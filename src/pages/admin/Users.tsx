@@ -380,7 +380,8 @@ const Users:FC = () => {
            name="contact_type"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={150}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -425,7 +426,7 @@ const Users:FC = () => {
         name="fast_search" 
         style={{display:'flex', width:'100%', padding:'5px'}} > 
         <Input 
-         style={{ height:'38px', width: '400px'}}
+         style={{ height:'38px', width: 'maxContent'}}
          placeholder={ t('fast_search') }
         />
         </Form.Item>

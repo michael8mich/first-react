@@ -67,7 +67,8 @@ const UtilForm: FC<UtilFormProps> = (props) => {
     container: (provided: any) => ({
       ...provided,
       width: '100%',
-      opacity: '1 !important'
+      opacity: '1 !important',
+      zIndex:1000
     })
   };
   const initSelectValues:any = {
@@ -294,7 +295,7 @@ const UtilForm: FC<UtilFormProps> = (props) => {
          //  rules={[validators.required()]}
          > 
          <AsyncSelect 
-         menuPosition="fixed"
+         menuPosition="absolute"
          isDisabled={false}
          isMulti={true}
          styles={SelectStyles}

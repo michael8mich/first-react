@@ -564,7 +564,7 @@ const TCategoryDtl:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={true}
@@ -586,7 +586,7 @@ const TCategoryDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -612,7 +612,7 @@ const TCategoryDtl:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -637,7 +637,7 @@ const TCategoryDtl:FC = () => {
            > 
            <AsyncSelect
            name="select_assignee" 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -659,7 +659,7 @@ const TCategoryDtl:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -681,7 +681,7 @@ const TCategoryDtl:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}

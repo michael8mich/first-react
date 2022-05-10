@@ -891,7 +891,7 @@ const TicketEmployee:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={false}
@@ -915,7 +915,7 @@ const TicketEmployee:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={false}
@@ -938,7 +938,7 @@ const TicketEmployee:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -1033,7 +1033,7 @@ const TicketEmployee:FC = () => {
                   initialValue={  {label: ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? p.defaultValue.split(':')[0] : '', value: ticketId === '0' && p.defaultValue && p.defaultValue.split(':').length > 1 ? p.defaultValue.split(':')[1] : ''} }
                   > 
                   <AsyncSelect 
-                  menuPosition="fixed"
+                  menuPosition="absolute"
                   isDisabled={ro}
                   isMulti={false}
                   styles={SelectStyles}

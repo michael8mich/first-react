@@ -464,7 +464,7 @@ const QueriesTree = forwardRef((props:QueriesTreeProps, ref) => {
            <Card bodyStyle={{padding: "0",background:props.sider ? '#000c17': ''}}>
            <AsyncSelect 
            autoFocus={true}
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={false}
            styles={SelectStyles}
            isClearable={true}

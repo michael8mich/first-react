@@ -231,7 +231,7 @@ const onFinish = (values: any) => {
           rules={[validators.required()]}
         >
           <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -310,7 +310,7 @@ const onFinish = (values: any) => {
              name="tcode_select"
            >
              <AsyncSelect 
-              menuPosition="fixed"
+              menuPosition="absolute"
               isDisabled={ro}
               isMulti={false}
               styles={SelectStyles}

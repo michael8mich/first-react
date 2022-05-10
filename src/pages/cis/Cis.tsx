@@ -269,7 +269,7 @@ const Cis:FC = () => {
          </Button>&nbsp;&nbsp;&nbsp;
          <Button  style={{ background: "orange", borderColor: "white" }}
           onClick={() => createNew()  }
-          >{t('add_new')}</Button>&nbsp;&nbsp;&nbsp;
+          >{t('add_new', { object: t('ci') })}</Button>&nbsp;&nbsp;&nbsp;
           {viewForm ? 
          <FilterOutlined style={{color:'gray', fontSize: '24px'}}
          onClick={() => setViewForm(false)}
@@ -303,7 +303,8 @@ const Cis:FC = () => {
            name="ci_class"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={250}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -332,7 +333,8 @@ const Cis:FC = () => {
            name="ci_status"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={250}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -350,7 +352,8 @@ const Cis:FC = () => {
            name="ci_user"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={250}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -384,7 +387,8 @@ const Cis:FC = () => {
            name="ci_model"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           maxMenuHeight={150}
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -442,7 +446,7 @@ const Cis:FC = () => {
         name="fast_search" 
         style={{display:'flex', width:'100%', padding:'5px'}} > 
         <Input 
-         style={{ height:'38px', width: '400px'}}
+         style={{ height:'38px', width: 'maxContent'}}
          placeholder={ t('fast_search') }
         />
         </Form.Item>

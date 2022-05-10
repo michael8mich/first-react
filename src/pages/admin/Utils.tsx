@@ -72,13 +72,15 @@ const Utils:FC = () => {
       key: 'name',
       title: t('name'),
       dataIndex: 'name',
+      width: width>1000 ? 400 : 120,
       sorter: true,
       render: (name, record, index) => {
         return (
           <a onClick={(event) => goToObject(event, record.id  ) }>
             {name} 
           </a>
-        );}
+        );},
+        fixed: 'left',
     
     },
     {
@@ -273,7 +275,8 @@ const Utils:FC = () => {
            name="type"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-            menuPosition="fixed"
+            menuPosition="absolute"
+            maxMenuHeight={120}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -299,7 +302,20 @@ const Utils:FC = () => {
            />
            </Form.Item>
            </Col>
-     </Row>
+        </Row>
+        <Row  >
+           <Col xs={24} xl={8}  >
+           <Form.Item
+           // label={ t('name') }
+           name="code" 
+           style={{ padding:'5px'}} > 
+           <Input 
+             style={{ height:'38px', width: 'maxContent'}}
+             placeholder={ t('code') }
+           />
+           </Form.Item>
+           </Col>
+           </Row>
      </>
       }
        </Form>
@@ -317,13 +333,13 @@ const Utils:FC = () => {
       title={() => <h3>{t('utils')}</h3> }
       footer={() => t('total_count') + ' ' + utilsCount}
       style={{width: '100%', padding: '5px'}}
-      // scroll={{ x: 1500, y: 700 }}
+      scroll={{ x: 1500, y: 700 }}
       />
       </Row>
       <Row justify="center" align="middle" >
        <Drawer
        placement={ user.locale === 'heIL' ? 'left' : 'right'}
-       closable={false}
+       closable={true}
        title={buildModalTitle()}
        footer={null}
        onClose={() => openCloseModal(false) }

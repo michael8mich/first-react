@@ -584,7 +584,8 @@ const TicketsAssignee:FC = () => {
       {error && 
      <h1 className='ErrorH1'>{error}</h1>
       }
-       <Form
+       <Form 
+       
        // layout="vertical"
        form={form}
        name="basic"
@@ -684,7 +685,8 @@ const TicketsAssignee:FC = () => {
            name="customer"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           maxMenuHeight={vewAdditionalFilter ? 350 : 200}
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -702,7 +704,8 @@ const TicketsAssignee:FC = () => {
            name="category"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={vewAdditionalFilter ? 350 : 200}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -737,7 +740,7 @@ const TicketsAssignee:FC = () => {
            name="ticket_type"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -755,7 +758,7 @@ const TicketsAssignee:FC = () => {
            name="status"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -773,7 +776,7 @@ const TicketsAssignee:FC = () => {
            name="team"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -791,7 +794,7 @@ const TicketsAssignee:FC = () => {
            name="assignee"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}

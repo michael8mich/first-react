@@ -13,6 +13,7 @@ import FilterOutlined from '@ant-design/icons/lib/icons/FilterOutlined';
 import { useHistory } from 'react-router-dom';
 import { RouteNames } from '../../router';
 import { INotificationObjects, INotification } from '../../models/INotification';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 const SORT_DEFAULT = 'name asc'
 const LIMIT_DEFAULT = '10'
@@ -28,7 +29,7 @@ const Notifications:FC = () => {
   const {error, isLoading, notifications, notificationCount } = useTypedSelector(state => state.admin)
   const {selectSmall } = useTypedSelector(state => state.cache)
   const {fetchNotifications, setSelectSmall} = useAction()
-
+  const { height, width } = useWindowDimensions();
   const [typeSelect, setTypeSelect] = useState('')
 
 
@@ -60,13 +61,15 @@ const Notifications:FC = () => {
       key: 'name',
       title: t('name'),
       dataIndex: 'name',
+      width: width>1000 ? 400 : 120,
       sorter: true,
       render: (name, record, index) => {
         return (
           <a onClick={(event) => goToObject(event, record.id  ) }>
             {name} 
           </a>
-        );}
+        );},
+        fixed: 'left',
     
     },
     {
@@ -154,7 +157,8 @@ const Notifications:FC = () => {
       container: (provided: any) => ({
         ...provided,
         width: '100%',
-        opacity: '1 !important'
+        opacity: '1 !important',
+        zIndex:1000
       })
     };
 
@@ -247,7 +251,7 @@ const Notifications:FC = () => {
            name="notification_type"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -290,7 +294,7 @@ const Notifications:FC = () => {
       title={() => <h3>{t('notifications')}</h3> }
       footer={() => t('total_count') + ' ' + notificationCount}
       style={{width: '100%', padding: '5px'}}
-      // scroll={{ x: 1500, y: 700 }}
+      scroll={{ x: 1500, y: 700 }}
       expandable={{
         expandedRowRender: record => <p style={{ margin: 0 }}>{record.body}</p>,
         rowExpandable: record => record.body !== '',

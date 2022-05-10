@@ -554,7 +554,8 @@ const TicketsAllWfs:FC = () => {
            name="customer"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={vewAdditionalFilter ? 350 : 200}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -572,7 +573,8 @@ const TicketsAllWfs:FC = () => {
            name="tcategory"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
+           maxMenuHeight={vewAdditionalFilter ? 350 : 200}
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -607,7 +609,7 @@ const TicketsAllWfs:FC = () => {
            name="task"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -625,7 +627,7 @@ const TicketsAllWfs:FC = () => {
            name="status"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -643,7 +645,7 @@ const TicketsAllWfs:FC = () => {
            name="team"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}
@@ -661,7 +663,7 @@ const TicketsAllWfs:FC = () => {
            name="assignee"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isMulti={true}
            styles={SelectStyles}
            isClearable={true}

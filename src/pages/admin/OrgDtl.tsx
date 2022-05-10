@@ -261,7 +261,7 @@ const OrgDtl:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={false}
@@ -282,7 +282,7 @@ const OrgDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}

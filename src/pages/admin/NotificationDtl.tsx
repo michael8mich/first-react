@@ -254,7 +254,7 @@ const exportHtml = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={false}

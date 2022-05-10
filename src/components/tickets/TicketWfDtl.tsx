@@ -602,7 +602,7 @@ const onFinish =async (values: any) => {
           rules={[validators.required()]}
         >
           <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={props.selectedWf?.id === '0' ? false: true}
            isMulti={false}
            styles={SelectStyles}
@@ -660,7 +660,7 @@ const onFinish =async (values: any) => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={true}
            isMulti={false}
            styles={SelectStyles}
@@ -683,7 +683,7 @@ const onFinish =async (values: any) => {
            rules={[validators.requiredTeamOrAssignee(formWf.getFieldValue('team')?.value,formWf.getFieldValue('assignee')?.value,formWf.getFieldValue('task')?.code)]}
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -706,7 +706,7 @@ const onFinish =async (values: any) => {
            > 
            <AsyncSelect
            name="select_assignee" 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}

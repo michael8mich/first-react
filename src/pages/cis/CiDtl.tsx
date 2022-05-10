@@ -370,7 +370,7 @@ const CisDtl:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={false}
@@ -393,7 +393,7 @@ const CisDtl:FC = () => {
            rules={[validators.required()]}
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={false}
@@ -415,7 +415,7 @@ const CisDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-      menuPosition="fixed"
+      menuPosition="absolute"
            className={classes.selectClass}
            isDisabled={ro}
            isMulti={false}
@@ -452,7 +452,7 @@ const CisDtl:FC = () => {
            name="ci_model"
            style={{ padding:'5px', width: 'maxContent'}} > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
@@ -528,7 +528,7 @@ const CisDtl:FC = () => {
            style={{ padding:'5px', width: 'maxContent'}} 
            > 
            <AsyncSelect 
-           menuPosition="fixed"
+           menuPosition="absolute"
            isDisabled={ro}
            isMulti={false}
            styles={SelectStyles}
