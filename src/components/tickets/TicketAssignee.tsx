@@ -1,7 +1,7 @@
 import { Button, Card, Checkbox, Col, Collapse, Descriptions, List, Form, Input, Layout, Modal, Radio, Row, Select, Space, Spin,  Tabs, DatePicker, Popover, Badge, Tooltip, Drawer, DrawerProps, Popconfirm, Alert} from 'antd';
 import { UpOutlined, DownOutlined, LeftOutlined, RightOutlined, UserOutlined, MailOutlined, SelectOutlined,
   UnorderedListOutlined, LayoutOutlined, FilePdfOutlined, QuestionCircleOutlined, CloseCircleOutlined,
-  ApiOutlined,CopyOutlined,BranchesOutlined, ScissorOutlined } from '@ant-design/icons';
+  ApiOutlined,CopyOutlined,BranchesOutlined, SlackOutlined } from '@ant-design/icons';
 import  {FC, useEffect, useMemo, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAction } from '../../hooks/useAction';
@@ -37,6 +37,7 @@ import TicketNotifications from './TicketNotifications';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import ContentEditable from "react-contenteditable";
 import { IAttachment } from '../../models/IObject';
+import TicketSla from './TicketSla';
 
 // Generate dark color palettes by a given color
 const colors = generate('#1890ff', {
@@ -383,6 +384,8 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
      const [categoryCrs, setCategoryCrs]  = useState(0)
      const [ciCrs, setCiCrs]  = useState(0) 
      const [categoryChanged, setCategoryChanged]  = useState(false) 
+     const [ticket_slaChanged, setTicket_slaChanged]  = useState(false) 
+
 
      const selectChanged = async (selectChange:any, name:string) =>
       {
@@ -425,6 +428,15 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
           }
         }   
     }
+    if(name==='ticket_sla') {
+      if(selectChange?.value) {
+        if(selectedTicket?.ticket_sla?.value !== selectChange?.value) {
+          setTicket_slaChanged(true)
+        }
+        console.log('');
+      }
+    }
+    
     setSelectValues({...selectOptions, [name]: selectChange })
       }
     const SelectStyles = {
@@ -532,7 +544,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
       })
       let valuesMulti =  saveFormBuildMulti({...values_},{...selectedTicket});
       saveFormBuild(values_)
-      createTicket({...values_, id:ticketId, name:selectedTicket.name, categoryChanged: categoryChanged}, valuesMulti, user.id, [...prp], values, selectedTicket, notificationsAll, router, setPathForEmpty)
+      createTicket({...values_, id:ticketId, name:selectedTicket.name, categoryChanged: categoryChanged, ticket_slaChanged: ticket_slaChanged}, valuesMulti, user.id, [...prp], values, selectedTicket, notificationsAll, router, setPathForEmpty)
       afterUpdateCreate()
     }
     const onFinishFailed = (errorInfo: any) => {
@@ -560,10 +572,112 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
     const buildTitle = () =>
     {
         return (
+          <Row >
+          <Col  xs={24} xl={12}>
+          {
           ticketId === '0'? 
           <h1 style={{padding:'10px'}}>{ !ro && t('create_new') } { t('ticket')} { selectedTicket?.name &&  t('number') + selectedTicket?.name} &nbsp;&nbsp;&nbsp; {buildSpinner()}</h1>:
           <h1 style={{padding:'10px'}}>{ ! ro && t('update') } { t('ticket')}   { t('number')} { selectedTicket?.name } &nbsp;&nbsp;&nbsp; {buildSpinner()}</h1>
-        )
+          }
+         </Col>
+         <Col  xs={24} xl={12}>
+          {ro 
+          ?     
+          <div style={{display:'flex', justifyContent:'start'}}  className="flex-container">
+       
+           <Button type="primary" htmlType="button" key="edit"
+            onClick={(event) => edit(event)  }
+           >
+           { t('edit') }
+           </Button>&nbsp;&nbsp;&nbsp;
+  
+           <Button type="primary" htmlType="button" key="toComment"
+           onClick={() => toComment('New Log Comment') }
+           >
+           { t('toComment') }
+           </Button>&nbsp;&nbsp;&nbsp;
+          {
+            form.getFieldValue('assignee')?.value !== user.id &&
+            <>
+            <Button type="primary" htmlType="button"  key="toMe"
+            onClick={() => toMe() }
+            >
+            { t('toMe') }
+            </Button>&nbsp;&nbsp;&nbsp;
+            </>
+          }
+           
+          {
+               form.getFieldValue('status')?.value !== STATUS_CLOSE.value &&
+               <>
+                <Button type="primary" htmlType="button" key="toClose"
+                onClick={() => toClose('Close Comment') }
+                >
+                { t('toClose') }
+                </Button>&nbsp;&nbsp;&nbsp;
+                </>
+  
+          }
+  
+          {     
+               form.getFieldValue('status')?.value !== STATUS_CANCELED.value && form.getFieldValue('status')?.value !== STATUS_CLOSE.value &&
+               <>
+               <Popconfirm title={t('are_you_sure_cancel')} 
+               okText={t('yes')} cancelText={t('no')}  
+               onConfirm={() =>  toCancel('Cancel Comment')} 
+               key="toCancel">
+              
+                <Button type="primary" htmlType="button" key="toCancel_button"
+                >
+                { t('toCancel') }
+                </Button>
+                </Popconfirm>&nbsp;&nbsp;&nbsp;
+                </>
+             
+          }
+  
+           
+  
+           <Button type="primary" htmlType="button" key="getTicket"
+           onClick={() => getTicket() }
+           >
+           { t('refresh') }
+           </Button>&nbsp;&nbsp;&nbsp;
+  
+           <Button type="primary" htmlType="button" key="copyTicket"
+           onClick={() => toCopy() }
+           > <CopyOutlined />
+           { t('toCopy') }
+           </Button>&nbsp;&nbsp;&nbsp;
+          
+  
+           <Tooltip title={t('export_to_pdf')} >
+           <FilePdfOutlined 
+            style={{color:'gray',fontSize:'24px'}}
+            onClick={() => toPdf() }
+           />
+            </Tooltip>
+          </div> 
+           :
+           <div style={{display:'flex', justifyContent:'start'}} className="flex-container">
+  
+           <Button type="primary" htmlType="submit" key="getTicket"
+           disabled={isLoading}
+           loading={isLoading}
+           >
+           { t('save') }
+           </Button>&nbsp;&nbsp;&nbsp;
+           <Button type="primary" htmlType="submit" key="submit"
+           onClick={() => cancelUpdate() }  
+           >
+           { t('cancel') }
+           </Button>&nbsp;&nbsp;&nbsp;
+          </div>    
+       }
+       
+         </Col>
+         </Row>
+          )
     }
     
     const  buildContentEditableTitle = () => {
@@ -741,7 +855,10 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
        fetchTicketWfs(selectedTicket)
        setActiveTabKey('wfs')
       }
-      //console.log(key);
+      if(key==='ticket_sla')
+      {
+        setActiveTabKey('ticket_sla')
+      }
     }
   const edit = (event:any) => {
     event.preventDefault()
@@ -905,27 +1022,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
   return (
   <Layout style={{height:"100vh"}} id='screen'>
       {error && <h1 className='ErrorH1'>{error}</h1> }
-     
-
-     
-       <Card  >
-       <div className="flex-container">
-         {buildTitle()}
-       </div>
-   <Tabs 
-   onChange={tabChangeFunction} 
-   type="card" 
-   tabPosition={tabPosition }
-   defaultActiveKey="detail"
-   activeKey={activeTabKey}
-   >
-      <TabPane tab={
-          <span> 
-          <LayoutOutlined />
-          {t('detail')} 
-          </span>
-        } key="detail" >
-       <Form
+      <Form
        layout="vertical"
        form={form}
        name="basic"
@@ -935,106 +1032,29 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
        onFinish={onFinish}
        onFinishFailed={onFinishFailed}
        autoComplete="off" 
-       > 
+       >
+       <Card  >
+       <div className="flex-container">
+         {buildTitle()}
+       </div>
+      
+   <Tabs 
+   onChange={tabChangeFunction} 
+   type="card" 
+   tabPosition={tabPosition }
+   defaultActiveKey="detail"
+   activeKey={activeTabKey}
+   >
+    
+      <TabPane tab={
+          <span> 
+          <LayoutOutlined />
+          {t('detail')} 
+          </span>
+        } key="detail" >
+  
           
-          <Row >
-        <Col  xs={24} xl={14}>
-        {ro 
-        ?     
-        <div className="flex-container">
-     
-         <Button type="primary" htmlType="button" key="edit"
-          onClick={(event) => edit(event)  }
-         >
-         { t('edit') }
-         </Button>&nbsp;&nbsp;&nbsp;
-
-         <Button type="primary" htmlType="button" key="toComment"
-         onClick={() => toComment('New Log Comment') }
-         >
-         { t('toComment') }
-         </Button>&nbsp;&nbsp;&nbsp;
-        {
-          form.getFieldValue('assignee')?.value !== user.id &&
-          <>
-          <Button type="primary" htmlType="button"  key="toMe"
-          onClick={() => toMe() }
-          >
-          { t('toMe') }
-          </Button>&nbsp;&nbsp;&nbsp;
-          </>
-        }
-         
-        {
-             form.getFieldValue('status')?.value !== STATUS_CLOSE.value &&
-             <>
-              <Button type="primary" htmlType="button" key="toClose"
-              onClick={() => toClose('Close Comment') }
-              >
-              { t('toClose') }
-              </Button>&nbsp;&nbsp;&nbsp;
-              </>
-
-        }
-
-        {     
-             form.getFieldValue('status')?.value !== STATUS_CANCELED.value && form.getFieldValue('status')?.value !== STATUS_CLOSE.value &&
-         
-             <Popconfirm title={t('are_you_sure_cancel')} 
-             okText={t('yes')} cancelText={t('no')}  
-             onConfirm={() =>  toCancel('Cancel Comment')} 
-             key="toCancel">
-            
-              <Button type="primary" htmlType="button" key="toCancel_button"
-              >
-              { t('toCancel') }
-              </Button>&nbsp;&nbsp;&nbsp;
-         
-              </Popconfirm>
-           
-        }
-
-         
-
-         <Button type="primary" htmlType="button" key="getTicket"
-         onClick={() => getTicket() }
-         >
-         { t('refresh') }
-         </Button>&nbsp;&nbsp;&nbsp;
-
-         <Button type="primary" htmlType="button" key="copyTicket"
-         onClick={() => toCopy() }
-         > <CopyOutlined />
-         { t('toCopy') }
-         </Button>&nbsp;&nbsp;&nbsp;
         
-
-         <Tooltip title={t('export_to_pdf')} >
-         <FilePdfOutlined 
-          style={{color:'gray',fontSize:'24px'}}
-          onClick={() => toPdf() }
-         />
-          </Tooltip>
-        </div> 
-         :
-         <div style={{display:'flex', justifyContent:'start'}} className="flex-container">
-
-         <Button type="primary" htmlType="submit" key="getTicket"
-         disabled={isLoading}
-         loading={isLoading}
-         >
-         { t('save') }
-         </Button>&nbsp;&nbsp;&nbsp;
-         <Button type="primary" htmlType="submit" key="submit"
-         onClick={() => cancelUpdate() }  
-         >
-         { t('cancel') }
-         </Button>&nbsp;&nbsp;&nbsp;
-        </div>    
-     }
-     
-        </Col>
-        </Row>
           <Row  >
           <Col xl={4}  lg={6} sm={12} xs={24}>
           
@@ -1522,7 +1542,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
             </Row> 
       
           }
-          </Form>
+         
       </TabPane>
       <TabPane tab={
           <span> 
@@ -1575,7 +1595,45 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
         <TicketWfs />  
         </TabPane>  
       }
-    
+    <TabPane 
+      tab={
+        <span> 
+        <SlackOutlined  /> 
+        {t('ticket_sla')} 
+        </span>
+      }
+       key="ticket_sla" forceRender={true} >
+         <Row>
+         <Col xl={4}  lg={6} sm={12} xs={24}>
+            <Form.Item 
+            key="ticket_sla"
+            label={ t('ticket_sla') }
+            name="ticket_sla"
+            style={{ padding:'5px', width: 'maxContent'}} 
+            // rules={[validators.required()]}
+            > 
+            <AsyncSelect 
+            menuPosition="absolute"
+            isDisabled={ro}
+            isMulti={false}
+            styles={  { container: (provided: any) => ({
+              ...provided,
+              width: '100%',
+              opacity: '1 !important',
+              zIndex:1000
+            })}}
+            isClearable={true}
+            placeholder={ t('ticket_sla') }
+            cacheOptions 
+            defaultOptions
+            loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_sla', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_sla'" + ORDER_BY_NAME, false )} 
+            onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_sla')}
+            />
+            </Form.Item>
+            </Col>
+        </Row>
+      <TicketSla />
+      </TabPane>  
       <TabPane 
       tab={
         <span> 
@@ -1588,7 +1646,7 @@ const TicketAssignee:FC<TicketAssigneeProps> = (props) => {
       </TabPane>  
   </Tabs>  
        </Card>
-   
+       </Form>
        
        
 

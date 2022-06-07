@@ -1,4 +1,4 @@
-import { ITicketsAllWfs, ITicketWfTpl } from './../../../models/ITicket';
+import { ITicketsAllWfs, ITicketSlaEvents, ITicketWfTpl } from './../../../models/ITicket';
 import { ITicket, ITicketCategory, ITicketPrpTpl } from '../../../models/ITicket';
 
 export interface TicketState {
@@ -21,6 +21,8 @@ export interface TicketState {
     wfs: ITicketWfTpl[]
     wfsCount: number
     selectedWf: ITicketWfTpl
+
+    ticketSlaEvents:  ITicketSlaEvents[]
 
     isLoading: boolean
     error: string
@@ -49,6 +51,7 @@ export enum TicketActionEnum {
     SET_SELECTED_WF = "SET_SELECTED_WF",
     SET_WFS_COUNT = "SET_WFS_COUNT",
 
+    SET_TICKET_SLA_EVENTS =  "SET_TICKET_SLA_EVENTS",
 
     SET_ERROR = "SET_ERROR",
     SET_IS_LOADING = "SET_IS_LOADING",
@@ -142,7 +145,11 @@ export interface SetWfsCountAction {
     type: TicketActionEnum.SET_WFS_COUNT,
     payload: number
 }
-
+//------------------
+export interface SetTicketSlaEventsAction {
+    type: TicketActionEnum.SET_TICKET_SLA_EVENTS,
+    payload: ITicketSlaEvents[]
+}
 //------------------
 export interface SetErrorAction {
     type: TicketActionEnum.SET_ERROR,
@@ -176,7 +183,8 @@ SetWfsAction |
 SetSelectedWfAction | 
 SetWfsCountAction | 
 SetTicketsAllWfsAction | 
-SetTicketsAllWfsCountAction
+SetTicketsAllWfsCountAction |
+SetTicketSlaEventsAction
 
 
 

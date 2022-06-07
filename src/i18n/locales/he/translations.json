@@ -150,6 +150,7 @@
         "Status Changed": "הסטטוס השתנה",
         "Customer Changed": "הלקוח השתנה",
         "Category Changed": "הסיווג השתנה",
+        "Ticket sla Changed": "רמת שירות השתנה",
         "Workflow Status Pend": "משימה העברה לטיפול",
         "Workflow Status Reject": "משימה נדחתה",
         "Workflow Status Complete": "משימה הושלמה",
@@ -277,6 +278,7 @@
          "open_file_in_new_window": "פתח קובץ בחלון חדש",
          "wf_dtl": "פרטי משימה",
          "children": "בנים",
+         "ticket_sla": "רמת שירות",
 
  
          

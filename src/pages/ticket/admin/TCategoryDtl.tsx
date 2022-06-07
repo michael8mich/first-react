@@ -694,6 +694,28 @@ const TCategoryDtl:FC = () => {
            />
            </Form.Item>
            </Col> 
+           <Col xl={4}  lg={8} sm={12} xs={24}>
+           <Form.Item 
+           key="ticket_sla"
+           label={ t('ticket_sla') }
+           name="ticket_sla"
+           style={{ padding:'5px', width: 'maxContent'}} 
+           rules={[validators.required()]}
+           > 
+           <AsyncSelect 
+           menuPosition="absolute"
+           isDisabled={ro}
+           isMulti={false}
+           styles={SelectStyles}
+           isClearable={true}
+           placeholder={ t('ticket_sla') }
+           cacheOptions 
+           defaultOptions
+           loadOptions={ (inputValue:string) => promiseOptions(inputValue, 'ticket_sla', ' top 20 name as label, id as value , id as code ', 'utils', " type = 'ticket_sla'", false )} 
+           onChange={(selectChange:any) => selectChanged(selectChange, 'ticket_sla')}
+           />
+           </Form.Item>
+           </Col> 
         </Row>   
         
         <Row  >

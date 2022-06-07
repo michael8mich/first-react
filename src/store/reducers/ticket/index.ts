@@ -1,4 +1,4 @@
-import { ITicket, ITicketCategory, ITicketPrpTpl, ITicketsAllWfs, ITicketWfTpl } from "../../../models/ITicket"
+import { ITicket, ITicketCategory, ITicketPrpTpl, ITicketsAllWfs, ITicketSlaEvents, ITicketWfTpl } from "../../../models/ITicket"
 import { TicketAction, TicketActionEnum, TicketState } from "./types"
 
 
@@ -22,6 +22,8 @@ const initialState: TicketState = {
     wfs: [] as ITicketWfTpl[],
     wfsCount: 0,
     selectedWf: {} as ITicketWfTpl,
+
+    ticketSlaEvents: [] as  ITicketSlaEvents[],
 
     isLoading: false,
     error: ''
@@ -73,7 +75,10 @@ export default function TicketReducer(state = initialState, action:TicketAction 
         case  TicketActionEnum.SET_SELECTED_WF:
                          return {...state, selectedWf: action.payload }  
         case  TicketActionEnum.SET_WFS_COUNT:
-                         return {...state, wfsCount: action.payload }                  
+                         return {...state, wfsCount: action.payload }  
+
+        case  TicketActionEnum.SET_TICKET_SLA_EVENTS:
+                            return {...state, ticketSlaEvents: action.payload, isLoading: false }             
                  
        case  TicketActionEnum.SET_ERROR:
            return {...state, error: action.payload, isLoading: false  }           
